@@ -1,0 +1,38 @@
+/* ================ Global Responsive Design ================ */
+@media (max-width: 768px) {
+  .container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+/* ================ Tablet Styles ================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    margin: 1.5rem;
+    padding: 1.8rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .methods-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ================ Large Screen Optimizations ================ */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1400px;
+  }
+  
+  .navbar {
+    padding: 1.5rem 3rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

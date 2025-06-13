@@ -1,0 +1,293 @@
+/* Contact.css */
+.contact-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
+  padding: 20px;
+}
+
+.contact-header {
+  background: linear-gradient(135deg, #1a2a6c, #2a5298);
+  color: white;
+  border-radius: 16px;
+  padding: 25px 30px;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(26, 42, 108, 0.2);
+}
+
+.header-content h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.header-content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  max-width: 600px;
+}
+
+.metro-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metro-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.map-link a {
+  display: inline-block;
+  margin-top: 10px;
+  color: #1a2a6c;
+  text-decoration: underline;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 992px) {
+  .contact-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.contact-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.contact-section h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #1e293b;
+}
+
+/* Enhanced icon styling for section headers */
+.section-icon {
+  color: #3498db !important;
+  font-size: 1.3rem !important;
+  width: 1.3rem;
+  height: 1.3rem;
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* Ensure React Icons are visible */
+.section-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  display: block;
+}
+
+.contact-card {
+  background: white;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.company-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin: 0;
+}
+
+.cin {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 5px 0 15px 0;
+}
+
+.contact-card h3 {
+  font-size: 1.2rem;
+  margin: 0 0 10px 0;
+  color: #1e293b;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.contact-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.contact-info:last-child {
+  margin-bottom: 0;
+}
+
+/* Enhanced icon styling for contact info */
+.contact-info .icon {
+  color: #3498db !important;
+  font-size: 1.2rem !important;
+  width: 1.2rem;
+  height: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 3px;
+  display: inline-block;
+  vertical-align: top;
+  line-height: 1;
+}
+
+/* Ensure React Icons in contact info are visible */
+.contact-info .icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  display: block;
+}
+
+/* Fallback for missing icons - display as colored squares */
+.section-icon:empty::before,
+.contact-info .icon:empty::before {
+  content: "●";
+  display: inline-block;
+  font-size: inherit;
+  color: inherit;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  text-align: center;
+}
+
+.contact-info span, .contact-info a {
+  line-height: 1.5;
+  flex: 1;
+}
+
+.contact-info a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-info a:hover {
+  text-decoration: underline;
+}
+
+.important-info {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 10px;
+  border-left: 4px solid #3498db;
+}
+
+.important-info h4 {
+  font-size: 1.1rem;
+  margin: 0 0 15px 0;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.important-info ul {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.important-info li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+  color: #475569;
+  text-align: justify;
+}
+
+.contact-footer {
+  max-width: 1200px;
+  margin: 40px auto 20px;
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  color: #475569;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.contact-footer a {
+  color: #3498db;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.contact-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Force icon visibility - additional fallback */
+[class*="Fa"], [class*="fa-"] {
+  display: inline-block !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-rendering: auto !important;
+  line-height: 1 !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .contact-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .metro-icon {
+    align-self: flex-end;
+  }
+  
+  .header-content h1 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content h1 {
+    font-size: 1.6rem;
+  }
+  
+  .header-content p {
+    font-size: 1rem;
+  }
+  
+  .contact-card {
+    padding: 20px;
+  }
+}
