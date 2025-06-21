@@ -9,8 +9,11 @@ from geopy.distance import geodesic
 app = Flask(__name__)
 CORS(app)
 
-fare_matrix = pd.read_excel("Fare Matrix.xlsx")
-stations_df = pd.read_excel("Location.xlsx")
+FARE_PATH = os.path.join(os.path.dirname(__file__), "Fare Matrix.xlsx")
+STATIONS_PATH = os.path.join(os.path.dirname(__file__), "Location.xlsx")
+
+fare_matrix = pd.read_excel(FARE_PATH)
+stations_df = pd.read_excel(STATIONS_PATH)
 
 source_col = 'Source'
 dest_col = 'Destination'
