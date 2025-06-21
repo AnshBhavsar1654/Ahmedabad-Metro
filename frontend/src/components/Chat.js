@@ -81,7 +81,7 @@ const Chat = () => {
     ]);
   };
 
-  // Update your handleSubmit function in Chat.jsx to handle Gujarati translation
+  // Fixed handleSubmit function with correct endpoint logic
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim() || isLoading) return;
@@ -92,9 +92,10 @@ const Chat = () => {
       setMessages(prev => [...prev, { text: userMessage, isBot: false, timestamp: new Date() }]);
       setInputMessage('');
     
+      // Fixed endpoint selection - English should use different endpoint than Gujarati
       const endpoint = selectedLanguage === 'gujarati' 
-      ? 'http://localhost:5000/chat_guj'
-      : 'http://localhost:5000/api/chat_guj';
+        ? 'http://localhost:5000/chat_guj'      // Gujarati endpoint
+        : 'http://localhost:5000/api/chat';     // English endpoint (fixed)
 
       const response = await fetch(endpoint, {
         method: 'POST',
