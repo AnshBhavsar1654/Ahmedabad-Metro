@@ -1,7 +1,7 @@
 import pandas as pd
 from math import radians, sin, cos, sqrt, atan2
 
-FILE_PATH = "Location.xlsx"
+FILE_PATH = os.path.join(os.path.dirname(__file__), "Location.xlsx")
 stations_df = pd.read_excel(FILE_PATH)
 
 station_coords = {}
