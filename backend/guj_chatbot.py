@@ -6,9 +6,11 @@ import warnings
 warnings.filterwarnings("ignore")
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
-QA_DATA_PATH = "C:/Data/Coding/Projects/Metro_React JS/backend/metro_qa_guj.json"
-CONTEXT_TEXT_PATH = "C:/Data/Coding/Projects/Metro_React JS/backend/metro_guj.txt"
-CONFIDENCE_THRESHOLD = 0.15  # Increased threshold for better quality
+os.path.join(os.path.dirname(__file__), "metro_qa_guj.json")
+
+QA_DATA_PATH = os.path.join(os.path.dirname(__file__), "metro_qa_guj.json")
+CONTEXT_TEXT_PATH = os.path.join(os.path.dirname(__file__), "metro_guj.txt")
+CONFIDENCE_THRESHOLD = 0.12
 MAX_RESPONSE_LENGTH = 256
 
 # Enhanced stopwords and synonyms
