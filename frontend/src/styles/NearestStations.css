@@ -1,0 +1,460 @@
+/* Nearest Stations CSS */
+.nearest-stations-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
+  padding: 20px;
+}
+
+.stations-header {
+  background: linear-gradient(135deg, #1a2a6c, #2a5298);
+  color: white;
+  border-radius: 16px;
+  padding: 25px 30px;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(26, 42, 108, 0.2);
+}
+
+.header-content h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.header-content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  max-width: 600px;
+}
+
+.location-indicator {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-indicator svg {
+  width: 30px;
+  height: 30px;
+}
+
+.stations-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading-container {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.loading-spinner {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+}
+
+.loading-spinner div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid #3498db;
+  border-radius: 50%;
+  animation: loading-spinner 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #3498db transparent transparent transparent;
+}
+
+.loading-spinner div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+
+.loading-spinner div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+
+.loading-spinner div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+
+@keyframes loading-spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.loading-note {
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.error-container {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.error-container p {
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+  color: #e53e3e;
+}
+
+.refresh-btn {
+  background: linear-gradient(135deg, #1a2a6c, #2a5298);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(26, 42, 108, 0.2);
+}
+
+.refresh-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(26, 42, 108, 0.3);
+}
+
+.location-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.accuracy-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.accuracy-value {
+  font-weight: 700;
+}
+
+.accuracy-value.high {
+  color: #38a169;
+}
+
+.accuracy-value.medium {
+  color: #dd6b20;
+}
+
+.accuracy-value.low {
+  color: #e53e3e;
+}
+
+.refresh-location-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.refresh-location-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.refresh-location-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.accuracy-warning {
+  background: #fffbeb;
+  color: #b45309;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 4px solid #f59e0b;
+}
+
+.stations-results {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 25px;
+}
+
+@media (min-width: 992px) {
+  .stations-results {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.results-title {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.results-title::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(to right, #1a2a6c, transparent);
+  margin-left: 10px;
+}
+
+.stations-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+.station-card {
+  background: white;
+  border-radius: 6px;
+  padding: 25px;
+  display: flex;
+  gap: 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  position: relative;
+}
+
+.station-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.station-rank {
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.rank-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.rank-badge.first {
+  background: linear-gradient(135deg, #38a169, #2f855a);
+  box-shadow: 0 4px 10px rgba(56, 161, 105, 0.3);
+}
+
+.rank-badge.second {
+  background: linear-gradient(135deg, #3182ce, #2b6cb0);
+  box-shadow: 0 4px 10px rgba(49, 130, 206, 0.3);
+}
+
+.rank-badge.third {
+  background: linear-gradient(135deg, #dd6b20, #c05621);
+  box-shadow: 0 4px 10px rgba(221, 107, 32, 0.3);
+}
+
+.station-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.station-name {
+  margin: 0 0 12px 0;
+  font-size: 1.2rem;
+  color: #1a202c;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.station-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #4a5568;
+  padding-left: 10px;
+  margin-top: 5px;
+}
+
+.distance-info, .coordinates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.distance-info svg, .coordinates svg {
+  flex-shrink: 0;
+}
+
+.distance-info span, .coordinates span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.coordinates span {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  background: #f8fafc;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.map-container {
+  background: white;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.map-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.map-view {
+  height: 500px;
+  width: 100%;
+  border-radius: 12px;
+}
+
+.map-popup {
+  font-size: 0.95rem;
+}
+
+.map-popup .coordinates {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-top: 5px;
+}
+
+.map-popup .station-rank-tag {
+  display: inline-block;
+  background: #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  margin-top: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stations-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .location-indicator {
+    align-self: flex-end;
+  }
+  
+  .location-controls {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .map-view {
+    height: 400px;
+  }
+  
+  .station-card {
+    padding: 20px 25px;
+    gap: 15px;
+  }
+  
+  .station-name {
+    font-size: 1.1rem;
+  }
+  
+  .station-meta {
+    font-size: 0.85rem;
+  }
+  
+  .coordinates span {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .station-card {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .station-rank {
+    align-self: flex-start;
+  }
+  
+  .station-info {
+    width: 100%;
+  }
+  
+  .station-name {
+    white-space: normal;
+    line-height: 1.3;
+  }
+}

@@ -1,0 +1,370 @@
+[
+  {
+    "id": 1,
+    "name": "Vastral Gam",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 2,
+    "name": "Nirant Cross Road",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 01"]
+  },
+  {
+    "id": 3,
+    "name": "Vastral",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 01 near Gate No. 02", "Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 4,
+    "name": "Rabari Colony",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 5,
+    "name": "Amraiwadi",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 01 near Gate No. 02", "Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 6,
+    "name": "Apparel Park",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 3"],
+    "facilities": ["Lift No. 01 near Gate No. 01"]
+  },
+  {
+    "id": 7,
+    "name": "Kankaria East",
+    "type": "Underground",
+    "corridor": "East-West",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 02 near Gate No. 02"]
+  },
+  {
+    "id": 8,
+    "name": "Kalupur Railway Station",
+    "type": "Underground",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 01 near Gate No. 01"]
+  },
+  {
+    "id": 9,
+    "name": "Gheekanta",
+    "type": "Underground",
+    "corridor": "East-West",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 10,
+    "name": "Shahpur",
+    "type": "Underground",
+    "corridor": "East-West",
+    "gates": ["Gate No. 2", "Gate No. 3", "Gate No. 4"],
+    "facilities": ["Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 11,
+    "name": "Old High Court (Interchange)",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 4", "Gate No. 6", "Gate No. 7", "Gate No. 8"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 03 near Gate No. 04", "Lift No. 04 near Gate No. 07", "Lift No. 05 near Gate No. 08"]
+  },
+  {
+    "id": 12,
+    "name": "SP Stadium",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 02 near Gate No. 02"]
+  },
+  {
+    "id": 13,
+    "name": "Commerce Six Road",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 5"],
+    "facilities": ["Lift No. 01 near Gate No. 01"]
+  },
+  {
+    "id": 14,
+    "name": "Gujarat University",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 02 near Gate No. 04"]
+  },
+  {
+    "id": 15,
+    "name": "Gurukul Road",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 01 near Gate No. 02"]
+  },
+  {
+    "id": 16,
+    "name": "Doordarshan Kendra",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 01"]
+  },
+  {
+    "id": 17,
+    "name": "Thaltej",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 02", "Lift No. 02 near Gate No. 04"]
+  },
+  {
+    "id": 18,
+    "name": "Thaltej Gam",
+    "type": "Elevated",
+    "corridor": "East-West",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 02 near Gate No. 02"]
+  },
+  {
+    "id": 19,
+    "name": "APMC",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 20,
+    "name": "Jivraj Park",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 01 near Gate No. 02"]
+  },
+  {
+    "id": 21,
+    "name": "Rajivnagar",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 4"],
+    "facilities": ["Lift No. 02 near Gate No. 04"]
+  },
+  {
+    "id": 22,
+    "name": "Shreyas",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 4"],
+    "facilities": ["Lift No. 02 near Gate No. 04", "Lift No. 01 near Gate No. 01"]
+  },
+  {
+    "id": 23,
+    "name": "Paldi",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 02 near Gate No. 03", "Lift No. 06 near Gate No. 02"]
+  },
+  {
+    "id": 24,
+    "name": "Gandhigram",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 3"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 03 near Gate No. 03"]
+  },
+  {
+    "id": 25,
+    "name": "Usmanpura",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 26,
+    "name": "Vijaynagar",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 01"]
+  },
+  {
+    "id": 27,
+    "name": "Vadaj",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 4", "Gate No. 5"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 05 near Gate No. 05"]
+  },
+  {
+    "id": 28,
+    "name": "Ranip",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 2", "Gate No. 3", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 02", "Lift No. 02 near Gate No. 03", "Lift No. 03 near Gate No. 04"]
+  },
+  {
+    "id": 29,
+    "name": "AEC",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4", "Gate No. 5"],
+    "facilities": ["Lift No. 01 near Gate No. 01", "Lift No. 02 near Gate No. 03", "Lift No. 03 near Gate No. 05"]
+  },
+  {
+    "id": 30,
+    "name": "Sabarmati Railway Station",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4", "Gate No. 5"],
+    "facilities": ["Lift No. 01 near Gate No. 02", "Lift No. 02 near Gate No. 03", "Lift No. 03 near Gate No. 05"]
+  },
+  {
+    "id": 31,
+    "name": "Motera Stadium (Interchange)",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4"],
+    "facilities": ["Lift No. 01 near Gate No. 02", "Lift No. 02 near Gate No. 03"]
+  },
+  {
+    "id": 32,
+    "name": "Koteshwar Road",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 33,
+    "name": "Vishwakarma College",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 34,
+    "name": "Tapovan Circle",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 35,
+    "name": "Narmada Canal",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 03 near Gate No. 01", "Lift No. 04 near Gate No. 02"]
+  },
+  {
+    "id": 36,
+    "name": "Koba Circle",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 37,
+    "name": "GNLU (Interchange)",
+    "type": "Elevated",
+    "corridor": "Corridor-2",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 38,
+    "name": "Raysan",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 39,
+    "name": "Randesan",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 40,
+    "name": "Dholakuva Circle",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 41,
+    "name": "Infocity",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 42,
+    "name": "Sector-1",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 43,
+    "name": "Sector-10A",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 44,
+    "name": "Sachivalaya",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 45,
+    "name": "PDEU",
+    "type": "Elevated",
+    "corridor": "Corridor-2",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 46,
+    "name": "GIFT City",
+    "type": "Elevated",
+    "corridor": "Corridor-2",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  }
+]
