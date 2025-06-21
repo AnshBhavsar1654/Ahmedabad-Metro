@@ -1,6 +1,6 @@
 Flask==2.3.2
 flask-cors==4.0.0
-pandas==2.1.4
+pandas==2.1.4 ; python_version < '3.13'
 geopy==2.4.1
 gunicorn==21.2.0
 openpyxl==3.1.2
