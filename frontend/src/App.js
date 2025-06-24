@@ -7,7 +7,6 @@ import Home from './components/Home';
 import RoutesInfo from './components/RoutesInfo';
 import Stations from './components/Stations';
 import Contact from './components/Contact';
-import Chat from './components/Chat';
 import Schedule from './components/Schedule';
 import NearestStations from './components/NearestStations';
 import StationInfo from './components/StationInfo';
@@ -54,7 +53,6 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/stations-info" element={<StationInfo />} />
             <Route path="/facilities" element={<Facilities />} />
-            <Route path="/chat" element={<Chat />} />
           </Routes>
         </main>
         <footer className="enhanced-footer">
@@ -82,7 +80,6 @@ function App() {
                 <h3 className="footer-title">Services</h3>
                 <div className="footer-links">
                   <Link to="/nearest-stations" className="footer-link">Nearest Stations</Link>
-                  <Link to="/chat" className="footer-link">Chat Support</Link>
                   <Link to="/contact" className="footer-link">Contact Us</Link>
                 </div>
               </div>
