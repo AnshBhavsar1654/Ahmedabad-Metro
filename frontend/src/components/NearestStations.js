@@ -31,7 +31,7 @@ const userLocationIcon = new L.Icon({
 
 const NearestStations = () => {
   const [userLocation, setUserLocation] = useState(null);
-  const [nearestStations, setNearestStations] = useState([]);
+  const [nearestStations, setNearestStations] = useState([]); // Initialize as empty array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [locationAccuracy, setLocationAccuracy] = useState(null);
@@ -109,20 +109,39 @@ const NearestStations = () => {
       setUserLocation([latitude, longitude]);
       setLocationAccuracy(Math.round(accuracy));
       
-      const response = await axios.get('${API_URL}/api/stations/nearby', {
+      const response = await axios.get(`${API_URL}/api/stations/nearby`, {
         params: { lat: latitude, lng: longitude }
       });
       
-      setNearestStations(response.data);
+      // Ensure the response data is an array
+      const stationsData = response.data;
+      if (Array.isArray(stationsData)) {
+        setNearestStations(stationsData);
+      } else if (stationsData && Array.isArray(stationsData.stations)) {
+        // Handle case where stations are nested in a 'stations' property
+        setNearestStations(stationsData.stations);
+      } else {
+        console.warn('API response is not an array:', stationsData);
+        setNearestStations([]);
+        setError('Invalid response format from server');
+      }
       
     } catch (err) {
       console.error('Error:', err);
+      setNearestStations([]); // Reset to empty array on error
+      
       if (err.code === 1) {
         setError('Location access denied. Please enable location services and refresh the page.');
       } else if (err.code === 2) {
         setError('Location not available. Please check your GPS/WiFi connection.');
       } else if (err.code === 3) {
         setError('Location request timed out. Please try again.');
+      } else if (err.response) {
+        // API error
+        setError(`Server error: ${err.response.status} - ${err.response.statusText}`);
+      } else if (err.request) {
+        // Network error
+        setError('Network error. Please check your internet connection and try again.');
       } else {
         setError('Error fetching location or stations: ' + err.message);
       }
@@ -212,36 +231,49 @@ const NearestStations = () => {
             <div className="stations-results">
               <div className="stations-list">
                 <h2 className="results-title">Nearest Stations</h2>
-                <div className="stations-grid">
-                  {nearestStations.map((station, index) => (
-                    <div key={index} className="station-card">
-                      <div className="station-rank">
-                        <span className={`rank-badge ${index === 0 ? 'first' : index === 1 ? 'second' : 'third'}`}>
-                          {index + 1}
-                        </span>
-                      </div>
-                      <div className="station-info">
-                        <h3 className="station-name">{station.name}</h3>
-                        <div className="station-meta">
-                          <div className="distance-info">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="12" cy="10" r="3"></circle>
-                              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
-                            </svg>
-                            <span>{station.distance} km away</span>
-                          </div>
-                          <div className="coordinates">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                              <line x1="9" y1="3" x2="9" y2="21"></line>
-                            </svg>
-                            <span>{station.latitude.toFixed(6)}, {station.longitude.toFixed(6)}</span>
+                {nearestStations.length === 0 ? (
+                  <div className="no-stations">
+                    <p>No stations found nearby. This might be due to:</p>
+                    <ul>
+                      <li>Limited station data in the database</li>
+                      <li>Your location being far from metro stations</li>
+                      <li>Server connectivity issues</li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="stations-grid">
+                    {nearestStations.map((station, index) => (
+                      <div key={index} className="station-card">
+                        <div className="station-rank">
+                          <span className={`rank-badge ${index === 0 ? 'first' : index === 1 ? 'second' : 'third'}`}>
+                            {index + 1}
+                          </span>
+                        </div>
+                        <div className="station-info">
+                          <h3 className="station-name">{station.name || 'Unknown Station'}</h3>
+                          <div className="station-meta">
+                            <div className="distance-info">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="10" r="3"></circle>
+                                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+                              </svg>
+                              <span>{station.distance || 'N/A'} km away</span>
+                            </div>
+                            <div className="coordinates">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                              </svg>
+                              <span>
+                                {station.latitude ? station.latitude.toFixed(6) : 'N/A'}, {station.longitude ? station.longitude.toFixed(6) : 'N/A'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="map-container">
@@ -270,18 +302,20 @@ const NearestStations = () => {
                     
                     {/* Station markers with default blue icons */}
                     {nearestStations.map((station, index) => (
-                      <Marker 
-                        key={index} 
-                        position={[station.latitude, station.longitude]}
-                      >
-                        <Popup>
-                          <div className="map-popup">
-                            <strong>{station.name}</strong>
-                            <div>Distance: {station.distance} km</div>
-                            <div className="station-rank-tag">Rank: #{index + 1}</div>
-                          </div>
-                        </Popup>
-                      </Marker>
+                      station.latitude && station.longitude ? (
+                        <Marker 
+                          key={index} 
+                          position={[station.latitude, station.longitude]}
+                        >
+                          <Popup>
+                            <div className="map-popup">
+                              <strong>{station.name || 'Unknown Station'}</strong>
+                              <div>Distance: {station.distance || 'N/A'} km</div>
+                              <div className="station-rank-tag">Rank: #{index + 1}</div>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      ) : null
                     ))}
                   </MapContainer>
                 </div>
