@@ -256,9 +256,37 @@
   gap: 15px;
 }
 
+/* No stations found message */
+.no-stations {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.no-stations p {
+  font-size: 1.1rem;
+  color: #4a5568;
+  margin-bottom: 20px;
+}
+
+.no-stations ul {
+  text-align: left;
+  display: inline-block;
+  color: #718096;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.no-stations li {
+  margin-bottom: 8px;
+}
+
 .station-card {
   background: white;
-  border-radius: 6px;
+  border-radius: 16px;
   padding: 25px;
   display: flex;
   gap: 18px;
@@ -314,7 +342,7 @@
 }
 
 .station-name {
-  /* margin: 0 0 12px 0; */
+  margin: 0 0 12px 0;
   font-size: 1.2rem;
   color: #1a202c;
   font-weight: 600;
