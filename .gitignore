@@ -1,0 +1,22 @@
+# === Node ===
+frontend/node_modules
+frontend/build
+frontend/.env
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.env
+venv/
+backend/__pycache__/
+backend/instance/
+backend/.pytest_cache/
+backend/.env
+
+# === General ===
+.DS_Store
+*.log
+*.sqlite3
+*.db

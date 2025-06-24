@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1,
+    "name": "Station Name",
+    "type": "Elevated/Underground",
+    "corridor": "East-West/North-South",
+    "gates": ["Gate 1", "Gate 2"],
+    "facilities": ["Facility 1", "Facility 2"]
+  }
+]
