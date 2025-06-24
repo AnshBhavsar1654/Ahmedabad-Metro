@@ -17,19 +17,19 @@ const Facilities = () => {
       id: 'passengers',
       title: 'Facilities for Passengers',
       icon: <FaUsers />,
-      color: '#4f46e5'
+      cssClass: 'passengers'
     },
     {
       id: 'differently-abled',
       title: 'Facilities for Differently Abled',
       icon: <FaWheelchair />,
-      color: '#059669'
+      cssClass: 'differently-abled'
     },
     {
       id: 'emergency',
       title: 'Emergency Facilities',
       icon: <FaExclamationTriangle />,
-      color: '#dc2626'
+      cssClass: 'emergency'
     }
   ];
 
@@ -174,11 +174,8 @@ const Facilities = () => {
         {categories.map((category) => (
           <button
             key={category.id}
-            className={`category-btn ${selectedCategory === category.id ? 'active' : ''}`}
+            className={`category-btn ${category.cssClass} ${selectedCategory === category.id ? 'active' : ''}`}
             onClick={() => setSelectedCategory(category.id)}
-            style={{
-              '--category-color': category.color
-            }}
           >
             <span className="category-icon">{category.icon}</span>
             <span className="category-title">{category.title}</span>
