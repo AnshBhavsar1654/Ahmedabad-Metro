@@ -58,7 +58,6 @@
   z-index: 100;
 }
 
-
 .category-btn {
   display: flex;
   flex-direction: column;
@@ -78,15 +77,44 @@
 .category-btn:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: var(--category-color);
+  border-color: #3b82f6;
 }
 
 .category-btn.active {
-  background: var(--category-color);
-  border-color: var(--category-color);
+  background: #3b82f6;
+  border-color: #3b82f6;
   color: white;
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Category-specific active states */
+.category-btn.active.passengers {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.category-btn.active.differently-abled {
+  background: #059669;
+  border-color: #059669;
+}
+
+.category-btn.active.emergency {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+/* Category-specific hover states */
+.category-btn.passengers:hover {
+  border-color: #4f46e5;
+}
+
+.category-btn.differently-abled:hover {
+  border-color: #059669;
+}
+
+.category-btn.emergency:hover {
+  border-color: #dc2626;
 }
 
 .category-icon {
@@ -207,7 +235,6 @@
   line-height: 1.4;
 }
 
-
 /* ======== Emergency Grid ======== */
 .emergency-grid {
   display: grid;
@@ -273,7 +300,6 @@
   line-height: 1.5;
   margin: 0;
 }
-
 
 /* ======== Responsive Design ======== */
 @media (max-width: 968px) {
