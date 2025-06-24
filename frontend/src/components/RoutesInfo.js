@@ -3,7 +3,7 @@ import '../App.css';
 import { GiPathDistance } from "react-icons/gi";
 import { FaSubway } from "react-icons/fa";
 import '../styles/route-planner.css';
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = "https://ahmedabad-metro-backend.onrender.com";
 console.log("API BASE URL:", process.env.REACT_APP_API_BASE_URL);
 
 const RoutesInfo = () => {
