@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
 import '../styles/NearestStations.css';
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = "https://ahmedabad-metro-backend.onrender.com";
 
 // Fix leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
