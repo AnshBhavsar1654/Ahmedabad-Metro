@@ -1,20 +1,24 @@
 /* ======== Facilities Container ======== */
 .facilities-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-  padding: 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
+  flex-direction: column;
   margin-top: 100px;
 }
 
 /* ======== Header Section ======== */
 .facilities-header {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #1a2a6c, #2a5298);
   color: white;
-  text-align: center;
-  padding: 30px 20px;
-  margin-bottom: 0;
+  border-radius: 16px;
+  padding: 30px 40px;
+  margin-bottom: 25px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 10px 30px rgba(26, 42, 108, 0.2);
 }
 
 .facilities-header::before {
@@ -28,22 +32,17 @@
 }
 
 .facilities-header h1 {
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: 700;
-  margin-bottom: 8px;
-  position: relative;
-  z-index: 1;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+  text-align: left !important;
 }
 
 .facilities-header p {
-  font-size: 1rem;
+  font-size: 1.1rem;
   opacity: 0.9;
   max-width: 600px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-  line-height: 1.5;
 }
 
 /* ======== Category Menu ======== */
@@ -54,7 +53,7 @@
   padding: 40px 20px;
   width: 90%;
   margin: 0 auto; /* Center align */
-  background: transparent; /* Transparent background */
+  background: transparent;
   z-index: 100;
 }
 
@@ -360,22 +359,36 @@
   }
 }
 
+/* ======== Responsive Design ======== */
 @media (max-width: 480px) {
   .facilities-header {
-    padding: 20px 15px;
+    margin-top: -35px;
+    padding: 15px; /* Reduced from 20px 15px to make it tighter */
+    margin-bottom: 10px; /* Reduced from default 25px to decrease space below header */
   }
   
   .facilities-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
   
   .facilities-header p {
     font-size: 0.85rem;
+    text-align: left;
+  }
+  
+  .category-menu {
+    flex-direction: row; /* Changed to row to keep all 3 categories in one line */
+    gap: 10px; /* Reduced gap between buttons for tighter spacing */
+    padding: 10px; /* Reduced from 40px 20px to decrease space around menu */
+    width: 100%; /* Ensures it uses full width to fit buttons */
   }
   
   .category-btn {
-    min-width: 200px;
-    padding: 12px 20px;
+    flex: 1; /* Allows buttons to share space equally */
+    min-width: 0; /* Overrides previous min-width to allow shrinking */
+    padding: 10px; /* Reduced from 12px 20px to fit better */
+    flex-direction: column; /* Stacks icon and title vertically within button */
+    gap: 5px; /* Reduced internal gap for compactness */
   }
   
   .category-icon {
@@ -383,7 +396,12 @@
   }
   
   .category-title {
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* Slightly reduced to fit better in narrow buttons */
+    text-align: center;
+  }
+  
+  .facilities-section {
+    padding: 10px; /* Reduced from 40px 20px to decrease space above facilities */
   }
   
   .section-icon {
@@ -399,11 +417,20 @@
   .facility-card {
     flex-direction: column;
     text-align: center;
-    padding: 20px 15px;
+    padding: 15px; /* Adjusted to 15px for consistency */
   }
   
   .facility-icon {
     margin-right: 0;
     margin-bottom: 15px;
+  }
+
+  /* Added styles for two-column layout */
+  .facilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .facility-name {
+    font-size: 0.8rem;
   }
 }
