@@ -251,12 +251,25 @@
 }
 
 @media (max-width: 480px) {
+  .footer-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns */
+    gap: 1.5rem;
+  }
+
+  /* Modify these existing rules */
   .footer-container {
     padding: 0 15px;
   }
   
   .footer-content {
     padding: 1.5rem 0 1rem;
+    grid-template-columns: 1fr 1fr; /* Ensure two columns */
+  }
+  
+  .footer-section:first-child,
+  .footer-section:last-child {
+    grid-column: span 2; /* Make first and last sections span both columns */
   }
   
   .footer-logo .logo-text {
@@ -270,6 +283,12 @@
   .footer-bottom-links {
     flex-direction: column;
     gap: 0.5rem;
+  }
+  
+  .footer-section:last-child .footer-social {
+    justify-content: center;
+    flex-wrap: wrap; /* Allows icons to wrap if needed */
+    gap: 0.75rem; /* Slightly reduce gap for small screens */
   }
 }
 
