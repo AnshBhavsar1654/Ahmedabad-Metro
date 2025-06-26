@@ -30,7 +30,7 @@ const Contact = () => (
         </h2>
         <div className="contact-card">
           <p className="company-name">Gujarat Metro Rail Corporation (GMRC) Limited</p>
-          <p className="cin">CIN NO. U60200GJ20105GC059407</p>
+          <p className="cin">CIN NO. U60200GJ20105GC059CO407</p>
           <div className="contact-info">
             <MapPin className="icon" />
             <span>Block No. 1, First Floor, Karmayogi Bhavan, Sector 10/A, Gandhinagar – 382010</span>
