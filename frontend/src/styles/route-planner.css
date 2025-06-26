@@ -27,6 +27,7 @@
   font-weight: 700;
   margin-bottom: 10px;
   letter-spacing: -0.5px;
+  text-align: left !important;
 }
 
 .header-content p {
@@ -617,13 +618,21 @@
   }
 
   .journey-summary {
-    grid-template-columns: 1fr;
-    gap: 15px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two cards in first row */
+    gap: 10px;
+    grid-auto-rows: auto;
+    text-align: center; /* center text */
   }
 
   .summary-card {
-    padding: 15px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .summary-card:nth-child(3) {
+    grid-column: span 2;
   }
 
   .summary-icon {
@@ -722,52 +731,54 @@
 @media screen and (max-width: 480px) {
   .route-planner-container {
     padding: 10px;
-    margin-top: 50px;
+    margin-top: 70px;
   }
 
   .route-header {
-    padding: 15px;
+    padding: 12px;
     border-radius: 10px;
   }
 
   .header-content h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
   .header-content p {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .metro-line {
-    width: 100px;
-    height: 100px;
-    right: -20px;
+    width: 90px;
+    height: 90px;
+    right: -15px;
   }
 
   .metro-line::before {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     top: 20px;
     left: 20px;
   }
 
   .route-card {
-    padding: 15px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 10px;
   }
 
   .station-selectors {
+    flex-direction: column;
     gap: 10px;
+    align-items: stretch;
   }
 
   .station-input select {
     padding: 10px 14px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     border-radius: 8px;
   }
 
   .input-label {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     gap: 6px;
   }
 
@@ -783,9 +794,10 @@
   }
 
   .swap-btn {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
+    margin: 0 auto;
   }
 
   .swap-btn svg {
@@ -795,8 +807,9 @@
 
   .submit-btn {
     padding: 12px;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     border-radius: 8px;
+    width: 100%;
   }
 
   .error-message {
@@ -805,23 +818,28 @@
     margin-top: 12px;
   }
 
+  .journey-summary {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
   .summary-card {
     padding: 12px;
     border-radius: 10px;
   }
 
   .summary-icon {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     font-size: 1rem;
   }
 
   .summary-label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .summary-value {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   .interchange-section {
@@ -831,7 +849,8 @@
   }
 
   .interchange-section h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
   }
 
   .interchange-badge,
@@ -846,26 +865,35 @@
   }
 
   .route-visualization h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
   }
 
   .station-marker {
+    background: #4dabf7;  /* same as .stop-marker */
     width: 18px;
     height: 18px;
+    margin-left: -3px;    /* aligns with stop markers */
   }
 
   .station-name {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     margin-left: 10px;
   }
 
   .path-line {
-    padding-left: 29px;
+    padding-left: 26px;
   }
 
   .path-line::before {
-    left: 30px;
+    left: 27px;
     width: 2px;
+    top: -20px;
+    bottom: 0;
+  }
+
+  .path-stop {
+    padding: 10px 0;
   }
 
   .stop-marker {
@@ -878,8 +906,52 @@
     height: 18px;
   }
 
+  .interchange-icon {
+    font-size: 0.7rem;
+  }
+
   .stop-name {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-left: 10px;
+  }
+  .compact-view .path-line {
+    padding-left: 10px;
+  }
+  
+  .compact-segment {
+    text-align: center;
+    padding: 8px 0;
+  }
+  
+  .expand-btn {
+    background: #4dabf7;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: inline-block;
+  }
+  
+  .expand-btn:hover {
+    background: #3a8fd4;
+    transform: translateY(-2px);
+  }
+  
+  .compact-view .path-stop {
+    padding: 8px 0;
+  }
+  
+  .compact-view .stop-marker {
+    margin-left: -3px;
+  }
+  
+  .compact-view .stop-name {
+    font-size: 0.9rem;
+    margin-left: 12px;
   }
 }
