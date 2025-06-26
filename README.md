@@ -1,109 +1,115 @@
-# AHMEDABAD-METRO
+## Ahmedabad Metro
 
-*Transforming Urban Transit with Seamless Innovation*
+Transforming Urban Transit with Seamless Innovation
 
-![languages](https://img.shields.io/badge/languages-4-blue)
+---
 
-*Built with the tools and technologies:*
+### Built With
 
-![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white) ![JSON](https://img.shields.io/badge/JSON-000000?style=flat&logo=json&logoColor=white) ![Markdown](https://img.shields.io/badge/Markdown-000000?style=flat&logo=markdown&logoColor=white) ![npm](https://img.shields.io/badge/npm-CB3837?style=flat&logo=npm&logoColor=white) ![Autoprefixer](https://img.shields.io/badge/Autoprefixer-DD3735?style=flat&logo=autoprefixer&logoColor=white) ![PostCSS](https://img.shields.io/badge/PostCSS-DD3A0A?style=flat&logo=postcss&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+This project utilizes the following tools and technologies:
 
-![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white) ![Gunicorn](https://img.shields.io/badge/Gunicorn-499848?style=flat&logo=gunicorn&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB) ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white) ![pandas](https://img.shields.io/badge/pandas-150458?style=flat&logo=pandas&logoColor=white) ![Axios](https://img.shields.io/badge/Axios-5A29E4?style=flat&logo=axios&logoColor=white)
+* **Languages & Frameworks**: JavaScript, Python, Flask, React
+* **Libraries**: Leaflet, Pandas, Axios
+* **Build Tools**: npm, Autoprefixer, PostCSS
+* **Deployment**: Gunicorn
+* **Data Formats**: JSON, Markdown, xlsx
 
-## Table of Contents
+---
 
-• [Overview](#overview)
+### Table of Contents
 
-• [Getting Started](#getting-started)
+* [Overview](#overview)
+* [Features](#features)
+* [Getting Started](#getting-started)
+* [Prerequisites](#prerequisites)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Testing](#testing)
+* [Project Structure](#project-structure)
+* [License](#license)
 
-  • [Prerequisites](#prerequisites)
-  
-  • [Installation](#installation)
-  
-  • [Usage](#usage)
-  
-  • [Testing](#testing)
+---
 
-## Overview
+### Overview
 
-Ahmedabad-Metro is an open-source developer toolkit designed to facilitate the creation of intelligent urban transit systems. It combines a robust backend API with an interactive frontend, enabling seamless data management, route planning, and user engagement. The project emphasizes multilingual support, geospatial computations, and AI-powered chatbots to enhance accessibility and user experience.
+**Ahmedabad-Metro** is an open-source developer toolkit designed to facilitate the creation of intelligent urban transit systems. It combines a robust backend API with an interactive frontend, enabling seamless data management, route planning, and user engagement.
 
-### Why Ahmedabad-Metro?
+---
 
-This project aims to streamline metro system development with scalable, feature-rich components. The core features include:
+### Features
 
-• 🧩 🗺️ **Geospatial Routing:** Efficient station lookup, route calculation, and nearby station discovery to optimize travel planning.
+* 🧭 **Route Finder**: Find the most efficient route from one station to another.
+* 📍 **Nearby Stations**: Discover the 3 nearest metro stations based on your current location.
+* 🏢 **Facilities Info**: Access detailed information about amenities and facilities available at all operational stations.
+* 🗨️ **AI Chatbot**: A multilingual chatbot built using Botpress to answer metro-related queries with support for Gujarati language.
+* 🗺️ **Metro Maps & Guides**: View and download official metro maps and route guides directly from the interface.
+* 🕒 **Metro Schedule**: Real-time and static schedule viewing for all metro lines.
+* ☎️ **Contact Page**: Easily reach out to metro support via the contact form or view available communication channels.
+* 🔧 **Modular API**: RESTful endpoints for fare estimation, station info, and connectivity.
 
-• 🗨️ 🤖 **Multilingual Chatbot:** Gujarati translation-enabled AI assistant that provides instant, context-aware responses.
+---
 
-• 📊 📈 **Interactive Maps & Schedules:** Dynamic visualizations of routes, schedules, and station details for better user navigation.
+### Getting Started
 
-• 🔧 🔨 **Modular API:** RESTful endpoints for fare estimation, station info, and connectivity, supporting flexible integrations.
+Follow the steps below to get Ahmedabad-Metro up and running on your local machine.
 
-• ⚡ 📊 **Performance & Accessibility:** Built-in tools for monitoring user experience and ensuring inclusive access across the network.
+#### Prerequisites
 
-## Getting Started
+Make sure you have the following installed:
 
-### Prerequisites
+* Python 3.7+
+* pip
+* Node.js (v14 or newer)
+* npm or yarn
 
-This project requires the following dependencies:
-
-• **Programming Language:** JavaScript
-
-• **Package Manager:** Pip, Npm
+---
 
 ### Installation
 
-Build Ahmedabad-Metro from the source and install dependencies:
-
-1. **Clone the repository:**
+#### Clone the Repository
 
 ```bash
 git clone https://github.com/AnshBhavsar1654/Ahmedabad-Metro
-```
-
-2. **Navigate to the project directory:**
-
-```bash
 cd Ahmedabad-Metro
 ```
 
-3. **Install the dependencies:**
-
-**Using pip:**
+#### Install Backend Dependencies (Flask)
 
 ```bash
-pip install -r backend/requirements.txt
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
-**Using npm:**
+#### Install Frontend Dependencies (React)
 
 ```bash
+cd ../frontend
 npm install
 ```
 
+---
+
 ### Usage
 
-Run the project with:
-
-**Using pip:**
+#### Run the Backend Server
 
 ```bash
-python {entrypoint}
+cd backend
+python app.py  # or use Gunicorn for production
 ```
 
-**Using npm:**
+#### Run the Frontend App
 
 ```bash
+cd frontend
 npm start
 ```
 
-### Testing
+---
 
-Ahmedabad-metro uses the {test_framework} test framework. Run the test suite with:
 
-**Using pip:**
+### License
 
-```bash
-pytest
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
