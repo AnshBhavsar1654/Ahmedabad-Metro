@@ -19,7 +19,7 @@
 }
 
 /* Background video */
-.hero-section video.bg-video {
+.hero-section .bg-img {
   position: absolute;
   top: 0;
   left: 0;
@@ -29,7 +29,7 @@
   z-index: 0;
   filter: brightness(0.5);
 }
-.bg-video {
+.bg-img {
   position: absolute;
   top: 0;
   left: 0;
@@ -39,17 +39,13 @@
   z-index: 0;
   filter: brightness(0.5);
 }
+
 /* Gradient overlay */
 .hero-section::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(30, 60, 114, 0.7),
-    rgba(42, 82, 152, 0.7),
-    rgba(52, 152, 219, 0.7)
-  );
+  background: transparent;
   z-index: 1;
 }
 
@@ -103,7 +99,7 @@
 
 /* ================ Hero Title ================ */
 .hero-title {
-  font-size: 3.2rem;
+  font-size: 3rem;
   font-weight: 200;
   margin-bottom: 2rem;
   background: linear-gradient(45deg, #ffffff, #f1c40f);
@@ -402,6 +398,46 @@
   line-height: 1.6;
 }
 
+/* ================ Continuous Scrolling Animation ================ */
+@keyframes continuousScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.scrolling-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  mask: linear-gradient(
+    90deg,
+    transparent,
+    white 20%,
+    white 80%,
+    transparent
+  );
+  -webkit-mask: linear-gradient(
+    90deg,
+    transparent,
+    white 20%,
+    white 80%,
+    transparent
+  );
+}
+
+.scrolling-content {
+  display: flex;
+  width: fit-content;
+  animation: continuousScroll 15s linear infinite;
+}
+
+.scrolling-content:hover {
+  animation-play-state: paused;
+}
+
 /* ================ Responsive Design ================ */
 /* Mobile screens (<=768px) */
 /* Mobile screens (<=768px) */
@@ -426,6 +462,7 @@
     height: 100%;
     width: 100%;
   }
+  
   .hero-section, .stats-section {
   border: none;
 }
@@ -601,12 +638,29 @@
 
 /* Small mobile screens (<=480px) */
 @media (max-width: 480px) {
-  .hero-content {
-    /* margin-top: 120px; */
+  .hero-title {
+    font-size: 2.5rem;
+    margin-top: -100px;
   }
 
   .hero-section {
     padding: 0.5rem;
+  }
+
+  .datetime {
+    margin-right: 1.5rem;
+  }
+
+  .datetime-weather {
+    margin-top: 50px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .quick-access {
+    margin-top: 70px;
   }
 
   .datetime-weather {
@@ -625,26 +679,77 @@
     font-size: 1.2rem;
   }
 
+  /* ================ Continuous Scrolling for Small Screens ================ */
   .access-grid {
-    max-width: calc(120px * 3 + 0.5rem * 2);
+    display: block;
+    max-width: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .scrolling-container {
+    width: 100%;
+    overflow: hidden;
+    mask: linear-gradient(
+      90deg,
+      transparent,
+      white 10%,
+      white 90%,
+      transparent
+    );
+    -webkit-mask: linear-gradient(
+      90deg,
+      transparent,
+      white 10%,
+      white 90%,
+      transparent
+    );
+  }
+
+  .scrolling-content {
+    display: flex;
+    gap: 0.5rem;
+    width: fit-content;
+    animation: continuousScroll 20s linear infinite;
+  }
+
+  .scrolling-content:hover {
+    animation-play-state: paused;
   }
 
   .access-card {
+    flex: 0 0 auto;
     width: 120px;
     min-height: 90px;
     padding: 0.5rem;
+    margin: 0;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+  }
+
+  .access-card:hover {
+    transform: translateY(-5px);
   }
 
   .card-icon {
     font-size: 1.2rem;
+    margin-bottom: 0.3rem;
   }
 
   .card-content h4 {
     font-size: 0.8rem;
+    margin-bottom: 0.2rem;
   }
 
   .card-content p {
     font-size: 0.6rem;
+    margin: 0;
   }
 
   .section-title {
