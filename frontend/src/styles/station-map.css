@@ -1,4 +1,3 @@
-/* Stations.css */
 .stations-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
@@ -16,6 +15,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  text-align: left;
   box-shadow: 0 10px 30px rgba(26, 42, 108, 0.2);
 }
 
@@ -186,7 +186,7 @@
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
   margin-bottom: 25px;
-  max-width: 900px; /* Limit the span */
+  max-width: 900px;
   margin-left: auto;
   margin-right: auto;
   justify-content: center;
@@ -318,30 +318,47 @@
 }
 
 @media (max-width: 480px) {
+  .stations-header {
+    margin-top: 1rem;
+  }
+
   .header-content h1 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
-  
+
   .header-content p {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
-  
+
   .map-info {
     grid-template-columns: 1fr;
   }
-  
-  .stations-controls .download-buttons {
+
+  .stations-controls {
     flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .stations-controls .info-toggle {
+    align-self: flex-start;
+    max-width: 150px;
+  }
+
+  .stations-controls .download-buttons {
+    flex-direction: row;
+    justify-content: space-between;
     gap: 10px;
   }
-  
+
   .download-btn {
     font-size: 0.9rem;
     padding: 10px 15px;
     min-width: auto;
-    width: 100%;
+    width: auto;
+    flex: 1;
   }
-  
+
   .map-container {
     max-width: 100%;
   }
