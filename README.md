@@ -8,25 +8,11 @@ Transforming Urban Transit with Seamless Innovation
 
 This project utilizes the following tools and technologies:
 
-* **Languages & Frameworks**: 
-  <img src="https://img.icons8.com/color/48/000000/javascript.png" alt="JavaScript" width="20"/> JavaScript, 
-  <img src="https://img.icons8.com/color/48/000000/python.png" alt="Python" width="20"/> Python, 
-  <img src="https://img.icons8.com/color/48/000000/flask.png" alt="Flask" width="20"/> Flask, 
-  <img src="https://img.icons8.com/color/48/000000/react-native.png" alt="React" width="20"/> React
-* **Libraries**: 
-  <img src="https://img.icons8.com/?size=48&id=O6F7vCrV9m8N&format=png" alt="Leaflet" width="20"/> Leaflet, 
-  <img src="https://img.icons8.com/?size=48&id=xV1WiP0QvAp0&format=png" alt="Pandas" width="20"/> Pandas, 
-  <img src="https://img.icons8.com/?size=48&id=9Kvi1p1F0tKO&format=png" alt="Axios" width="20"/> Axios
-* **Build Tools**: 
-  <img src="https://img.icons8.com/color/48/000000/npm.png" alt="npm" width="20"/> npm, 
-  <img src="https://img.icons8.com/?size=48&id=77288&format=png" alt="Autoprefixer" width="20"/> Autoprefixer, 
-  <img src="https://img.icons8.com/?size=48&id=39948&format=png" alt="PostCSS" width="20"/> PostCSS
-* **Deployment**: 
-  <img src="https://img.icons8.com/?size=48&id=22815&format=png" alt="Gunicorn" width="20"/> Gunicorn
-* **Data Formats**: 
-  <img src="https://img.icons8.com/color/48/000000/json.png" alt="JSON" width="20"/> JSON, 
-  <img src="https://img.icons8.com/color/48/000000/markdown.png" alt="Markdown" width="20"/> Markdown, 
-  <img src="https://img.icons8.com/color/48/000000/microsoft-excel.png" alt="xlsx" width="20"/> xlsx
+* **Languages & Frameworks**: JavaScript, Python, Flask, React
+* **Libraries**: Leaflet, Pandas, Axios
+* **Build Tools**: npm, Autoprefixer, PostCSS
+* **Deployment**: Gunicorn
+* **Data Formats**: JSON, Markdown, xlsx
 
 ---
 
@@ -34,6 +20,7 @@ This project utilizes the following tools and technologies:
 
 * [Overview](#overview)
 * [Features](#features)
+* [Live Demo](#live-demo)
 * [Getting Started](#getting-started)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
@@ -63,6 +50,12 @@ This project utilizes the following tools and technologies:
 
 ---
 
+### Live Demo
+
+The project is live at [https://ahmedabad-metro-frontend.vercel.app/](https://ahmedabad-metro-frontend.vercel.app/).
+
+---
+
 ### Getting Started
 
 Follow the steps below to get Ahmedabad-Metro up and running on your local machine.
@@ -71,10 +64,10 @@ Follow the steps below to get Ahmedabad-Metro up and running on your local machi
 
 Make sure you have the following installed:
 
-* <img src="https://img.icons8.com/color/48/000000/python.png" alt="Python" width="20"/> Python 3.7+
-* <img src="https://img.icons8.com/color/48/000000/pip.png" alt="pip" width="20"/> pip
-* <img src="https://img.icons8.com/color/48/000000/nodejs.png" alt="Node.js" width="20"/> Node.js (v14 or newer)
-* <img src="https://img.icons8.com/color/48/000000/npm.png" alt="npm" width="20"/> npm or yarn
+* Python 3.7+
+* pip
+* Node.js (v14 or newer)
+* npm or yarn
 
 ---
 
