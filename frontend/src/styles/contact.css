@@ -1,4 +1,3 @@
-/* Contact.css */
 .contact-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
@@ -20,7 +19,6 @@
   box-shadow: 0 10px 30px rgba(26, 42, 108, 0.2);
 }
 
-
 .header-content h1 {
   font-size: 2.2rem;
   font-weight: 700;
@@ -32,6 +30,7 @@
   font-size: 1.1rem;
   opacity: 0.9;
   max-width: 600px;
+  text-align: left;
 }
 
 .metro-icon {
@@ -117,6 +116,12 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.contact-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .company-name {
@@ -424,6 +429,7 @@
   }
 
   .contact-header {
+    margin-top: 2rem;
     padding: 15px; /* Further reduce padding */
     border-radius: 12px; /* Slightly smaller radius */
   }
