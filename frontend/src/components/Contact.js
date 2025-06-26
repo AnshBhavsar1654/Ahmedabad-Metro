@@ -93,7 +93,7 @@ const Contact = () => (
           </div>
           <div className="contact-info">
             <Mail className="icon" />
-            <a href="mailto:care@gujaratmetrorail.com">care@gujaratmetronal.com</a>
+            <a href="mailto:care@gujaratmetrorail.com">care@gujaratmetrorail.com</a>
           </div>
           <div className="contact-info">
             <Clock className="icon" />
