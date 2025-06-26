@@ -13,13 +13,29 @@ const RoutesInfo = () => {
   const [routeDetails, setRouteDetails] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 480);
+  const [expandedSegments, setExpandedSegments] = useState([]);
 
-useEffect(() => {
-  fetch(`${API_URL}/api/stations`)
-    .then(res => res.json())
-    .then(data => setStations(data))
-    .catch(err => setError('Failed to load stations'));
-}, []);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth <= 480);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/stations`)
+      .then(res => res.json())
+      .then(data => setStations(data))
+      .catch(err => setError('Failed to load stations'));
+  }, []);
+
+  useEffect(() => {
+    if (routeDetails && routeDetails.interchanges.length > 0) {
+      setExpandedSegments(Array(routeDetails.interchanges.length + 1).fill(false));
+    }
+  }, [routeDetails]);
 
   const swapStations = () => {
     const temp = selectedSource;
@@ -88,6 +104,85 @@ useEffect(() => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleSegment = (index) => {
+    const newExpandedSegments = [...expandedSegments];
+    newExpandedSegments[index] = !newExpandedSegments[index];
+    setExpandedSegments(newExpandedSegments);
+  };
+
+  const renderCompactRoute = () => {
+    if (!routeDetails || routeDetails.route.length === 0) return null;
+    
+    const keyStations = [selectedSource, ...routeDetails.interchanges, selectedDest];
+    const segments = [];
+    let lastIndex = 0;
+    
+    for (let i = 0; i < keyStations.length - 1; i++) {
+      const startStation = keyStations[i];
+      const endStation = keyStations[i + 1];
+      const startIdx = routeDetails.route.indexOf(startStation, lastIndex);
+      const endIdx = routeDetails.route.indexOf(endStation, startIdx + 1);
+      
+      if (startIdx === -1 || endIdx === -1) break;
+      
+      segments.push(routeDetails.route.slice(startIdx, endIdx + 1));
+      lastIndex = endIdx;
+    }
+
+    return (
+      <div className="metro-path compact-view">
+        <div className="path-start">
+          <div className="station-marker circle-red"></div>
+          <div className="station-name">{selectedSource}</div>
+        </div>
+        
+        <div className="path-line">
+          {segments.map((segment, segIndex) => {
+            const segmentStations = segment.slice(1, -1);
+            const hasIntermediate = segmentStations.length > 0;
+            const isExpanded = expandedSegments[segIndex];
+            
+            return (
+              <React.Fragment key={`seg-${segIndex}`}>
+                {hasIntermediate && (
+                  <div className="path-stop compact-segment">
+                    <button 
+                      className="expand-btn"
+                      onClick={() => toggleSegment(segIndex)}
+                    >
+                      {isExpanded ? 'Hide Stations' : `Show ${segmentStations.length} Stations`}
+                    </button>
+                  </div>
+                )}
+                
+                {isExpanded && segmentStations.map((station, idx) => (
+                  <div key={`inter-${segIndex}-${idx}`} className="path-stop">
+                    <div className={`stop-marker ${routeDetails.interchanges.includes(station) ? 'interchange' : ''}`}>
+                      {routeDetails.interchanges.includes(station) && (
+                        <div className="interchange-icon">⇄</div>
+                      )}
+                    </div>
+                    <div className="stop-name">{station}</div>
+                  </div>
+                ))}
+                
+                <div className="path-stop">
+                  <div className={`stop-marker ${segIndex === segments.length - 1 ? 'circle-blue' : 
+                    routeDetails.interchanges.includes(segment[segment.length - 1]) ? 'interchange' : ''}`}>
+                    {segIndex < segments.length - 1 && routeDetails.interchanges.includes(segment[segment.length - 1]) && (
+                      <div className="interchange-icon">⇄</div>
+                    )}
+                  </div>
+                  <div className="stop-name">{segment[segment.length - 1]}</div>
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -221,30 +316,34 @@ useEffect(() => {
 
             <div className="route-visualization">
               <h3>Your Journey Route</h3>
-              <div className="metro-path">
-                <div className="path-start">
-                  <div className="station-marker circle-red"></div>
-                  <div className="station-name">{selectedSource}</div>
-                </div>
-                
-                <div className="path-line">
-                  {routeDetails.route.filter(station => station !== selectedSource && station !== selectedDest).map((station, index) => (
-                    <div key={index} className="path-stop">
-                      <div className={`stop-marker ${routeDetails.interchanges.includes(station) ? 'interchange' : ''}`}>
-                        {routeDetails.interchanges.includes(station) && (
-                          <div className="interchange-icon">⇄</div>
-                        )}
+              {isSmallScreen && routeDetails.interchanges.length > 0 ? (
+                renderCompactRoute()
+              ) : (
+                <div className="metro-path">
+                  <div className="path-start">
+                    <div className="station-marker circle-red"></div>
+                    <div className="station-name">{selectedSource}</div>
+                  </div>
+                  
+                  <div className="path-line">
+                    {routeDetails.route.filter(station => station !== selectedSource && station !== selectedDest).map((station, index) => (
+                      <div key={index} className="path-stop">
+                        <div className={`stop-marker ${routeDetails.interchanges.includes(station) ? 'interchange' : ''}`}>
+                          {routeDetails.interchanges.includes(station) && (
+                            <div className="interchange-icon">⇄</div>
+                          )}
+                        </div>
+                        <div className="stop-name">{station}</div>
                       </div>
-                      <div className="stop-name">{station}</div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  
+                  <div className="path-end">
+                    <div className="station-marker circle-blue"></div>
+                    <div className="station-name">{selectedDest}</div>
+                  </div>
                 </div>
-                
-                <div className="path-end">
-                  <div className="station-marker circle-blue"></div>
-                  <div className="station-name">{selectedDest}</div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}
