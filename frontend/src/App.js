@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link, Routes, useLocation } from 'react-router-dom';
 import './styles/navbar.css';
 import './styles/footer.css';
 import './styles/main.css';
@@ -14,6 +14,17 @@ import Facilities from './components/Facilities';
 import {FaTrain, FaPhoneAlt, FaEnvelope, FaFacebookF, FaTwitter, FaInstagram, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
 import Navbar from './components/Navbar';
 
+// Component to handle scroll to top on route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   const iconStyle = { color: 'white', fontSize: '24px' };
 
@@ -21,27 +32,59 @@ function App() {
     // Log environment variable during app load
     console.log("API BASE URL:", process.env.REACT_APP_API_BASE_URL);
 
-    // Dynamically load Botpress 
-    const injectScript = document.createElement('script');
-    injectScript.src = 'https://cdn.botpress.cloud/webchat/v3.0/inject.js';
-    injectScript.async = true;
-    document.body.appendChild(injectScript);
+    // Dynamically load Botpress with proper sequencing
+    const loadBotpress = () => {
+      // First, load the main Botpress inject script
+      const injectScript = document.createElement('script');
+      injectScript.src = 'https://cdn.botpress.cloud/webchat/v3.0/inject.js';
+      injectScript.async = true;
+      
+      // Wait for the inject script to load before loading the config
+      injectScript.onload = () => {
+        console.log('Botpress inject script loaded');
+        
+        // Now load the configuration script
+        const configScript = document.createElement('script');
+        configScript.src = 'https://files.bpcontent.cloud/2025/06/23/12/20250623123006-KM1HLTXZ.js';
+        configScript.async = true;
+        
+        configScript.onload = () => {
+          console.log('Botpress config script loaded');
+        };
+        
+        configScript.onerror = (error) => {
+          console.error('Failed to load Botpress config script:', error);
+        };
+        
+        document.body.appendChild(configScript);
+      };
+      
+      injectScript.onerror = (error) => {
+        console.error('Failed to load Botpress inject script:', error);
+      };
+      
+      document.body.appendChild(injectScript);
+    };
 
-    const configScript = document.createElement('script');
-    configScript.src = 'https://files.bpcontent.cloud/2025/06/23/12/20250623123006-KM1HLTXZ.js';
-    configScript.async = true;
-    document.body.appendChild(configScript);
+    // Load Botpress
+    loadBotpress();
 
-    // Cleanup scripts on component unmount
+    // Cleanup function
     return () => {
-      document.body.removeChild(injectScript);
-      document.body.removeChild(configScript);
+      // Remove all Botpress-related scripts
+      const scripts = document.querySelectorAll('script[src*="botpress"], script[src*="bpcontent"]');
+      scripts.forEach(script => {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      });
     };
   }, []);
 
   return (
     <Router>
       <div className="App">
+        <ScrollToTop />
         <Navbar />
         <main className="main-content">
           <Routes>
