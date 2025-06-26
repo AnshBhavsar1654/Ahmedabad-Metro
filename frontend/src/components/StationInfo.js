@@ -16,17 +16,12 @@ const StationInfo = () => {
       setIsLoading(false);
     };
 
-    // Simulate API/JSON loading delay
     setTimeout(fetchStationData, 800);
   }, []);
 
   const filteredStations = stations.filter(station => {
-    // Apply corridor filter
     if (filter !== 'all' && station.corridor !== filter) return false;
-    
-    // Apply search filter
     if (searchTerm && !station.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    
     return true;
   });
 
@@ -110,6 +105,20 @@ const StationInfo = () => {
           >
             Corridor-2
           </button>
+        </div>
+        
+        <div className="filter-dropdown">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            aria-label="Select corridor"
+          >
+            <option value="all">All Stations</option>
+            <option value="East-West">East-West Corridor</option>
+            <option value="North-South">North-South Corridor</option>
+            <option value="Corridor-1">Corridor-1</option>
+            <option value="Corridor-2">Corridor-2</option>
+          </select>
         </div>
       </div>
       
