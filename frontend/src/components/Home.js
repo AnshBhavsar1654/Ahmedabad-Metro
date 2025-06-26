@@ -10,6 +10,7 @@ const Home = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [temperature, setTemperature] = useState({ current: '--', high: '--', condition: 'Loading...' });
   const [isLoading, setIsLoading] = useState(true);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -17,6 +18,17 @@ const Home = () => {
     }, 1000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth <= 480);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   useEffect(() => {
@@ -34,19 +46,17 @@ const Home = () => {
             condition: data.weather[0].main
           });
         } else {
-          // Fallback to mock data if API fails
-          setTemperature({ current: 32, high: 38, condition: 'Sunny' });
+          setTemperature({ current: 32, high: 90, condition: 'Sunny' });
         }
       } catch (error) {
         console.error('Weather fetch failed:', error);
-        setTemperature({ current: 32, high: 38, condition: 'Sunny' });
+        setTemperature({ current: 32, high: 90, condition: 'Sunny' });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchWeather();
-    // Refresh weather data every 10 minutes
     const weatherTimer = setInterval(fetchWeather, 600000);
     
     return () => clearInterval(weatherTimer);
@@ -84,12 +94,66 @@ const Home = () => {
     return iconMap[condition] || '☀️';
   };
 
+  // Updated function to determine background image based on new time periods
+  const getBgImage = (hour) => {
+    if (hour >= 5 && hour < 17) {
+      return "/afternoon.png";
+    } else if (hour >= 17 && hour < 20) {
+      return "/evening.png";
+    } else {
+      return "/cover.png";
+    }
+  };
+
+  // Compute the background image using current time
+  const bgImage = getBgImage(currentTime.getHours());
+
+  const accessCards = [
+    {
+      to: "/routes",
+      icon: <FaMapMarkedAlt style={{ color: 'white', fontSize: '24px' }} />,
+      title: "Route Planning",
+      subtitle: "Plan Journey"
+    },
+    {
+      to: "/stations",
+      icon: <HiOutlineMap style={{ color: 'white', fontSize: '24px' }} />,
+      title: "Metro Map",
+      subtitle: ""
+    },
+    {
+      to: "/nearest-stations",
+      icon: <MdLocationOn size={28} color="white" />,
+      title: "Nearest",
+      subtitle: "Find Stations"
+    },
+    {
+      to: "/schedule",
+      icon: <MdSchedule size={28} color="white" />,
+      title: "Metro Schedule",
+      subtitle: "Timetable"
+    }
+  ];
+
+  const renderAccessCards = () => {
+    return accessCards.map((card, index) => (
+      <Link key={index} to={card.to} className="access-card">
+        <div className="card-icon">
+          {card.icon}
+        </div>
+        <div className="card-content">
+          <h4>{card.title}</h4>
+          {card.subtitle && <p>{card.subtitle}</p>}
+        </div>
+      </Link>
+    ));
+  };
+
   return (
     <div className="hero-container">
-      <img className="bg-video" src="/cover.png" alt="Metro Cover" />
+      <img className="bg-img" src={bgImage} alt="Metro Cover" />
       <div className="hero-section">
         <div className="hero-content">
-          
           <h1 className="hero-title">Welcome to Ahmedabad Metro</h1>
           
           <div className="datetime-weather">
@@ -111,49 +175,20 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Quick Access Cards */}
           <div className="quick-access">
             <h3>Frequently Used</h3>
-            <div className="access-grid">
-              <Link to="/routes" className="access-card">
-                <div className="card-icon">
-                  <FaMapMarkedAlt style={{ color: 'white', fontSize: '24px' }} />
+            {isSmallScreen ? (
+              <div className="scrolling-container">
+                <div className="scrolling-content">
+                  {renderAccessCards()}
+                  {renderAccessCards()}
                 </div>
-                <div className="card-content">
-                  <h4>Route Planning</h4>
-                  <p>Plan Journey</p>
-                </div>
-              </Link>
-              
-              <Link to="/stations" className="access-card">
-                <div className="card-icon">
-                  <HiOutlineMap style={{ color: 'white', fontSize: '24px' }} />
-                </div>
-                <div className="card-content">
-                  <h4>Metro Map</h4>
-                </div>
-              </Link>
-              
-              <Link to="/nearest-stations" className="access-card">
-                <div className="card-icon">
-                  <MdLocationOn size={28} color="white" />
-                </div>
-                <div className="card-content">
-                  <h4>Nearest</h4>
-                  <p>Find Stations</p>
-                </div>
-              </Link>
-              
-              <Link to="/schedule" className="access-card">
-                <div className="card-icon">
-                  <MdSchedule size={28} color="white" />
-                </div>
-                <div className="card-content">
-                  <h4>Metro Schedule</h4>
-                  <p>Timetable</p>
-                </div>
-              </Link>
-            </div>
+              </div>
+            ) : (
+              <div className="access-grid">
+                {renderAccessCards()}
+              </div>
+            )}
           </div>
         </div>
 
