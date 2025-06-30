@@ -16,6 +16,31 @@ const RoutesInfo = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 480);
   const [expandedSegments, setExpandedSegments] = useState([]);
 
+  // Metro line data
+  const metroLines = {
+    "Red Line": ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium"],
+    "Blue Line": ["Thaltej Gam", "Thaltej", "Doordarshan Kendra", "Gurukul Road", "Gujarat University", "Commerce Six Road", "SP Stadium", "Old High Court", "Shahpur", "Ghee Kanta", "Kalupur Railway Station", "Kankaria East", "Apparel Park", "Amraivadi", "Rabari Colony", "Vastral", "Nirant Cross Road", "Vastral Gam"],
+    "Yellow Line": ["Motera Stadium", "Koteshwar Road", "Vishvakarma College", "Tapovan Circle", "Narmada Canal", "Koba Circle", "Juna Koba", "Koba Gam", "GNLU", "Raysan", "Randesan", "Dholakuva Circle", "Infocity", "Sector-1", "Sector-10A", "Sachivalaya", "Akshardham", "Juna Sachivalaya", "Sector-16", "Sector-24", "Mahatma Mandir"],
+    "Violet Line": ["GNLU", "PDEU", "GIFT City"]
+  };
+
+  const lineColors = {
+    "Red Line": "#c0392b",
+    "Blue Line": "#3498db",
+    "Yellow Line": "#ffd700",
+    "Violet Line": "#8e44ad"
+  };
+
+  // Function to get the color of a station based on its line
+  const getStationColor = (stationName) => {
+    for (const [lineName, stationList] of Object.entries(metroLines)) {
+      if (stationList.includes(stationName)) {
+        return lineColors[lineName];
+      }
+    }
+    return "#666"; // Default color if station not found
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth <= 480);
@@ -41,6 +66,34 @@ const RoutesInfo = () => {
     const temp = selectedSource;
     setSelectedSource(selectedDest);
     setSelectedDest(temp);
+  };
+
+  const getStationInstruction = (station, index) => {
+    if (!routeDetails || !routeDetails.instructions) return '';
+    
+    // For the first station (source)
+    if (index === 0 && routeDetails.instructions.length > 0) {
+      const instruction = routeDetails.instructions[0];
+      // Extract just the line info from "Start at StationName (Take Red Line)"
+      const match = instruction.match(/\(Take .+?\)$/);
+      return match ? ` ${match[0]}` : '';
+    }
+    
+    // For interchange stations
+    if (routeDetails.interchanges.includes(station)) {
+      const instructionIndex = routeDetails.route.indexOf(station);
+      if (instructionIndex >= 0 && instructionIndex < routeDetails.instructions.length) {
+        const instruction = routeDetails.instructions[instructionIndex];
+        // Check if this is a line change instruction
+        if (instruction.includes('Change from')) {
+          // Extract just the line change info from "StationName (Change from Red Line to Blue Line)"
+          const match = instruction.match(/\(Change from .+?\)$/);
+          return match ? ` ${match[0]}` : '';
+        }
+      }
+    }
+    
+    return '';
   };
 
   const handleProceed = async () => {
@@ -94,6 +147,7 @@ const RoutesInfo = () => {
       setRouteDetails({
         route: routeData.route || [],
         interchanges: routeData.interchanges || [],
+        instructions: routeData.instructions || [],
         fare: fareData.fare || 0,
         distance: routeData.distance || 0
       });
@@ -134,8 +188,14 @@ const RoutesInfo = () => {
     return (
       <div className="metro-path compact-view">
         <div className="path-start">
-          <div className="station-marker circle-red"></div>
-          <div className="station-name">{selectedSource}</div>
+          <div 
+            className="station-marker circle-red"
+            style={{ backgroundColor: getStationColor(selectedSource) }}
+          ></div>
+          <div className="station-name">
+            {selectedSource}
+            {getStationInstruction(selectedSource, 0)}
+          </div>
         </div>
         
         <div className="path-line">
@@ -157,25 +217,43 @@ const RoutesInfo = () => {
                   </div>
                 )}
                 
-                {isExpanded && segmentStations.map((station, idx) => (
-                  <div key={`inter-${segIndex}-${idx}`} className="path-stop">
-                    <div className={`stop-marker ${routeDetails.interchanges.includes(station) ? 'interchange' : ''}`}>
-                      {routeDetails.interchanges.includes(station) && (
-                        <div className="interchange-icon">⇄</div>
-                      )}
+                {isExpanded && segmentStations.map((station, idx) => {
+                  const routeIndex = routeDetails.route.indexOf(station);
+                  const isInterchange = routeDetails.interchanges.includes(station);
+                  return (
+                    <div key={`inter-${segIndex}-${idx}`} className="path-stop">
+                      <div className={`stop-marker ${isInterchange ? 'interchange' : ''}`}
+                           style={!isInterchange ? { backgroundColor: getStationColor(station) } : {}}>
+                        {isInterchange && (
+                          <div className="interchange-icon">⇄</div>
+                        )}
+                      </div>
+                      <div className="stop-name">
+                        {station}
+                        {getStationInstruction(station, routeIndex)}
+                      </div>
                     </div>
-                    <div className="stop-name">{station}</div>
-                  </div>
-                ))}
+                  );
+                })}
                 
                 <div className="path-stop">
                   <div className={`stop-marker ${segIndex === segments.length - 1 ? 'circle-blue' : 
-                    routeDetails.interchanges.includes(segment[segment.length - 1]) ? 'interchange' : ''}`}>
+                    routeDetails.interchanges.includes(segment[segment.length - 1]) ? 'interchange' : ''}`}
+                    style={segIndex === segments.length - 1 ? 
+                      { backgroundColor: getStationColor(selectedDest) } : 
+                      (!routeDetails.interchanges.includes(segment[segment.length - 1]) ? 
+                        { backgroundColor: getStationColor(segment[segment.length - 1]) } : {})}>
                     {segIndex < segments.length - 1 && routeDetails.interchanges.includes(segment[segment.length - 1]) && (
                       <div className="interchange-icon">⇄</div>
                     )}
                   </div>
-                  <div className="stop-name">{segment[segment.length - 1]}</div>
+                  <div className="stop-name">
+                    {segment[segment.length - 1]}
+                    {segIndex < segments.length - 1 ? 
+                      getStationInstruction(segment[segment.length - 1], routeDetails.route.indexOf(segment[segment.length - 1])) : 
+                      ''
+                    }
+                  </div>
                 </div>
               </React.Fragment>
             );
@@ -321,25 +399,42 @@ const RoutesInfo = () => {
               ) : (
                 <div className="metro-path">
                   <div className="path-start">
-                    <div className="station-marker circle-red"></div>
-                    <div className="station-name">{selectedSource}</div>
+                    <div 
+                      className="station-marker circle-red"
+                      style={{ backgroundColor: getStationColor(selectedSource) }}
+                    ></div>
+                    <div className="station-name">
+                      {selectedSource}
+                      {getStationInstruction(selectedSource, 0)}
+                    </div>
                   </div>
                   
                   <div className="path-line">
-                    {routeDetails.route.filter(station => station !== selectedSource && station !== selectedDest).map((station, index) => (
-                      <div key={index} className="path-stop">
-                        <div className={`stop-marker ${routeDetails.interchanges.includes(station) ? 'interchange' : ''}`}>
-                          {routeDetails.interchanges.includes(station) && (
-                            <div className="interchange-icon">⇄</div>
-                          )}
+                    {routeDetails.route.filter(station => station !== selectedSource && station !== selectedDest).map((station, index) => {
+                      const routeIndex = routeDetails.route.indexOf(station);
+                      const isInterchange = routeDetails.interchanges.includes(station);
+                      return (
+                        <div key={index} className="path-stop">
+                          <div className={`stop-marker ${isInterchange ? 'interchange' : ''}`}
+                               style={!isInterchange ? { backgroundColor: getStationColor(station) } : {}}>
+                            {isInterchange && (
+                              <div className="interchange-icon">⇄</div>
+                            )}
+                          </div>
+                          <div className="stop-name">
+                            {station}
+                            {getStationInstruction(station, routeIndex)}
+                          </div>
                         </div>
-                        <div className="stop-name">{station}</div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   
                   <div className="path-end">
-                    <div className="station-marker circle-blue"></div>
+                    <div 
+                      className="station-marker circle-blue"
+                      style={{ backgroundColor: getStationColor(selectedDest) }}
+                    ></div>
                     <div className="station-name">{selectedDest}</div>
                   </div>
                 </div>
