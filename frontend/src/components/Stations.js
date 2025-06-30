@@ -20,7 +20,7 @@ const Stations = () => {
     <div className="stations-container">
       <div className="stations-header">
         <div className="header-content">
-          <h1>Ahmedabad Metro Network</h1>
+          <h1>Ahmedabad Metro Map</h1>
           <p>Interactive map of all metro stations and lines</p>
         </div>
         <div className="metro-icon">
@@ -80,19 +80,19 @@ const Stations = () => {
             <h3>Metro Lines</h3>
             <div className="metro-lines">
               <div className="line-info">
-                <div className="line-color" style={{ backgroundColor: '#FF8C00' }}></div>
+                <div className="line-color" style={{ backgroundColor: '#3498db' }}></div>
                 <div>Line 1: Vastral Gam to Thaltej Gam (EW Corridor)</div>
               </div>
               <div className="line-info">
-                <div className="line-color" style={{ backgroundColor: '#3498db' }}></div>
+                <div className="line-color" style={{ backgroundColor: '#c0392b' }}></div>
                 <div>Line 2: APMC to Motera Stadium (NS Corridor)</div>
               </div>
               <div className="line-info">
-                <div className="line-color" style={{ backgroundColor: '#28a745' }}></div>
+                <div className="line-color" style={{ backgroundColor: '#ffd700' }}></div>
                 <div>Line 3: Motera Stadium to Mahatma Mandir (Corridor-1)</div>
               </div>
               <div className="line-info">
-                <div className="line-color" style={{ backgroundColor: '#28a745' }}></div>
+                <div className="line-color" style={{ backgroundColor: '#8e44ad' }}></div>
                 <div>Line 4: GNLU to GIFT City (Corridor-2)</div>
               </div>
             </div>
