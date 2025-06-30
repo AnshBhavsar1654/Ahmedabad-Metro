@@ -225,23 +225,46 @@ const Home = () => {
           <div className="booking-grid">
             <div className="booking-card">
               <div className="booking-icon">🎫</div>
-              <h3>Ticket Vending Machine</h3>
-              <p>Self-service machines at all stations</p>
-            </div>
-            <div className="booking-card">
-              <div className="booking-icon">💳</div>
-              <h3>NCMC Smart Card</h3>
-              <p>Contactless payment solution</p>
-            </div>
-            <div className="booking-card">
-              <div className="booking-icon">🏪</div>
-              <h3>KIOSK Counter</h3>
-              <p>Assisted service with staff support</p>
+                <h3>Ticket Vending Machine</h3>
+                <p>Self-service machines at all stations</p>
+              </div>
+              <div className="booking-card">
+                <div className="booking-icon">💳</div>
+                <h3>NCMC Smart Card</h3>
+                <p>Contactless payment solution</p>
+              </div>
+              <div className="booking-card">
+                <div className="booking-icon">🏪</div>
+                  <h3>KIOSK Counter</h3>
+                  <p>Assisted service with staff support</p>
+                </div>
+                <div className="booking-card">
+                  <div className="booking-icon">📱</div>
+                  <h3>E-Ticket (Mobile App)</h3>
+                  <p>Book e-tickets on your smartphone</p>
+                    <div className="app-links">
+                      <a 
+                        href="https://play.google.com/store/apps/details?id=com.gujaratmetrorail.gmrcamddigitalticketing&hl=en_IN&pli=1" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="app-link"
+                      >
+                        <img src="https://freelogopng.com/images/all_img/1664285914google-play-logo-png.png" alt="Android" className="app-logo" />
+                      </a>
+                      <a 
+                        href="https://apps.apple.com/in/app/ahmedabad-metro-official-app/id6670203895" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="app-link"
+                      >
+                        <img src="https://seekvectors.com/files/download/f1f44e5b764dd072f4f711f1c079fe60.jpg" alt="iOS" className="app-logo" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
   );
 };
 
