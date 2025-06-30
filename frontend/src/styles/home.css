@@ -364,8 +364,33 @@
 
 .booking-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
+}
+
+.app-links {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-top: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-link {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 50%;
+}
+
+.app-link:hover {
+  transform: scale(1.1);
+}
+
+.app-logo {
+  height: 24px;
+  width: 24px;
 }
 
 .booking-card {
@@ -440,10 +465,8 @@
 
 /* ================ Responsive Design ================ */
 /* Mobile screens (<=768px) */
-/* Mobile screens (<=768px) */
 @media (max-width: 768px) {
   /* ================ Hero Container ================ */
-
   .hero-section {
   padding: 2rem 1rem 1rem 1rem;
     margin: 0;
@@ -461,6 +484,19 @@
     object-fit: cover;
     height: 100%;
     width: 100%;
+  }
+  .booking-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .app-badge {
+    height: 35px;
+  }
+
+  .app-logo {
+    height: 20px;
+    width: 20px;
   }
   
   .hero-section, .stats-section {
@@ -761,5 +797,29 @@
 
   .booking-icon {
     font-size: 2rem;
+  }
+
+  .booking-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .app-links {
+    flex-direction: row;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .app-badge {
+    height: 30px;
+  }
+
+  .app-logo {
+    height: 18px;
+    width: 18px;
+  }
+  
+  .app-links {
+    gap: 0.8rem;
   }
 }
