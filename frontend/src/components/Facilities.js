@@ -7,7 +7,6 @@ import {
 } from 'react-icons/fa';
 import { MdElevator, MdOutlineSmartDisplay } from 'react-icons/md';
 import { GiCardExchange } from 'react-icons/gi';
-import '../styles/facilities.css';
 
 const Facilities = () => {
   const [selectedCategory, setSelectedCategory] = useState('passengers');
@@ -17,19 +16,19 @@ const Facilities = () => {
       id: 'passengers',
       title: 'Facilities for Passengers',
       icon: <FaUsers />,
-      color: '#4f46e5'
+      cssClass: 'passengers'
     },
     {
       id: 'differently-abled',
       title: 'Facilities for Differently Abled',
       icon: <FaWheelchair />,
-      color: '#059669'
+      cssClass: 'differently-abled'
     },
     {
       id: 'emergency',
       title: 'Emergency Facilities',
       icon: <FaExclamationTriangle />,
-      color: '#dc2626'
+      cssClass: 'emergency'
     }
   ];
 
@@ -129,15 +128,17 @@ const Facilities = () => {
   const renderFacilityCards = () => {
     if (selectedCategory === 'emergency') {
       return (
-        <div className="emergency-grid">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {facilitiesData.emergency.map((item, index) => (
-            <div key={index} className="emergency-card">
-              <div className="emergency-icon">
-                {item.icon}
-              </div>
-              <div className="emergency-content">
-                <h3 className="emergency-title">{item.facility}</h3>
-                <p className="emergency-description">{item.description}</p>
+            <div
+              key={index}
+              className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm p-5 transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-red-600 to-red-800" />
+              <div className="text-red-600 text-3xl mb-3">{item.icon}</div>
+              <div>
+                <h3 className="font-bold text-slate-900 mb-2">{item.facility}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{item.description}</p>
               </div>
             </div>
           ))}
@@ -146,47 +147,67 @@ const Facilities = () => {
     }
 
     return (
-      <div className="facilities-grid">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {facilitiesData[selectedCategory].map((facility, index) => (
-          <div key={index} className="facility-card">
-            <div className="facility-icon">
+          <div
+            key={index}
+            className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm p-5 flex items-center gap-4 transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-brand-500 to-brand-800" />
+            <div className="text-brand-600 text-3xl min-w-12 flex items-center justify-center">
               {facility.icon}
             </div>
-            <div className="facility-name">{facility.name}</div>
+            <div className="font-semibold text-slate-700 leading-snug">{facility.name}</div>
           </div>
         ))}
       </div>
     );
   };
 
-  const getCurrentCategory = () => {
-    return categories.find(cat => cat.id === selectedCategory);
-  };
-
   return (
-    <div className="facilities-container">
-      <div className="facilities-header">
-        <h1>Facilities at Ahmedabad Metro</h1>
-        <p>Explore the various passenger amenities available across our metro network</p>
+    <div className="mx-auto max-w-6xl px-5 pb-10">
+      <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8">
+        <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Facilities at Ahmedabad Metro</h1>
+        <p className="mt-2 text-white/90 max-w-2xl">Explore the various passenger amenities available across our metro network</p>
       </div>
 
-      <div className="category-menu">
-        {categories.map((category) => (
-          <button
-            key={category.id}
-            className={`category-btn ${selectedCategory === category.id ? 'active' : ''}`}
-            onClick={() => setSelectedCategory(category.id)}
-            style={{
-              '--category-color': category.color
-            }}
-          >
-            <span className="category-icon">{category.icon}</span>
-            <span className="category-title">{category.title}</span>
-          </button>
-        ))}
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4">
+        {categories.map((category) => {
+          const isActive = selectedCategory === category.id;
+          const activeColors =
+            category.id === 'passengers'
+              ? 'bg-indigo-600 border-indigo-600'
+              : category.id === 'differently-abled'
+                ? 'bg-emerald-600 border-emerald-600'
+                : 'bg-red-600 border-red-600';
+
+          const hoverBorder =
+            category.id === 'passengers'
+              ? 'hover:border-indigo-600'
+              : category.id === 'differently-abled'
+                ? 'hover:border-emerald-600'
+                : 'hover:border-red-600';
+
+          return (
+            <button
+              key={category.id}
+              type="button"
+              className={
+                `flex items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition shadow-sm ` +
+                (isActive
+                  ? `${activeColors} text-white shadow-md`
+                  : `bg-white border-slate-200 text-slate-800 hover:-translate-y-0.5 hover:shadow-md ${hoverBorder}`)
+              }
+              onClick={() => setSelectedCategory(category.id)}
+            >
+              <span className={isActive ? 'text-2xl' : 'text-2xl text-slate-700'}>{category.icon}</span>
+              <span className="font-semibold text-sm sm:text-base leading-snug">{category.title}</span>
+            </button>
+          );
+        })}
       </div>
 
-      <section className="facilities-section">
+      <section className="mt-8">
         {renderFacilityCards()}
       </section>
     </div>

@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import '../App.css';
-import '../styles/station-map.css';
 
 const Stations = () => {
-  const [activeTab, setActiveTab] = useState('map');
   const [showInfo, setShowInfo] = useState(true);
 
   const handleDownloadPDF = (filePath, fileName) => {
@@ -17,14 +14,14 @@ const Stations = () => {
   };
 
   return (
-    <div className="stations-container">
-      <div className="stations-header">
-        <div className="header-content">
-          <h1>Ahmedabad Metro Network</h1>
-          <p>Interactive map of all metro stations and lines</p>
+    <div className="mx-auto max-w-6xl px-5 pb-10">
+      <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8 flex items-center justify-between gap-6">
+        <div>
+          <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Ahmedabad Metro Map</h1>
+          <p className="mt-2 text-white/90 max-w-2xl">Interactive map of all metro stations and lines</p>
         </div>
-        <div className="metro-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="hidden md:flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="2" width="20" height="16" rx="2" />
             <path d="M12 18v-6" />
             <circle cx="8.5" cy="10.5" r="1.5" />
@@ -33,10 +30,16 @@ const Stations = () => {
           </svg>
         </div>
       </div>
-      
-      <div className="stations-controls">
-        <button 
-          className={`info-toggle ${showInfo ? 'active' : ''}`}
+
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="button"
+          className={
+            `inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ` +
+            (showInfo
+              ? 'bg-brand-50 text-brand-900 border-brand-200'
+              : 'bg-white text-slate-900 border-slate-200 hover:bg-slate-50')
+          }
           onClick={() => setShowInfo(!showInfo)}
         >
           {showInfo ? 'Hide Info' : 'Show Info'}
@@ -47,9 +50,10 @@ const Stations = () => {
           </svg>
         </button>
 
-        <div className="download-buttons">
-          <button 
-            className="download-btn"
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow hover:-translate-y-0.5 transition"
             onClick={() => handleDownloadPDF('/Route.pdf', 'Ahmedabad_Metro_Route_Guide.pdf')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -60,8 +64,9 @@ const Stations = () => {
             Download Route Guide
           </button>
 
-          <button 
-            className="download-btn"
+          <button
+            type="button"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow hover:-translate-y-0.5 transition"
             onClick={() => handleDownloadPDF('/Map.pdf', 'Ahmedabad_Metro_Map.pdf')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -73,34 +78,34 @@ const Stations = () => {
           </button>
         </div>
       </div>
-      
+
       {showInfo && (
-        <div className="map-info">
-          <div className="info-card">
-            <h3>Metro Lines</h3>
-            <div className="metro-lines">
-              <div className="line-info">
-                <div className="line-color" style={{ backgroundColor: '#FF8C00' }}></div>
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3">Metro Lines</h3>
+            <div className="mt-4 space-y-3 text-sm text-slate-700">
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-full border-2 border-white shadow" style={{ backgroundColor: '#3498db' }} />
                 <div>Line 1: Vastral Gam to Thaltej Gam (EW Corridor)</div>
               </div>
-              <div className="line-info">
-                <div className="line-color" style={{ backgroundColor: '#3498db' }}></div>
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-full border-2 border-white shadow" style={{ backgroundColor: '#c0392b' }} />
                 <div>Line 2: APMC to Motera Stadium (NS Corridor)</div>
               </div>
-              <div className="line-info">
-                <div className="line-color" style={{ backgroundColor: '#28a745' }}></div>
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-full border-2 border-white shadow" style={{ backgroundColor: '#ffd700' }} />
                 <div>Line 3: Motera Stadium to Mahatma Mandir (Corridor-1)</div>
               </div>
-              <div className="line-info">
-                <div className="line-color" style={{ backgroundColor: '#28a745' }}></div>
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-full border-2 border-white shadow" style={{ backgroundColor: '#8e44ad' }} />
                 <div>Line 4: GNLU to GIFT City (Corridor-2)</div>
               </div>
             </div>
           </div>
         </div>
       )}
-      
-      <div className="map-container">
+
+      <div className="mt-6 overflow-hidden rounded-2xl border-2 border-brand-800/20 bg-white shadow-[0_15px_35px_rgba(0,0,0,0.1)]">
         <iframe
           src="https://www.google.com/maps/d/u/0/embed?mid=1OiBaXz-gpGhD-bGCv55xJBy-mz6O7R0"
           width="100%"

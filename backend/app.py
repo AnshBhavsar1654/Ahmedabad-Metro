@@ -37,6 +37,7 @@ def get_route():
     
     if not source or not destination:
         return jsonify({"error": "Missing source or destination"}), 400
+    
     result = calculate_route_details(source, destination)
     
     if result['error']:
@@ -45,7 +46,8 @@ def get_route():
     return jsonify({
         "route": result['route'],
         "interchanges": result['interchanges'],
-        "distance": result['distance']
+        "distance": result['distance'],
+        "instructions": result['instructions']
     })
 
 @app.route('/api/fare', methods=['POST'])

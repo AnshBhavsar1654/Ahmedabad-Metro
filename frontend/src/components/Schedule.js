@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import '../styles/schedule.css';
 
 const Schedule = () => {
   const [isZoomed, setIsZoomed] = useState(false);
@@ -11,13 +10,13 @@ const Schedule = () => {
   };
 
   return (
-    <div className="schedule-container">
-      <div className="schedule-header">
-        <div className="header-content">
-          <h1>Ahmedabad Metro Schedule</h1>
+    <div className="mx-auto max-w-6xl px-5 pb-10">
+      <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8 flex items-center justify-between gap-6">
+        <div>
+          <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Ahmedabad Metro Schedule</h1>
         </div>
-        <div className="schedule-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="hidden md:flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
             <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -25,9 +24,18 @@ const Schedule = () => {
           </svg>
         </div>
       </div>
-      
-      <div className="schedule-actions">
-        <button className={`zoom-btn ${isZoomed ? 'active' : ''}`} onClick={toggleZoom}>
+
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="button"
+          className={
+            `inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ` +
+            (isZoomed
+              ? 'bg-brand-800 text-white border-brand-800 shadow'
+              : 'bg-white text-slate-900 border-slate-200 hover:bg-slate-50')
+          }
+          onClick={toggleZoom}
+        >
           {isZoomed ? (
             <>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -49,8 +57,8 @@ const Schedule = () => {
             </>
           )}
         </button>
-        
-        <div className="effective-date">
+
+        <div className="inline-flex items-center gap-2 rounded-xl bg-white/70 px-4 py-2 text-sm font-medium text-slate-700 border border-white/40">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
@@ -58,13 +66,18 @@ const Schedule = () => {
           Effective from 13th May 2025
         </div>
       </div>
-      
-      <div className={`schedule-image-container ${isZoomed ? 'zoomed' : ''}`}>
-        <img 
-          src={scheduleImage} 
-          alt="Ahmedabad Metro Schedule" 
-          className="schedule-image"
-        />
+
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className={isZoomed ? 'overflow-auto' : 'overflow-hidden'}>
+          <img
+            src={scheduleImage}
+            alt="Ahmedabad Metro Schedule"
+            className={
+              `block w-full h-auto select-none transition-transform duration-300 origin-top ` +
+              (isZoomed ? 'scale-125 md:scale-150' : 'scale-100')
+            }
+          />
+        </div>
       </div>
     </div>
   );
