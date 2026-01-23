@@ -7,6 +7,21 @@ import { FaSubway, FaMapMarkerAlt, FaExchangeAlt } from "react-icons/fa";
 
 const API_URL = process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com";
 
+// Metro line data (constants - moved outside component)
+const metroLines = {
+  "Red Line": ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium"],
+  "Blue Line": ["Thaltej Gam", "Thaltej", "Doordarshan Kendra", "Gurukul Road", "Gujarat University", "Commerce Six Road", "SP Stadium", "Old High Court", "Shahpur", "Ghee Kanta", "Kalupur Railway Station", "Kankaria East", "Apparel Park", "Amraivadi", "Rabari Colony", "Vastral", "Nirant Cross Road", "Vastral Gam"],
+  "Yellow Line": ["Motera Stadium", "Koteshwar Road", "Vishvakarma College", "Tapovan Circle", "Narmada Canal", "Koba Circle", "Juna Koba", "Koba Gam", "GNLU", "Raysan", "Randesan", "Dholakuva Circle", "Infocity", "Sector-1", "Sector-10A", "Sachivalaya", "Akshardham", "Juna Sachivalaya", "Sector-16", "Sector-24", "Mahatma Mandir"],
+  "Violet Line": ["GNLU", "PDEU", "GIFT City"]
+};
+
+const lineColors = {
+  "Red Line": "#c0392b",
+  "Blue Line": "#3498db",
+  "Yellow Line": "#ffd700",
+  "Violet Line": "#8e44ad"
+};
+
 // Fix leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -43,21 +58,6 @@ const RoutesInfo = () => {
   const [loading, setLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState([23.0225, 72.5714]); // Ahmedabad center
   const [mapZoom, setMapZoom] = useState(12);
-
-  // Metro line data
-  const metroLines = {
-    "Red Line": ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium"],
-    "Blue Line": ["Thaltej Gam", "Thaltej", "Doordarshan Kendra", "Gurukul Road", "Gujarat University", "Commerce Six Road", "SP Stadium", "Old High Court", "Shahpur", "Ghee Kanta", "Kalupur Railway Station", "Kankaria East", "Apparel Park", "Amraivadi", "Rabari Colony", "Vastral", "Nirant Cross Road", "Vastral Gam"],
-    "Yellow Line": ["Motera Stadium", "Koteshwar Road", "Vishvakarma College", "Tapovan Circle", "Narmada Canal", "Koba Circle", "Juna Koba", "Koba Gam", "GNLU", "Raysan", "Randesan", "Dholakuva Circle", "Infocity", "Sector-1", "Sector-10A", "Sachivalaya", "Akshardham", "Juna Sachivalaya", "Sector-16", "Sector-24", "Mahatma Mandir"],
-    "Violet Line": ["GNLU", "PDEU", "GIFT City"]
-  };
-
-  const lineColors = {
-    "Red Line": "#c0392b",
-    "Blue Line": "#3498db",
-    "Yellow Line": "#ffd700",
-    "Violet Line": "#8e44ad"
-  };
 
   // Function to get the color of a station based on its line
   const getStationColor = (stationName) => {
