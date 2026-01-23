@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const Schedule = () => {
   const [isZoomed, setIsZoomed] = useState(false);
   
-  const scheduleImage = "https://www.gujaratmetrorail.com/ahmedabad/wp-content/uploads/HomePageImage/Revised-Time-Table-w.e.f-13.05.2025.jpg";
+  const scheduleImage = "https://www.gujaratmetrorail.com/ahmedabad/wp-content/uploads/2026/01/FINAL-KA-BHI-FINAL-REVISED-FINAL-TRAIN-TIME-TABLE.jpg";
   
   const toggleZoom = () => {
     setIsZoomed(!isZoomed);

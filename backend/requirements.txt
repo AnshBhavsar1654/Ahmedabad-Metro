@@ -5,3 +5,4 @@ geopy
 gunicorn
 openpyxl
 python-dotenv
+requests

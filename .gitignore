@@ -20,3 +20,7 @@ backend/.env
 *.log
 *.sqlite3
 *.db
+
+Ahmedabad_Metro_Gujarati.docx
+Ahmedabad_Metro_Hindi.docx
+Ahmedabad_Metro_Kb.docx

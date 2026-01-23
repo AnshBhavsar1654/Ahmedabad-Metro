@@ -4,8 +4,12 @@ from route import get_all_stations, calculate_route_details
 import pandas as pd
 import os
 from geopy.distance import geodesic
+from dotenv import load_dotenv
+from chat import ask_gemini
 app = Flask(__name__)
 CORS(app)
+
+load_dotenv()
 
 FARE_PATH = os.path.join(os.path.dirname(__file__), "Fare Matrix.xlsx")
 STATIONS_PATH = os.path.join(os.path.dirname(__file__), "Location.xlsx")
@@ -26,6 +30,21 @@ def get_stations():
     try:
         stations = get_all_stations()
         return jsonify(stations)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/stations/coordinates', methods=['GET'])
+def get_stations_with_coordinates():
+    """Returns all stations with their coordinates for mapping"""
+    try:
+        stations_list = []
+        for _, row in stations_df.iterrows():
+            stations_list.append({
+                "name": row['Station'],
+                "latitude": row['Latitude'],
+                "longitude": row['Longitude']
+            })
+        return jsonify(stations_list)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -98,6 +117,31 @@ def get_nearby_stations():
     except Exception as e:
         app.logger.error(f"Error in nearby stations: {str(e)}")
         return jsonify({"error": "Failed to find nearby stations"}), 500
+
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    try:
+        data = request.get_json() or {}
+        message = (data.get('message') or '').strip()
+        if not message:
+            return jsonify({"error": "Missing message"}), 400
+
+        # Get conversation history if provided (for follow-up questions)
+        conversation_history = data.get('history', [])
+        # Ensure history is a list of dicts with 'role' and 'text'
+        if not isinstance(conversation_history, list):
+            conversation_history = []
+
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            return jsonify({"error": "GEMINI_API_KEY is not configured on the server"}), 500
+
+        reply, language = ask_gemini(message, api_key=api_key, conversation_history=conversation_history)
+        return jsonify({"response": reply, "language": language})
+    except Exception as e:
+        app.logger.exception("Chat error")
+        return jsonify({"error": "Chat request failed", "details": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True, debug=True)

@@ -1,18 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { GiPathDistance } from "react-icons/gi";
-import { FaSubway } from "react-icons/fa";
-const API_URL = "https://ahmedabad-metro-backend.onrender.com";
-console.log("API BASE URL:", process.env.REACT_APP_API_BASE_URL);
+import { FaSubway, FaMapMarkerAlt, FaExchangeAlt } from "react-icons/fa";
+
+const API_URL = process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com";
+
+// Fix leaflet marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+// Custom icons for source, destination, and route stations
+const createCustomIcon = (color, size = [20, 20], isLarge = false) => {
+  const iconSize = isLarge ? [size[0] * 1.5, size[1] * 1.5] : size;
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="
+      width: ${iconSize[0]}px;
+      height: ${iconSize[1]}px;
+      background-color: ${color};
+      border: 3px solid white;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    "></div>`,
+    iconSize: iconSize,
+    iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+  });
+};
 
 const RoutesInfo = () => {
   const [stations, setStations] = useState([]);
+  const [stationCoords, setStationCoords] = useState({});
   const [selectedSource, setSelectedSource] = useState('');
   const [selectedDest, setSelectedDest] = useState('');
   const [routeDetails, setRouteDetails] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 480);
-  const [expandedSegments, setExpandedSegments] = useState([]);
+  const [mapCenter, setMapCenter] = useState([23.0225, 72.5714]); // Ahmedabad center
+  const [mapZoom, setMapZoom] = useState(12);
 
   // Metro line data
   const metroLines = {
@@ -36,29 +66,27 @@ const RoutesInfo = () => {
         return lineColors[lineName];
       }
     }
-    return "#666"; // Default color if station not found
+    return "#666";
   };
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsSmallScreen(window.innerWidth <= 480);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+  // Fetch stations and coordinates
   useEffect(() => {
     fetch(`${API_URL}/api/stations`)
       .then(res => res.json())
       .then(data => setStations(data))
       .catch(err => setError('Failed to load stations'));
-  }, []);
 
-  useEffect(() => {
-    if (routeDetails && routeDetails.interchanges.length > 0) {
-      setExpandedSegments(Array(routeDetails.interchanges.length + 1).fill(false));
-    }
-  }, [routeDetails]);
+    fetch(`${API_URL}/api/stations/coordinates`)
+      .then(res => res.json())
+      .then(data => {
+        const coordsMap = {};
+        data.forEach(station => {
+          coordsMap[station.name] = [station.latitude, station.longitude];
+        });
+        setStationCoords(coordsMap);
+      })
+      .catch(err => console.error('Failed to load station coordinates:', err));
+  }, []);
 
   const swapStations = () => {
     const temp = selectedSource;
@@ -69,22 +97,17 @@ const RoutesInfo = () => {
   const getStationInstruction = (station, index) => {
     if (!routeDetails || !routeDetails.instructions) return '';
     
-    // For the first station (source)
     if (index === 0 && routeDetails.instructions.length > 0) {
       const instruction = routeDetails.instructions[0];
-      // Extract just the line info from "Start at StationName (Take Red Line)"
       const match = instruction.match(/\(Take .+?\)$/);
       return match ? ` ${match[0]}` : '';
     }
     
-    // For interchange stations
     if (routeDetails.interchanges.includes(station)) {
       const instructionIndex = routeDetails.route.indexOf(station);
       if (instructionIndex >= 0 && instructionIndex < routeDetails.instructions.length) {
         const instruction = routeDetails.instructions[instructionIndex];
-        // Check if this is a line change instruction
         if (instruction.includes('Change from')) {
-          // Extract just the line change info from "StationName (Change from Red Line to Blue Line)"
           const match = instruction.match(/\(Change from .+?\)$/);
           return match ? ` ${match[0]}` : '';
         }
@@ -150,6 +173,16 @@ const RoutesInfo = () => {
         distance: routeData.distance || 0
       });
 
+      // Update map center to show the route
+      if (stationCoords[selectedSource] && stationCoords[selectedDest]) {
+        const sourceCoords = stationCoords[selectedSource];
+        const destCoords = stationCoords[selectedDest];
+        const centerLat = (sourceCoords[0] + destCoords[0]) / 2;
+        const centerLon = (sourceCoords[1] + destCoords[1]) / 2;
+        setMapCenter([centerLat, centerLon]);
+        setMapZoom(12);
+      }
+
     } catch (err) {
       setError(err.message);
       console.error('API Error:', err);
@@ -158,133 +191,36 @@ const RoutesInfo = () => {
     }
   };
 
-  const toggleSegment = (index) => {
-    const newExpandedSegments = [...expandedSegments];
-    newExpandedSegments[index] = !newExpandedSegments[index];
-    setExpandedSegments(newExpandedSegments);
-  };
+  // Get route polyline coordinates
+  const routePolyline = useMemo(() => {
+    if (!routeDetails || !routeDetails.route || Object.keys(stationCoords).length === 0) return [];
+    return routeDetails.route
+      .map(station => stationCoords[station])
+      .filter(coord => coord !== undefined);
+  }, [routeDetails, stationCoords]);
 
-  const renderCompactRoute = () => {
-    if (!routeDetails || routeDetails.route.length === 0) return null;
-    
-    const keyStations = [selectedSource, ...routeDetails.interchanges, selectedDest];
-    const segments = [];
-    let lastIndex = 0;
-    
-    for (let i = 0; i < keyStations.length - 1; i++) {
-      const startStation = keyStations[i];
-      const endStation = keyStations[i + 1];
-      const startIdx = routeDetails.route.indexOf(startStation, lastIndex);
-      const endIdx = routeDetails.route.indexOf(endStation, startIdx + 1);
-      
-      if (startIdx === -1 || endIdx === -1) break;
-      
-      segments.push(routeDetails.route.slice(startIdx, endIdx + 1));
-      lastIndex = endIdx;
-    }
-
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-5">
-        <div className="flex items-center gap-3">
-          <div
-            className="h-6 w-6 rounded-full"
-            style={{ backgroundColor: getStationColor(selectedSource) }}
-          />
-          <div className="font-semibold text-slate-900">
-            {selectedSource}
-            <span className="text-slate-600">{getStationInstruction(selectedSource, 0)}</span>
-          </div>
-        </div>
-
-        <div className="mt-4 space-y-3">
-          {segments.map((segment, segIndex) => {
-            const segmentStations = segment.slice(1, -1);
-            const hasIntermediate = segmentStations.length > 0;
-            const isExpanded = expandedSegments[segIndex];
-
-            return (
-              <React.Fragment key={`seg-${segIndex}`}>
-                {hasIntermediate && (
-                  <div className="text-center">
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-brand-700 transition"
-                      onClick={() => toggleSegment(segIndex)}
-                    >
-                      {isExpanded ? 'Hide Stations' : `Show ${segmentStations.length} Stations`}
-                    </button>
-                  </div>
-                )}
-
-                {isExpanded && segmentStations.map((station, idx) => {
-                  const routeIndex = routeDetails.route.indexOf(station);
-                  const isInterchange = routeDetails.interchanges.includes(station);
-                  const color = getStationColor(station);
-
-                  return (
-                    <div key={`inter-${segIndex}-${idx}`} className="flex items-start gap-3">
-                      <div
-                        className={
-                          `mt-1 flex h-5 w-5 items-center justify-center rounded-full ` +
-                          (isInterchange ? 'bg-amber-500' : '')
-                        }
-                        style={!isInterchange ? { backgroundColor: color } : {}}
-                      >
-                        {isInterchange && (
-                          <span className="text-[10px] font-bold text-white">⇄</span>
-                        )}
-                      </div>
-                      <div className="text-sm font-medium text-slate-700">
-                        {station}
-                        <span className="text-slate-500">{getStationInstruction(station, routeIndex)}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                <div className="flex items-start gap-3">
-                  {(() => {
-                    const stationName = segment[segment.length - 1];
-                    const isLast = segIndex === segments.length - 1;
-                    const isInterchange = !isLast && routeDetails.interchanges.includes(stationName);
-
-                    return (
-                      <>
-                        <div
-                          className={
-                            `mt-1 flex h-5 w-5 items-center justify-center rounded-full ` +
-                            (isInterchange ? 'bg-amber-500' : '')
-                          }
-                          style={!isInterchange ? { backgroundColor: getStationColor(isLast ? selectedDest : stationName) } : {}}
-                        >
-                          {isInterchange && (
-                            <span className="text-[10px] font-bold text-white">⇄</span>
-                          )}
-                        </div>
-                        <div className="text-sm font-semibold text-slate-900">
-                          {stationName}
-                          <span className="text-slate-500">
-                            {isLast ? '' : getStationInstruction(stationName, routeDetails.route.indexOf(stationName))}
-                          </span>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
+  // Get all metro line polylines (for background)
+  const allMetroLines = useMemo(() => {
+    if (Object.keys(stationCoords).length === 0) return [];
+    const lines = [];
+    Object.entries(metroLines).forEach(([lineName, stations]) => {
+      const coords = stations
+        .map(station => stationCoords[station])
+        .filter(coord => coord !== undefined);
+      if (coords.length > 1) {
+        lines.push({ name: lineName, coords, color: lineColors[lineName] });
+      }
+    });
+    return lines;
+  }, [stationCoords]);
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-10">
+    <div className="mx-auto max-w-7xl px-5 pb-10">
       <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8 relative overflow-hidden">
         <div className="absolute -right-10 top-1/2 hidden h-40 w-40 -translate-y-1/2 rounded-full border-8 border-white/15 md:block" />
         <div className="relative">
-          <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Route Planner</h1>
+          <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Plan Your Journey</h1>
+          <p className="mt-2 text-sm text-white/90">Find the best route, fare, and travel time</p>
         </div>
       </div>
 
@@ -302,7 +238,7 @@ const RoutesInfo = () => {
               value={selectedSource}
               onChange={(e) => setSelectedSource(e.target.value)}
               disabled={loading}
-              className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:border-brand-400"
+              className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:border-brand-400 transition"
             >
               <option value="">Select departure station</option>
               {stations.map((station) => (
@@ -340,7 +276,7 @@ const RoutesInfo = () => {
               value={selectedDest}
               onChange={(e) => setSelectedDest(e.target.value)}
               disabled={loading}
-              className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:border-brand-400"
+              className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:border-brand-400 transition"
             >
               <option value="">Select destination station</option>
               {stations.map((station) => (
@@ -355,10 +291,10 @@ const RoutesInfo = () => {
           onClick={handleProceed}
           disabled={loading || !selectedSource || !selectedDest}
           className={
-            `mt-6 mx-auto flex w-full max-w-sm items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white shadow transition ` +
+            `mt-6 mx-auto flex w-full max-w-sm items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white shadow-lg transition ` +
             (loading || !selectedSource || !selectedDest
               ? 'bg-slate-400 cursor-not-allowed'
-              : 'bg-gradient-to-br from-brand-900 to-brand-700 hover:-translate-y-0.5')
+              : 'bg-gradient-to-br from-brand-900 to-brand-700 hover:-translate-y-0.5 hover:shadow-xl')
           }
         >
           {loading ? (
@@ -373,110 +309,271 @@ const RoutesInfo = () => {
             {error}
           </div>
         )}
+      </div>
 
-        {routeDetails && (
-          <div className="mt-8">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-sky-100 text-sky-900 flex items-center justify-center font-bold text-xl">₹</div>
+      {routeDetails && (
+        <div className="mt-6 space-y-6">
+          {/* Route Summary Cards */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-2xl border-2 border-brand-200 bg-gradient-to-br from-brand-50 to-white p-6 shadow-lg">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center text-2xl font-bold shadow-md">
+                  ₹
+                </div>
                 <div>
-                  <div className="text-xs font-semibold text-slate-500">Total Fare</div>
-                  <div className="text-2xl font-bold text-slate-900">₹{routeDetails.fare}</div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Fare</div>
+                  <div className="mt-1 text-3xl font-bold text-slate-900">₹{routeDetails.fare}</div>
                 </div>
               </div>
+            </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-sky-100 text-sky-900 flex items-center justify-center text-xl">
+            <div className="rounded-2xl border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-white p-6 shadow-lg">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-sky-600 to-sky-800 text-white flex items-center justify-center text-2xl shadow-md">
                   <GiPathDistance />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-slate-500">Distance</div>
-                  <div className="text-2xl font-bold text-slate-900">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Distance</div>
+                  <div className="mt-1 text-3xl font-bold text-slate-900">
                     {typeof routeDetails.distance === 'number'
                       ? `${routeDetails.distance.toFixed(2)} km`
                       : routeDetails.distance}
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 flex items-center gap-4 sm:col-span-2 lg:col-span-1">
-                <div className="h-12 w-12 rounded-xl bg-sky-100 text-sky-900 flex items-center justify-center text-xl">
+            <div className="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6 shadow-lg sm:col-span-2 lg:col-span-1">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-amber-600 to-amber-800 text-white flex items-center justify-center text-2xl shadow-md">
                   <FaSubway />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-slate-500">Stations</div>
-                  <div className="text-2xl font-bold text-slate-900">{routeDetails.route.length} stations</div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Stations</div>
+                  <div className="mt-1 text-3xl font-bold text-slate-900">{routeDetails.route.length} stops</div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {routeDetails.interchanges.length > 0 && (
-              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-                <h3 className="text-base font-bold text-amber-900">Interchange Stations</h3>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {routeDetails.interchanges.map((station, i) => (
-                    <div key={i} className="inline-flex items-center overflow-hidden rounded-full bg-white shadow-sm">
-                      <span className="bg-amber-500 px-3 py-2 text-xs font-bold text-white">Change</span>
-                      <span className="px-3 py-2 text-xs font-semibold text-slate-800">{station}</span>
-                    </div>
-                  ))}
-                </div>
+          {/* Map and Route Display */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Map */}
+            <div className="rounded-2xl border-2 border-slate-200 bg-white shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-brand-900 to-brand-700 px-5 py-3 text-white">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <FaMapMarkerAlt /> Route Map
+                </h3>
               </div>
-            )}
+              <div className="h-[500px] w-full">
+                {Object.keys(stationCoords).length > 0 && (
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    style={{ height: '100%', width: '100%' }}
+                    scrollWheelZoom={true}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    
+                    {/* All metro lines (light) */}
+                    {allMetroLines.map((line, idx) => (
+                      <Polyline
+                        key={`line-${idx}`}
+                        positions={line.coords}
+                        pathOptions={{
+                          color: line.color,
+                          weight: 3,
+                          opacity: 0.3
+                        }}
+                      />
+                    ))}
 
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
-              <h3 className="text-base font-bold text-slate-900">Your Journey Route</h3>
-              <div className="mt-4">
-                {isSmallScreen && routeDetails.interchanges.length > 0 ? (
-                  renderCompactRoute()
-                ) : (
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="h-6 w-6 rounded-full" style={{ backgroundColor: getStationColor(selectedSource) }} />
-                      <div className="font-semibold text-slate-900">
-                        {selectedSource}
-                        <span className="text-slate-600">{getStationInstruction(selectedSource, 0)}</span>
+                    {/* Selected route (bold) */}
+                    {routePolyline.length > 1 && (
+                      <Polyline
+                        positions={routePolyline}
+                        pathOptions={{
+                          color: '#1e40af',
+                          weight: 6,
+                          opacity: 0.9
+                        }}
+                      />
+                    )}
+
+                    {/* All stations (light) */}
+                    {Object.entries(stationCoords).map(([name, coords]) => {
+                      const isInRoute = routeDetails.route.includes(name);
+                      const isSource = name === selectedSource;
+                      const isDest = name === selectedDest;
+                      const isInterchange = routeDetails.interchanges.includes(name);
+
+                      if (isSource) {
+                        return (
+                          <Marker
+                            key={name}
+                            position={coords}
+                            icon={createCustomIcon('#ef4444', [30, 30], true)}
+                          >
+                            <Popup>
+                              <div className="font-bold text-red-600">FROM: {name}</div>
+                            </Popup>
+                          </Marker>
+                        );
+                      }
+                      if (isDest) {
+                        return (
+                          <Marker
+                            key={name}
+                            position={coords}
+                            icon={createCustomIcon('#0ea5e9', [30, 30], true)}
+                          >
+                            <Popup>
+                              <div className="font-bold text-sky-600">TO: {name}</div>
+                            </Popup>
+                          </Marker>
+                        );
+                      }
+                      if (isInRoute) {
+                        return (
+                          <Marker
+                            key={name}
+                            position={coords}
+                            icon={createCustomIcon(getStationColor(name), [18, 18])}
+                          >
+                            <Popup>
+                              <div className="text-sm font-medium">{name}</div>
+                              {isInterchange && (
+                                <div className="text-xs text-amber-600 mt-1">
+                                  <FaExchangeAlt className="inline mr-1" /> Interchange
+                                </div>
+                              )}
+                            </Popup>
+                          </Marker>
+                        );
+                      }
+                      return (
+                        <Marker
+                          key={name}
+                          position={coords}
+                          icon={createCustomIcon('#94a3b8', [12, 12])}
+                        >
+                          <Popup>
+                            <div className="text-xs text-slate-500">{name}</div>
+                          </Popup>
+                        </Marker>
+                      );
+                    })}
+                  </MapContainer>
+                )}
+              </div>
+            </div>
+
+            {/* Route Details */}
+            <div className="rounded-2xl border-2 border-slate-200 bg-white shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-brand-900 to-brand-700 px-5 py-3 text-white">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <FaSubway /> Your Journey Route
+                </h3>
+              </div>
+              <div className="p-6 max-h-[500px] overflow-y-auto">
+                <div className="space-y-4">
+                  {/* Source */}
+                  <div className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-red-50 to-white border-2 border-red-200">
+                    <div className="h-10 w-10 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <span className="text-white font-bold text-sm">1</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-bold text-lg text-slate-900">{selectedSource}</div>
+                      <div className="text-sm text-slate-600 mt-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+                          <FaMapMarkerAlt /> Start
+                        </span>
+                        <span className="ml-2 text-slate-500">{getStationInstruction(selectedSource, 0)}</span>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="mt-4 space-y-3">
-                      {routeDetails.route
-                        .filter((station) => station !== selectedSource && station !== selectedDest)
-                        .map((station, index) => {
-                          const routeIndex = routeDetails.route.indexOf(station);
-                          const isInterchange = routeDetails.interchanges.includes(station);
+                  {/* Intermediate stations */}
+                  {routeDetails.route
+                    .filter((station) => station !== selectedSource && station !== selectedDest)
+                    .map((station, index) => {
+                      const routeIndex = routeDetails.route.indexOf(station);
+                      const isInterchange = routeDetails.interchanges.includes(station);
+                      const stationColor = getStationColor(station);
 
-                          return (
-                            <div key={index} className="flex items-start gap-3">
-                              <div
-                                className={
-                                  `mt-1 flex h-5 w-5 items-center justify-center rounded-full ` +
-                                  (isInterchange ? 'bg-amber-500' : '')
-                                }
-                                style={!isInterchange ? { backgroundColor: getStationColor(station) } : {}}
-                              >
-                                {isInterchange && <span className="text-[10px] font-bold text-white">⇄</span>}
-                              </div>
-                              <div className="text-sm font-medium text-slate-700">
-                                {station}
-                                <span className="text-slate-500">{getStationInstruction(station, routeIndex)}</span>
-                              </div>
+                      return (
+                        <div
+                          key={index}
+                          className={`flex items-start gap-4 p-4 rounded-xl border-2 ${
+                            isInterchange
+                              ? 'bg-gradient-to-r from-amber-50 to-white border-amber-300'
+                              : 'bg-slate-50 border-slate-200'
+                          }`}
+                        >
+                          <div
+                            className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md"
+                            style={{ backgroundColor: isInterchange ? '#f59e0b' : stationColor }}
+                          >
+                            {isInterchange ? (
+                              <FaExchangeAlt className="text-white text-sm" />
+                            ) : (
+                              <span className="text-white font-bold text-xs">{index + 2}</span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-slate-900">{station}</div>
+                            <div className="text-sm text-slate-600 mt-1">
+                              {isInterchange && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold mr-2">
+                                  <FaExchangeAlt /> Change Line
+                                </span>
+                              )}
+                              <span className="text-slate-500">{getStationInstruction(station, routeIndex)}</span>
                             </div>
-                          );
-                        })}
-                    </div>
+                          </div>
+                        </div>
+                      );
+                    })}
 
-                    <div className="mt-4 flex items-center gap-3">
-                      <div className="h-6 w-6 rounded-full" style={{ backgroundColor: getStationColor(selectedDest) }} />
-                      <div className="font-bold text-slate-900">{selectedDest}</div>
+                  {/* Destination */}
+                  <div className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-sky-50 to-white border-2 border-sky-200">
+                    <div className="h-10 w-10 rounded-full bg-sky-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <span className="text-white font-bold text-sm">✓</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-bold text-lg text-slate-900">{selectedDest}</div>
+                      <div className="text-sm text-slate-600 mt-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-sky-100 text-sky-700 text-xs font-semibold">
+                          <FaMapMarkerAlt /> Destination
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {routeDetails.interchanges.length > 0 && (
+                  <div className="mt-6 rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
+                    <h4 className="text-sm font-bold text-amber-900 mb-3 flex items-center gap-2">
+                      <FaExchangeAlt /> Interchange Stations ({routeDetails.interchanges.length})
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {routeDetails.interchanges.map((station, i) => (
+                        <div key={i} className="inline-flex items-center overflow-hidden rounded-full bg-white shadow-sm border border-amber-300">
+                          <span className="bg-amber-500 px-3 py-1.5 text-xs font-bold text-white">Change</span>
+                          <span className="px-3 py-1.5 text-xs font-semibold text-slate-800">{station}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
