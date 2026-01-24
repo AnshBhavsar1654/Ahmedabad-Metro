@@ -33,8 +33,18 @@ const Home = () => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
+        const weatherApiKey = process.env.REACT_APP_WEATHER_API_KEY;
+        const weatherCity = process.env.REACT_APP_WEATHER_CITY || 'Ahmedabad,IN';
+        
+        if (!weatherApiKey) {
+          console.warn('Weather API key not configured');
+          setTemperature({ current: 32, high: 90, condition: 'Sunny' });
+          setIsLoading(false);
+          return;
+        }
+
         const response = await fetch(
-          "https://api.openweathermap.org/data/2.5/weather?q=Ahmedabad,IN&appid=502bb8635ab3708269a5f468827d3841&units=metric"
+          `https://api.openweathermap.org/data/2.5/weather?q=${weatherCity}&appid=${weatherApiKey}&units=metric`
         );
         
         if (response.ok) {

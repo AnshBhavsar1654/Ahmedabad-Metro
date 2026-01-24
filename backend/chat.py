@@ -2,6 +2,9 @@ import os
 from typing import List, Tuple
 
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def _read_kb_text() -> str:
@@ -25,16 +28,10 @@ def _build_prompt(kb_text: str, user_message: str, conversation_history: List[di
     Builds a concise, high-signal prompt for metro Q&A grounded in the KB.
     Includes conversation history for context when available.
     """
-    history_context = ""
-    if conversation_history and len(conversation_history) > 0:
-        history_context = "\n\nPrevious conversation context:\n"
-        for msg in conversation_history[-6:]:  # Last 6 messages for context
-            role_label = "User" if msg.get("role") == "user" else "Assistant"
-            history_context += f"{role_label}: {msg.get('text', '')}\n"
-        history_context += "\n"
-    
-    return f"""
-You are "Ahmedabad Metro Assistant", a helpful customer support assistant for Ahmedabad Metro.
+    # Get prompt template from env or use default
+    prompt_template = os.getenv(
+        "GEMINI_PROMPT_TEMPLATE",
+        """You are "Ahmedabad Metro Assistant", a helpful customer support assistant for Ahmedabad Metro.
 
 IMPORTANT RULES:
 - AUTOMATICALLY detect the language of the user's question (English, Hindi, Gujarati, or mixed languages like Hinglish/Gujarati+English).
@@ -49,18 +46,42 @@ Knowledge Base (verbatim):
 
 Current user question:
 \"\"\"{user_message}\"\"\"
-""".strip()
+"""
+    )
+    
+    history_context = ""
+    if conversation_history and len(conversation_history) > 0:
+        history_context = "\n\nPrevious conversation context:\n"
+        for msg in conversation_history[-6:]:  # Last 6 messages for context
+            role_label = "User" if msg.get("role") == "user" else "Assistant"
+            history_context += f"{role_label}: {msg.get('text', '')}\n"
+        history_context += "\n"
+    
+    return prompt_template.format(
+        history_context=history_context,
+        kb_text=kb_text,
+        user_message=user_message
+    ).strip()
 
 
-def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict] = None, model: str = "gemini-2.5-flash") -> Tuple[str, str]:
+def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict] = None, model: str = None) -> Tuple[str, str]:
     """
     Sends a grounded prompt to Gemini with conversation history and returns (reply_text, language_hint).
     Language hint is just "auto" since Gemini detects it automatically.
     """
+    # Get configuration from environment variables with defaults
+    if model is None:
+        model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    
+    gemini_base_url = os.getenv("GEMINI_API_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
+    temperature = float(os.getenv("GEMINI_TEMPERATURE", "0.2"))
+    top_p = float(os.getenv("GEMINI_TOP_P", "0.9"))
+    max_output_tokens = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "512"))
+    
     kb_text = _read_kb_text()
     prompt = _build_prompt(kb_text=kb_text, user_message=user_message, conversation_history=conversation_history or [])
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    url = f"{gemini_base_url}/models/{model}:generateContent"
     params = {"key": api_key}
     payload = {
         "contents": [
@@ -70,9 +91,9 @@ def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict]
             }
         ],
         "generationConfig": {
-            "temperature": 0.2,
-            "topP": 0.9,
-            "maxOutputTokens": 512,
+            "temperature": temperature,
+            "topP": top_p,
+            "maxOutputTokens": max_output_tokens,
         },
     }
 

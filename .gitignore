@@ -24,3 +24,5 @@ backend/.env
 Ahmedabad_Metro_Gujarati.docx
 Ahmedabad_Metro_Hindi.docx
 Ahmedabad_Metro_Kb.docx
+
+ENV_VARIABLES.md

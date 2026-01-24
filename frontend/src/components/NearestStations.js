@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
-const API_URL = "https://ahmedabad-metro-backend.onrender.com";
+const API_URL = process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com";
 
 // Fix leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;

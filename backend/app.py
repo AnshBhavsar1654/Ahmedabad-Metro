@@ -159,7 +159,9 @@ def chat():
             app.logger.error("GEMINI_API_KEY is not set in environment variables")
             return jsonify({"error": "GEMINI_API_KEY is not configured on the server"}), 500
 
-        reply, language = ask_gemini(message, api_key=api_key, conversation_history=conversation_history)
+        # Get model from env or use default
+        model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        reply, language = ask_gemini(message, api_key=api_key, conversation_history=conversation_history, model=model)
         return jsonify({"response": reply, "language": language})
     except Exception as e:
         app.logger.exception("Chat error")
