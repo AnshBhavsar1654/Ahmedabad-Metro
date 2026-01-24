@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FaPaperPlane, FaRobot, FaTimes, FaSync } from 'react-icons/fa';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL;
+const API_URL = process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com";
 
 function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,8 +19,7 @@ function ChatWidget() {
   const containerRef = useRef(null);
 
   const endpoint = useMemo(() => {
-    // If API_URL is undefined in local dev, keep relative so proxy setups still work.
-    return API_URL ? `${API_URL}/api/chat` : `/api/chat`;
+    return `${API_URL}/api/chat`;
   }, []);
 
   const scrollToBottom = () => {
@@ -66,19 +65,29 @@ function ChatWidget() {
         })
       });
 
-      const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        throw new Error(data.error || 'Chat request failed');
+        const errorText = await resp.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: `Server error: ${resp.status} ${resp.statusText}` };
+        }
+        throw new Error(errorData.error || errorData.details || `Chat request failed (${resp.status})`);
       }
+
+      const data = await resp.json();
 
       setMessages((prev) => [
         ...prev,
         { role: 'bot', text: data.response || 'Sorry, I could not respond.', ts: Date.now() }
       ]);
     } catch (e) {
+      console.error('Chat error:', e);
+      const errorMessage = e.message || 'Sorry, the chatbot is unavailable right now.';
       setMessages((prev) => [
         ...prev,
-        { role: 'bot', text: e.message || 'Sorry, the chatbot is unavailable right now.', ts: Date.now() }
+        { role: 'bot', text: errorMessage, ts: Date.now() }
       ]);
     } finally {
       setIsLoading(false);

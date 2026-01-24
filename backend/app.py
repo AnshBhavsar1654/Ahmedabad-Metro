@@ -7,7 +7,20 @@ from geopy.distance import geodesic
 from dotenv import load_dotenv
 from chat import ask_gemini
 app = Flask(__name__)
-CORS(app)
+
+# Configure CORS to allow requests from Vercel and localhost
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://*.vercel.app",
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://127.0.0.1:3000"
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 load_dotenv()
 
@@ -119,8 +132,16 @@ def get_nearby_stations():
         return jsonify({"error": "Failed to find nearby stations"}), 500
 
 
-@app.route('/api/chat', methods=['POST'])
+@app.route('/api/chat', methods=['POST', 'OPTIONS'])
 def chat():
+    if request.method == 'OPTIONS':
+        # Handle preflight request for CORS
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
+    
     try:
         data = request.get_json() or {}
         message = (data.get('message') or '').strip()
@@ -135,6 +156,7 @@ def chat():
 
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
+            app.logger.error("GEMINI_API_KEY is not set in environment variables")
             return jsonify({"error": "GEMINI_API_KEY is not configured on the server"}), 500
 
         reply, language = ask_gemini(message, api_key=api_key, conversation_history=conversation_history)
