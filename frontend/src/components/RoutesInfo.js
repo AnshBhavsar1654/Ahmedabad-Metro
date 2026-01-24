@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { GiPathDistance } from "react-icons/gi";
 import { FaSubway, FaMapMarkerAlt, FaExchangeAlt } from "react-icons/fa";
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com";
+const API_URL = (process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com").replace(/\/+$/, "");
 
 // Metro line data (constants - moved outside component)
 const metroLines = {

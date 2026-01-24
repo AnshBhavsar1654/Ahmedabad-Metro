@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FaPaperPlane, FaRobot, FaTimes, FaSync } from 'react-icons/fa';
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com";
+const API_URL = (process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com").replace(/\/+$/, "");
 
 function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
