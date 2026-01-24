@@ -70,7 +70,7 @@ function Navbar() {
         <div className="hidden items-center gap-3 md:flex">
           <Link to="/" className={linkClass('/')} onClick={closeMenu}><FaHome /> Home</Link>
           <Link to="/routes" className={linkClass('/routes')} onClick={closeMenu}><FaMapMarkedAlt /> Plan Journey</Link>
-          <Link to="/stations" className={linkClass('/stations')} onClick={closeMenu}><FaTrain /> Stations</Link>
+          <Link to="/stations" className={linkClass('/stations')} onClick={closeMenu}><FaTrain /> Metro Map</Link>
           <Link to="/nearest-stations" className={linkClass('/nearest-stations')} onClick={closeMenu}><FaMapMarkerAlt /> Nearest Stations</Link>
           <Link to="/facilities" className={linkClass('/facilities')} onClick={closeMenu}><MdElevator /> Facilities</Link>
           <Link to="/schedule" className={linkClass('/schedule')} onClick={closeMenu}><FaClock /> Schedule</Link>
