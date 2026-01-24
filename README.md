@@ -97,13 +97,3 @@ python {entrypoint}
 ```bash
 npm start
 ```
-
-### Testing
-
-Ahmedabad-metro uses the {test_framework} test framework. Run the test suite with:
-
-**Using pip:**
-
-```bash
-pytest
-```
