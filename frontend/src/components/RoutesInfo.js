@@ -82,8 +82,8 @@ const RoutesInfo = () => {
   const [routeDetails, setRouteDetails] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mapCenter, setMapCenter] = useState([23.0225, 72.5714]); // Ahmedabad center
-  const [mapZoom, setMapZoom] = useState(11);
+  const [mapCenter] = useState([23.0225, 72.5714]); // Ahmedabad center
+  const [mapZoom] = useState(11);
   const [animatedPos, setAnimatedPos] = useState(null);
   const animationRafIdRef = useRef(null);
 
