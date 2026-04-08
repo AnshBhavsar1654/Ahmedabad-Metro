@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { MapContainer, Marker, Popup, Polyline, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { GiPathDistance } from "react-icons/gi";
@@ -12,7 +12,7 @@ const metroLines = {
   "Red Line": ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium"],
   "Blue Line": ["Thaltej Gam", "Thaltej", "Doordarshan Kendra", "Gurukul Road", "Gujarat University", "Commerce Six Road", "SP Stadium", "Old High Court", "Shahpur", "Ghee Kanta", "Kalupur Railway Station", "Kankaria East", "Apparel Park", "Amraivadi", "Rabari Colony", "Vastral", "Nirant Cross Road", "Vastral Gam"],
   "Yellow Line": ["Motera Stadium", "Koteshwar Road", "Vishvakarma College", "Tapovan Circle", "Narmada Canal", "Koba Circle", "Juna Koba", "Koba Gam", "GNLU", "Raysan", "Randesan", "Dholakuva Circle", "Infocity", "Sector-1", "Sector-10A", "Sachivalaya", "Akshardham", "Juna Sachivalaya", "Sector-16", "Sector-24", "Mahatma Mandir"],
-  "Violet Line": ["GNLU", "PDEU", "GIFT City"]
+  "Violet Line": ["GNLU", "PDEU", "Gift City"]
 };
 
 const lineColors = {
@@ -30,22 +30,48 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-// Custom icons for source, destination, and route stations
-const createCustomIcon = (color, size = [20, 20], isLarge = false) => {
+// Custom icons for stations
+const createRingIcon = (borderColor, size = [16, 16], isLarge = false, borderWidth = 3) => {
   const iconSize = isLarge ? [size[0] * 1.5, size[1] * 1.5] : size;
   return L.divIcon({
     className: 'custom-marker',
     html: `<div style="
       width: ${iconSize[0]}px;
       height: ${iconSize[1]}px;
-      background-color: ${color};
-      border: 3px solid white;
+      background-color: #ffffff;
+      border: ${borderWidth}px solid ${borderColor};
       border-radius: 50%;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
     "></div>`,
     iconSize: iconSize,
     iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
   });
+};
+
+const FitNetworkBounds = ({ bounds }) => {
+  const map = useMap();
+
+  const didFitRef = useRef(false);
+
+  useEffect(() => {
+    if (!bounds) return;
+    if (didFitRef.current) return;
+    map.fitBounds(bounds, { padding: [24, 24] });
+    didFitRef.current = true;
+  }, [bounds, map]);
+
+  return null;
+};
+
+const FitRouteBounds = ({ bounds }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!bounds) return;
+    map.fitBounds(bounds, { padding: [36, 36] });
+  }, [bounds, map]);
+
+  return null;
 };
 
 const RoutesInfo = () => {
@@ -57,7 +83,9 @@ const RoutesInfo = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState([23.0225, 72.5714]); // Ahmedabad center
-  const [mapZoom, setMapZoom] = useState(12);
+  const [mapZoom, setMapZoom] = useState(11);
+  const [animatedPos, setAnimatedPos] = useState(null);
+  const animationRafIdRef = useRef(null);
 
   // Function to get the color of a station based on its line
   const getStationColor = (stationName) => {
@@ -173,16 +201,6 @@ const RoutesInfo = () => {
         distance: routeData.distance || 0
       });
 
-      // Update map center to show the route
-      if (stationCoords[selectedSource] && stationCoords[selectedDest]) {
-        const sourceCoords = stationCoords[selectedSource];
-        const destCoords = stationCoords[selectedDest];
-        const centerLat = (sourceCoords[0] + destCoords[0]) / 2;
-        const centerLon = (sourceCoords[1] + destCoords[1]) / 2;
-        setMapCenter([centerLat, centerLon]);
-        setMapZoom(12);
-      }
-
     } catch (err) {
       setError(err.message);
       console.error('API Error:', err);
@@ -213,6 +231,91 @@ const RoutesInfo = () => {
     });
     return lines;
   }, [stationCoords]);
+
+  const networkBounds = useMemo(() => {
+    const coords = Object.values(stationCoords);
+    if (!coords || coords.length === 0) return null;
+    return L.latLngBounds(coords.map(([lat, lng]) => L.latLng(lat, lng)));
+  }, [stationCoords]);
+
+  const routeBounds = useMemo(() => {
+    if (!routePolyline || routePolyline.length < 2) return null;
+    return L.latLngBounds(routePolyline.map(([lat, lng]) => L.latLng(lat, lng)));
+  }, [routePolyline]);
+
+  const animatedIcon = useMemo(() => {
+    return L.divIcon({
+      className: 'route-anim-marker',
+      html: `<div style="width:16px;height:16px;border-radius:9999px;background:#1e40af;border:3px solid #fff;box-shadow:0 8px 16px rgba(30,64,175,0.35);"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!routePolyline || routePolyline.length < 2) {
+      setAnimatedPos(null);
+      return;
+    }
+
+    if (animationRafIdRef.current) {
+      cancelAnimationFrame(animationRafIdRef.current);
+      animationRafIdRef.current = null;
+    }
+
+    const points = routePolyline.map(([lat, lng]) => L.latLng(lat, lng));
+    const segLens = [];
+    let total = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+      const len = points[i].distanceTo(points[i + 1]);
+      segLens.push(len);
+      total += len;
+    }
+    if (total <= 0) {
+      setAnimatedPos(routePolyline[0]);
+      return;
+    }
+
+    const durationMs = Math.min(14000, Math.max(6500, total / 2));
+    const startTs = performance.now();
+
+    const step = (ts) => {
+      const t = Math.min(1, (ts - startTs) / durationMs);
+      const targetDist = t * total;
+
+      let walked = 0;
+      let idx = 0;
+      while (idx < segLens.length && walked + segLens[idx] < targetDist) {
+        walked += segLens[idx];
+        idx++;
+      }
+
+      if (idx >= segLens.length) {
+        setAnimatedPos(routePolyline[routePolyline.length - 1]);
+        return;
+      }
+
+      const segT = segLens[idx] === 0 ? 0 : (targetDist - walked) / segLens[idx];
+      const a = points[idx];
+      const b = points[idx + 1];
+      const lat = a.lat + (b.lat - a.lat) * segT;
+      const lng = a.lng + (b.lng - a.lng) * segT;
+      setAnimatedPos([lat, lng]);
+
+      if (t < 1) {
+        animationRafIdRef.current = requestAnimationFrame(step);
+      }
+    };
+
+    animationRafIdRef.current = requestAnimationFrame(step);
+
+    return () => {
+      if (animationRafIdRef.current) {
+        cancelAnimationFrame(animationRafIdRef.current);
+        animationRafIdRef.current = null;
+      }
+    };
+  }, [routePolyline]);
 
   return (
     <div className="mx-auto max-w-7xl px-5 pb-10">
@@ -370,14 +473,17 @@ const RoutesInfo = () => {
                   <MapContainer
                     center={mapCenter}
                     zoom={mapZoom}
-                    style={{ height: '100%', width: '100%' }}
+                    style={{ height: '100%', width: '100%', backgroundColor: '#f8fafc' }}
                     scrollWheelZoom={true}
+                    zoomControl={true}
+                    dragging={true}
+                    doubleClickZoom={true}
+                    touchZoom={true}
+                    boxZoom={true}
+                    keyboard={true}
                   >
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    
+                    <FitNetworkBounds bounds={networkBounds} />
+                    <FitRouteBounds bounds={routeBounds} />
                     {/* All metro lines (light) */}
                     {allMetroLines.map((line, idx) => (
                       <Polyline
@@ -385,21 +491,41 @@ const RoutesInfo = () => {
                         positions={line.coords}
                         pathOptions={{
                           color: line.color,
-                          weight: 3,
-                          opacity: 0.3
+                          weight: 4,
+                          opacity: 0.9
                         }}
                       />
                     ))}
 
-                    {/* Selected route (bold) */}
+                    {/* Selected route (highlight) */}
                     {routePolyline.length > 1 && (
-                      <Polyline
-                        positions={routePolyline}
-                        pathOptions={{
-                          color: '#1e40af',
-                          weight: 6,
-                          opacity: 0.9
-                        }}
+                      <>
+                        <Polyline
+                          positions={routePolyline}
+                          pathOptions={{
+                            color: '#2563eb',
+                            weight: 14,
+                            opacity: 0.25,
+                            className: 'route-glow'
+                          }}
+                        />
+                        <Polyline
+                          positions={routePolyline}
+                          pathOptions={{
+                            color: '#1d4ed8',
+                            weight: 8,
+                            opacity: 0.95
+                          }}
+                        />
+                      </>
+                    )}
+
+                    {animatedPos && (
+                      <Marker
+                        position={animatedPos}
+                        icon={animatedIcon}
+                        interactive={false}
+                        zIndexOffset={1000}
                       />
                     )}
 
@@ -410,13 +536,25 @@ const RoutesInfo = () => {
                       const isDest = name === selectedDest;
                       const isInterchange = routeDetails.interchanges.includes(name);
 
+                      const stationBorderColor = getStationColor(name);
+                      const showPermanentLabel = isSource || isDest || isInterchange;
+
                       if (isSource) {
                         return (
                           <Marker
                             key={name}
                             position={coords}
-                            icon={createCustomIcon('#ef4444', [30, 30], true)}
+                            icon={createRingIcon('#ef4444', [18, 18])}
                           >
+                            <Tooltip
+                              className="station-tooltip"
+                              direction="top"
+                              offset={[0, -10]}
+                              opacity={1}
+                              permanent
+                            >
+                              {name}
+                            </Tooltip>
                             <Popup>
                               <div className="font-bold text-red-600">FROM: {name}</div>
                             </Popup>
@@ -428,8 +566,17 @@ const RoutesInfo = () => {
                           <Marker
                             key={name}
                             position={coords}
-                            icon={createCustomIcon('#0ea5e9', [30, 30], true)}
+                            icon={createRingIcon('#0ea5e9', [18, 18])}
                           >
+                            <Tooltip
+                              className="station-tooltip"
+                              direction="top"
+                              offset={[0, -10]}
+                              opacity={1}
+                              permanent
+                            >
+                              {name}
+                            </Tooltip>
                             <Popup>
                               <div className="font-bold text-sky-600">TO: {name}</div>
                             </Popup>
@@ -441,8 +588,28 @@ const RoutesInfo = () => {
                           <Marker
                             key={name}
                             position={coords}
-                            icon={createCustomIcon(getStationColor(name), [18, 18])}
+                            icon={createRingIcon(stationBorderColor, [12, 12], false, 2)}
                           >
+                            {showPermanentLabel ? (
+                              <Tooltip
+                                className="station-tooltip"
+                                direction="top"
+                                offset={[0, -10]}
+                                opacity={1}
+                                permanent
+                              >
+                                {name}
+                              </Tooltip>
+                            ) : (
+                              <Tooltip
+                                className="station-tooltip"
+                                direction="top"
+                                offset={[0, -10]}
+                                opacity={0.95}
+                              >
+                                {name}
+                              </Tooltip>
+                            )}
                             <Popup>
                               <div className="text-sm font-medium">{name}</div>
                               {isInterchange && (
@@ -458,8 +625,16 @@ const RoutesInfo = () => {
                         <Marker
                           key={name}
                           position={coords}
-                          icon={createCustomIcon('#94a3b8', [12, 12])}
+                          icon={createRingIcon(stationBorderColor, [12, 12], false, 2)}
                         >
+                          <Tooltip
+                            className="station-tooltip"
+                            direction="top"
+                            offset={[0, -8]}
+                            opacity={0.9}
+                          >
+                            {name}
+                          </Tooltip>
                           <Popup>
                             <div className="text-xs text-slate-500">{name}</div>
                           </Popup>

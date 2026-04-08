@@ -55,7 +55,7 @@ function Navbar() {
   return (
     <nav
       className={
-        `fixed top-0 z-50 w-full transition-all duration-300 ` +
+        `fixed top-0 z-[2000] w-full transition-all duration-300 ` +
         (isSolid
           ? 'bg-white/90 backdrop-blur-md border-b border-black/10 shadow-lg'
           : 'bg-transparent')
