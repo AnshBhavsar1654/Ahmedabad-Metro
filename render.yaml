@@ -5,5 +5,5 @@ services:
     region: oregon
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     workingDir: backend

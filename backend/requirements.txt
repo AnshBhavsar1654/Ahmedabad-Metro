@@ -1,8 +1,7 @@
-Flask
-flask-cors
+fastapi
 pandas
 geopy
-gunicorn
 openpyxl
 python-dotenv
 requests
+uvicorn
