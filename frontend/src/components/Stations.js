@@ -81,24 +81,59 @@ const Stations = () => {
 
       {showInfo && (
         <div className="mt-6 grid gap-5 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3">Metro Lines</h3>
-            <div className="mt-4 space-y-3 text-sm text-slate-700">
-              <div className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full border-2 border-white shadow" style={{ backgroundColor: '#3498db' }} />
-                <div>Line 1: Vastral Gam to Thaltej Gam (EW Corridor)</div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-800 shadow-sm md:col-span-2">
+            <div className="relative">
+              <div className="flex flex-col gap-2 border-b border-slate-200 pb-3 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-800">
+                    Line summary
+                  </div>
+                  <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-900 md:text-xl">Metro Lines</h3>
+                  <p className="mt-1 max-w-2xl text-sm text-slate-600">
+                    Four metro corridors shown in a compact view.
+                  </p>
+                </div>
+                <div className="hidden rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 lg:inline-flex">
+                  4 Active Lines
+                </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full border-2 border-white shadow" style={{ backgroundColor: '#c0392b' }} />
-                <div>Line 2: APMC to Motera Stadium (NS Corridor)</div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full border-2 border-white shadow" style={{ backgroundColor: '#ffd700' }} />
-                <div>Line 3: Motera Stadium to Mahatma Mandir (Corridor-1)</div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full border-2 border-white shadow" style={{ backgroundColor: '#8e44ad' }} />
-                <div>Line 4: GNLU to GIFT City (Corridor-2)</div>
+
+              <div className="mt-4 flex flex-col gap-3 text-sm lg:flex-row lg:items-stretch lg:justify-between">
+                <div className="flex flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50">
+                  <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#3498db' }} />
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 1</div>
+                    <div className="mt-1 font-medium text-slate-900">Vastral Gam to Thaltej Gam</div>
+                    <div className="mt-1 text-slate-500">East-West Corridor</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50">
+                  <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#c0392b' }} />
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 2</div>
+                    <div className="mt-1 font-medium text-slate-900">APMC to Motera Stadium</div>
+                    <div className="mt-1 text-slate-500">North-South Corridor</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50">
+                  <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#ffd700' }} />
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 3</div>
+                    <div className="mt-1 font-medium text-slate-900">Motera Stadium to Mahatma Mandir</div>
+                    <div className="mt-1 text-slate-500">Corridor-1</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50">
+                  <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#8e44ad' }} />
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 4</div>
+                    <div className="mt-1 font-medium text-slate-900">GNLU to GIFT City</div>
+                    <div className="mt-1 text-slate-500">Corridor-2</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
