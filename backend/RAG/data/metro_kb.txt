@@ -1,0 +1,192 @@
+Ahmedabad Metro System - Structured Knowledge Base
+
+=== SECTION I: GENERAL OVERVIEW ===
+
+Total Stations: 56
+Number of Lines: 4
+- East-West Line
+- North-South Line
+- Corridor-1
+- Corridor-2
+
+Operational Hours: 6:30 AM to 11:00 PM daily
+Extended Hours: Up to 12:30 AM during major events at Narendra Modi Stadium
+
+Operational Length (as of May 2025): 58.66 km
+Phase 1: 40.03 km, 32 stations
+Phase 2: 28.25 km, 22 stations (8 Gandhinagar stations under construction)
+
+Fares:
+- Minimum Fare: Rs 5
+- Maximum Fare: Rs 40
+
+Contact Information:
+- Phone: +91-79-22960123
+- Email: care@gujaratmetrorail.com
+
+=== SECTION II: FARES AND TICKETING ===
+
+Ticket Types: Single journey, Return journey, Group tickets (available via app or station counters)
+
+Payments Accepted: Cash, UPI (Paytm, PhonePe, Google Pay), Debit Cards, Credit Cards
+
+Smart Cards:
+- 10% fare discount on all journeys
+- Purchase or recharge at stations or via the metro app
+- Non-transferable between passengers
+- Recharge range: Rs 50 to Rs 3000
+
+NCMC (National Common Mobility Card):
+- Accepted at all stations
+- Foreign tourists: 3-month validity card available with valid passport and visa
+- Recharge options: stations, app (UPI), bank ATMs, net banking
+
+Refund Policy:
+- Unused tickets/tokens are refundable within 30 minutes at point of purchase
+- No refunds for used tickets or lost tokens/cards
+- QR code tickets are refundable only if unused within 30 minutes of purchase
+
+Penalties:
+- Ticketless Travel: Rs 50 plus maximum fare
+- Token Misuse: Rs 200
+
+Children Policy: Up to 2 children under 3 feet tall can travel free per accompanying adult
+
+=== SECTION III: STATION AMENITIES AND ACCESSIBILITY ===
+
+Accessibility Features: All stations have elevators, escalators, and ramps for differently-abled passengers
+Specific gate accessibility information available via "Station Info" section on app or website
+
+Amenities at Stations:
+- Restrooms available at all stations
+- Free Wi-Fi available at select stations
+- Mobile charging points: Not available at stations
+
+Security Measures:
+- CCTV surveillance at all stations and inside trains
+- Baggage scanners at all station entry points
+
+Parking:
+- Parking available near most stations (not at all stations)
+- Designated parking areas near Narendra Modi Stadium
+
+=== SECTION IV: ROUTE AND TRAVEL GUIDELINES ===
+
+Journey Planning: Use the "Plan Your Journey" feature on the metro app or website
+
+Peak Hours on Weekdays:
+- Morning Peak: 8:00 AM to 11:00 AM
+- Evening Peak: 5:00 PM to 8:00 PM
+
+Train Frequency: Varies by line and time (see Section V)
+
+Line Interchanges (no additional fare charged):
+- Old High Court station
+- Motera Stadium station
+- GNLU station
+
+Luggage Policy:
+- Maximum weight allowed: 25 kg
+- Maximum dimensions: 80 x 50 x 30 cm
+- Bicycles are prohibited on metro trains
+- Mandatory security checks for all luggage
+
+Prohibited Items on Metro:
+- Flammable materials
+- Explosives
+- Toxic or radioactive materials
+- Weapons of any kind
+- Luggage exceeding size/weight limits
+- Food and drinks (eating and drinking prohibited)
+- Smoking is strictly prohibited
+- Pets are not allowed
+
+=== SECTION V: TRAIN FREQUENCY BY LINE ===
+
+East-West Line:
+- Weekday Peak Hours: Every 9 minutes
+- Weekday Non-Peak Hours: Every 10 minutes
+- Weekend Peak Hours: Every 12 minutes
+
+North-South Line:
+- Weekday Peak Hours: Every 10 minutes
+- Weekday Non-Peak Hours: Every 12 minutes
+- Weekend Peak Hours: Every 12 minutes
+
+Corridor-1 (Gandhinagar):
+- Frequency: Every 30 to 70 minutes (may vary up to 355 minutes based on schedule)
+
+Corridor-2 (GIFT City):
+- Frequency: Every 33 to 355 minutes
+
+=== SECTION VII: LOST AND FOUND ===
+
+How to Report Lost Items:
+- Report at any metro station to station staff
+- Contact Lost and Found Office directly
+
+Lost and Found Office:
+- Address: Apparel Park Depot, Rajpur Hirpur, Gomtipur, Ahmedabad - 380021
+- Phone: 079-22960234
+
+Lost Smart Cards: Report immediately at any station or to the Lost and Found Office
+Items Lost on Train: Contact Metro Security or station staff immediately
+Unclaimed Items: Kept for six months before disposal
+
+=== SECTION VIII: EMERGENCY PROCEDURES ===
+
+Medical Emergency:
+- First aid kits available at all stations
+- Ambulance: Call 1073
+- Medical incidents must be reported within 24 hours to: claims@gujaratmetrorail.com
+
+Fire Emergency:
+- Use fire alarms immediately
+- Follow emergency exit signage
+- Do not use elevators during fire emergency
+
+Lift/Elevator Issue:
+- Press the emergency button inside the lift
+- Or call: 079-22960000
+
+Lost Child:
+- Immediately inform station staff
+
+Harassment or Safety Concerns:
+- Press emergency button in coach or at station
+- Women helpline: Call 181
+- Police: Call 112
+
+Security Concerns:
+- Call: 079-22960234
+- Use station intercoms
+
+General Helpline: 079-22960000
+
+=== SECTION IX: OTHER REGULATIONS AND INFORMATION ===
+
+Feedback:
+- Submit feedback forms available at all operational stations
+
+Prohibited Activities:
+- Begging inside metro premises
+- Unauthorized selling of goods
+- Putting up posters or graffiti
+
+Travel Time Limits:
+- Same station entry and exit: Maximum 20 minutes
+- Different station journey: Maximum 240 minutes (4 hours)
+
+=== SECTION VI: STATION LIST ===
+
+East-West Line Stations (Thaltej Gam to Vastral Gam):
+Thaltej Gam, Doordarshan Kendra, Gurukul Road, Gujarat University, Commerce Six Roads, Ambawadi, Shahpur, Old High Court (interchange), Ghee Kanta, Kalupur Railway Station, Kankaria East, Apparel Park, Amraiwadi, Rabari Colony, Maninagar, Khokhara Mehmedabad, Anjali, Vinzol, Nirant, Vastral, Vastral Gam
+
+North-South Line Stations (Motera to Gyaspur):
+Motera Stadium (interchange), Sabarmati, Chandlodia, Ranip, Sabarmati River, Sola Road, Kargil Ground, Gujarat High Court, GNLU (interchange), Thaltej, Doordarshan Kendra, Rajiv Nagar, Sanathal, Ognaj, Gota, Sargasan
+
+Corridor-1 (Gandhinagar Stations):
+GNLU, Koba Circle, Infocity, Gandhinagar Capital
+
+Corridor-2 (GIFT City Extension):
+GIFT City, Sargasan

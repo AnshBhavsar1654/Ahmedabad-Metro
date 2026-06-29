@@ -1,7 +1,0 @@
-fastapi
-pandas
-geopy
-openpyxl
-python-dotenv
-requests
-uvicorn
