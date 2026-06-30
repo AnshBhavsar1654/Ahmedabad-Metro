@@ -1,10 +1,18 @@
 import os
 from typing import List, Tuple
-
 import requests
+import json
+import difflib
+import pandas as pd
 from dotenv import load_dotenv
 
+from route import calculate_route_details, get_all_stations
+
 load_dotenv()
+
+# Load Fare Matrix
+FARE_PATH = os.path.join(os.path.dirname(__file__), "Fare Matrix.xlsx")
+fare_matrix = pd.read_excel(FARE_PATH)
 
 
 def _read_kb_text() -> str:
@@ -64,16 +72,93 @@ Current user question:
     ).strip()
 
 
+def _classify_intent_and_extract(message: str, api_key: str, model: str, base_url: str) -> dict:
+    prompt = f"""You are a query classifier for the Ahmedabad Metro chatbot.
+Given the user's message, determine if the user is asking about the route, distance, instructions or fare between two specific stations.
+
+Message: "{message}"
+
+If the message is about a route or fare between two stations, extract the source and destination stations and return JSON in this exact format:
+{{"intent": "route_fare", "source": "station_name", "destination": "station_name"}}
+
+If the message is asking for general information (timings, rules, smart card, general metro info, etc.) or doesn't mention two stations, return:
+{{"intent": "general"}}
+
+Return ONLY the JSON. No markdown formatting, no backticks, no other text."""
+
+    url = f"{base_url}/models/{model}:generateContent"
+    params = {"key": api_key}
+    payload = {
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.0, "response_mime_type": "application/json"},
+    }
+    try:
+        resp = requests.post(url, params=params, json=payload, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+        return json.loads(text)
+    except Exception:
+        return {"intent": "general"}
+
+
+def _match_station(name: str, valid_stations: List[str]) -> str:
+    matches = difflib.get_close_matches(name, valid_stations, n=1, cutoff=0.5)
+    if matches:
+        return matches[0]
+    return name
+
+
 def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict] = None, model: str = None) -> Tuple[str, str]:
     """
     Sends a grounded prompt to Gemini with conversation history and returns (reply_text, language_hint).
-    Language hint is just "auto" since Gemini detects it automatically.
+    First checks if query intent is route/fare, and returns route details/fare directly using local logic.
     """
-    # Get configuration from environment variables with defaults
     if model is None:
         model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     
     gemini_base_url = os.getenv("GEMINI_API_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
+    
+    # 1. Classify intent
+    classification = _classify_intent_and_extract(user_message, api_key, model, gemini_base_url)
+    intent = classification.get("intent", "general")
+    
+    if intent == "route_fare":
+        source_raw = classification.get("source", "")
+        dest_raw = classification.get("destination", "")
+        
+        all_stations = get_all_stations()
+        source = _match_station(source_raw, all_stations)
+        destination = _match_station(dest_raw, all_stations)
+        
+        if source and destination and source != destination:
+            route_result = calculate_route_details(source, destination)
+            
+            fare_value = 0
+            try:
+                matching_fare = fare_matrix[(fare_matrix["Source"] == source) & (fare_matrix["Destination"] == destination)]
+                fare_value = int(matching_fare["Fare"].iloc[0]) if len(matching_fare) > 0 else 0
+            except Exception:
+                pass
+            
+            if not route_result.get("error"):
+                interchanges = route_result['interchanges']
+                dist = route_result['distance']
+                
+                response_text = f"🚆 **Route & Fare: {source} to {destination}**\n\n"
+                response_text += f"**Fare:** ₹{fare_value}\n"
+                response_text += f"**Distance:** {dist} km\n\n"
+                
+                if interchanges:
+                    response_text += f"**Interchange required at:** {', '.join(interchanges)}\n\n"
+                
+                response_text += "**Instructions:**\n"
+                for idx, inst in enumerate(route_result['instructions'], 1):
+                    response_text += f"{idx}. {inst}\n"
+                    
+                return (response_text, "auto")
+
+    # 2. General Query
     temperature = float(os.getenv("GEMINI_TEMPERATURE", "0.2"))
     top_p = float(os.getenv("GEMINI_TOP_P", "0.9"))
     max_output_tokens = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "512"))
@@ -101,7 +186,6 @@ def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict]
     resp.raise_for_status()
     data = resp.json()
 
-    # Typical shape: candidates[0].content.parts[0].text
     candidates = data.get("candidates") or []
     if not candidates:
         return ("Sorry, I couldn't generate a response right now.", "auto")

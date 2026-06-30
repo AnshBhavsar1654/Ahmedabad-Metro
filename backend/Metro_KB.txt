@@ -1,128 +1,192 @@
-I. General Overview
-•	Total Stations: 56
-•	Number of Lines: 4
-o	East-West Line
-o	North-South Line
-o	Corridor-1
-o	Corridor-2
-•	Operational Hours: 6:30 AM – 11:00 PM daily
-o	Extended to 12:30 AM during major events at Narendra Modi Stadium
-•	Operational Length (as of May 2025): 58.66 km
-o	Phase 1: 40.03 km, 32 stations
-o	Phase 2: 28.25 km, 22 stations (8 Gandhinagar stations under construction)
-•	Fares:
-o	Minimum: ₹5
-o	Maximum: ₹40
-•	Contact:
-o	Phone: +91-79-22960123
-o	Email: care@gujaratmetrorail.com
-o	Website/App: [Not provided]
+Ahmedabad Metro System - Structured Knowledge Base
 
-II. Fares and Ticketing
-•	Ticket Types: Single, Return, Group (via app or counters)
-•	Payments Accepted: Cash, UPI (Paytm, PhonePe, Google Pay), Debit/Credit Cards
-•	Smart Cards:
-o	10% fare discount
-o	Purchase/recharge at stations or via app
-o	Non-transferable; Recharge range: ₹50 – ₹3000
-•	NCMC Cards:
-o	Accepted
-o	Foreign tourists: 3-month validity card with passport/visa
-o	Recharge via stations, app (UPI), bank ATMs, net banking
-•	Refund Policy:
-o	Unused tickets/tokens refundable within 30 minutes at point of purchase
-o	No refunds for used tickets, lost tokens/cards
-o	QR code tickets refundable only if unused within 30 minutes
-•	Penalties:
-o	Ticketless Travel: ₹50 + max fare
-o	Token Misuse: ₹200
-•	Children: Up to 2 under 3-feet-tall children travel free per adult
+=== SECTION I: GENERAL OVERVIEW ===
 
-III. Station Amenities & Accessibility
-•	Accessibility: All stations have elevators, escalators, and ramps
-o	Specific gate accessibility via “Station Info” on app/website
-•	Amenities:
-o	Restrooms at all stations
-o	Free Wi-Fi at select stations
-o	No mobile charging points
-•	Security:
-o	CCTV at stations and on trains
-o	Baggage scanners at all entries
-•	Parking:
-o	Available near most stations (not at all)
-o	Designated areas near Narendra Modi Stadium
+Total Stations: 56
+Number of Lines: 4
+- East-West Line
+- North-South Line
+- Corridor-1
+- Corridor-2
 
-IV. Route and Travel Guidelines
-•	Journey Planning: Use “Plan Your Journey” on app/website
-•	Peak Hours (Weekdays): 8:00 AM – 11:00 AM, 5:00 PM – 8:00 PM
-•	Train Frequency: Varies by line/time (see Section V)
-•	Line Interchanges: Old High Court, Motera Stadium, GNLU (no additional fare)
-•	Luggage Policy:
-o	Max 25 kg, 80x50x30 cm
-o	Bicycles prohibited
-o	Mandatory security checks
-•	Prohibited Items:
-o	Flammables, explosives, toxic/radioactive materials, weapons
-o	Large luggage beyond limits
-o	Eating, drinking, smoking, pets
+Operational Hours: 6:30 AM to 11:00 PM daily
+Extended Hours: Up to 12:30 AM during major events at Narendra Modi Stadium
 
-V. Train Frequency (by Line)
-•	East-West Line:
-o	Weekday Peak: 9 min | Non-Peak: 10 min | Weekend Peak: 12 min
-•	North-South Line:
-o	Weekday Peak: 10 min | Non-Peak: 12 min | Weekend Peak: 12 min
-•	Corridor-1 (Gandhinagar): 30-70 min (or up to 355 min based on varying sources)
-•	Corridor-2 (GIFT City): 33-355 min
+Operational Length (as of May 2025): 58.66 km
+Phase 1: 40.03 km, 32 stations
+Phase 2: 28.25 km, 22 stations (8 Gandhinagar stations under construction)
 
-VI. Station Proximity to Landmarks
-•	Gujarat University: Gujarat University Station
-•	Narendra Modi Stadium: Motera Stadium Station
-•	Airport (SVPI): Nearest - AEC Station (~3.5 km)
-•	Law Garden: Paldi & Old High Court Stations
-•	Sabarmati Riverfront: Paldi (0.96 km), Gandhigram (1.41 km), Shreyas (2.16 km)
-•	Kankaria Lake: Kankaria East Station
-•	Science City: Thaltej Gam Station
-•	SG Highway: Thaltej Station
-•	Prahladnagar: Jivraj Park Station (~2.4 km)
-•	Maninagar: Kankaria East Station (~2.2 km)
-•	Ellis Bridge: Gandhigram Station
-•	Vastrapur: Gurukul Road Station
-•	Sabarmati Ashram: Ranip Station (~1.9 km)
-•	Jama Masjid: Gheekanta Station (~750 m)
-•	Adalaj Stepwell: Koba Station (Exit Gate 4 + local transport)
-•	Akshardham Temple: Akshardham Station
-•	Parimal Garden: Paldi Metro Station
-•	Indroda Nature Park: Infocity Metro Station
-•	Bodakdev: Thaltej Metro Station
-•	Manek Chowk: Ghee Kanta Metro Station
+Fares:
+- Minimum Fare: Rs 5
+- Maximum Fare: Rs 40
 
-VII. Lost and Found
-•	Report at any station or contact:
-o	Lost & Found Office: Apparel Park Depot, Rajpur Hirpur, Gomtipur, Ahmedabad – 380021
-o	Phone: 079-22960234
-o	Lost Smart Cards: Report at station or above
-o	Lost on Train: Contact Metro Security or station staff immediately
-•	Unclaimed items: Kept for six months
-VIII. Emergency Procedures
-•	Medical:
-o	First aid at stations, ambulance: Call 1073
-o	Report within 24 hrs to: claims@gujaratmetrorail.com
-•	Fire: Use alarms, follow exits (avoid elevators)
-•	Lift Issue: Press emergency button or call 079-22960000
-•	Lost Child: Inform station staff
-•	Harassment: Emergency button, call 181 (women), 112 (police)
-•	Security Concerns: Call 079-22960234 or use intercoms
-•	General Helpline: 079-22960000
+Contact Information:
+- Phone: +91-79-22960123
+- Email: care@gujaratmetrorail.com
 
-IX. Other Regulations
-•	Feedback: Submit forms at operational stations
-•	Prohibited Activities: Begging, unauthorized selling, posters/graffiti
-•	Travel Time Limits:
-o	20 min for same station entry/exit
-o	240 min max for different station journey
+=== SECTION II: FARES AND TICKETING ===
 
+Ticket Types: Single journey, Return journey, Group tickets (available via app or station counters)
 
+Payments Accepted: Cash, UPI (Paytm, PhonePe, Google Pay), Debit Cards, Credit Cards
 
+Smart Cards:
+- 10% fare discount on all journeys
+- Purchase or recharge at stations or via the metro app
+- Non-transferable between passengers
+- Recharge range: Rs 50 to Rs 3000
 
+NCMC (National Common Mobility Card):
+- Accepted at all stations
+- Foreign tourists: 3-month validity card available with valid passport and visa
+- Recharge options: stations, app (UPI), bank ATMs, net banking
 
-this is the current knowledge base i have
+Refund Policy:
+- Unused tickets/tokens are refundable within 30 minutes at point of purchase
+- No refunds for used tickets or lost tokens/cards
+- QR code tickets are refundable only if unused within 30 minutes of purchase
+
+Penalties:
+- Ticketless Travel: Rs 50 plus maximum fare
+- Token Misuse: Rs 200
+
+Children Policy: Up to 2 children under 3 feet tall can travel free per accompanying adult
+
+=== SECTION III: STATION AMENITIES AND ACCESSIBILITY ===
+
+Accessibility Features: All stations have elevators, escalators, and ramps for differently-abled passengers
+Specific gate accessibility information available via "Station Info" section on app or website
+
+Amenities at Stations:
+- Restrooms available at all stations
+- Free Wi-Fi available at select stations
+- Mobile charging points: Not available at stations
+
+Security Measures:
+- CCTV surveillance at all stations and inside trains
+- Baggage scanners at all station entry points
+
+Parking:
+- Parking available near most stations (not at all stations)
+- Designated parking areas near Narendra Modi Stadium
+
+=== SECTION IV: ROUTE AND TRAVEL GUIDELINES ===
+
+Journey Planning: Use the "Plan Your Journey" feature on the metro app or website
+
+Peak Hours on Weekdays:
+- Morning Peak: 8:00 AM to 11:00 AM
+- Evening Peak: 5:00 PM to 8:00 PM
+
+Train Frequency: Varies by line and time (see Section V)
+
+Line Interchanges (no additional fare charged):
+- Old High Court station
+- Motera Stadium station
+- GNLU station
+
+Luggage Policy:
+- Maximum weight allowed: 25 kg
+- Maximum dimensions: 80 x 50 x 30 cm
+- Bicycles are prohibited on metro trains
+- Mandatory security checks for all luggage
+
+Prohibited Items on Metro:
+- Flammable materials
+- Explosives
+- Toxic or radioactive materials
+- Weapons of any kind
+- Luggage exceeding size/weight limits
+- Food and drinks (eating and drinking prohibited)
+- Smoking is strictly prohibited
+- Pets are not allowed
+
+=== SECTION V: TRAIN FREQUENCY BY LINE ===
+
+East-West Line:
+- Weekday Peak Hours: Every 9 minutes
+- Weekday Non-Peak Hours: Every 10 minutes
+- Weekend Peak Hours: Every 12 minutes
+
+North-South Line:
+- Weekday Peak Hours: Every 10 minutes
+- Weekday Non-Peak Hours: Every 12 minutes
+- Weekend Peak Hours: Every 12 minutes
+
+Corridor-1 (Gandhinagar):
+- Frequency: Every 30 to 70 minutes (may vary up to 355 minutes based on schedule)
+
+Corridor-2 (GIFT City):
+- Frequency: Every 33 to 355 minutes
+
+=== SECTION VII: LOST AND FOUND ===
+
+How to Report Lost Items:
+- Report at any metro station to station staff
+- Contact Lost and Found Office directly
+
+Lost and Found Office:
+- Address: Apparel Park Depot, Rajpur Hirpur, Gomtipur, Ahmedabad - 380021
+- Phone: 079-22960234
+
+Lost Smart Cards: Report immediately at any station or to the Lost and Found Office
+Items Lost on Train: Contact Metro Security or station staff immediately
+Unclaimed Items: Kept for six months before disposal
+
+=== SECTION VIII: EMERGENCY PROCEDURES ===
+
+Medical Emergency:
+- First aid kits available at all stations
+- Ambulance: Call 1073
+- Medical incidents must be reported within 24 hours to: claims@gujaratmetrorail.com
+
+Fire Emergency:
+- Use fire alarms immediately
+- Follow emergency exit signage
+- Do not use elevators during fire emergency
+
+Lift/Elevator Issue:
+- Press the emergency button inside the lift
+- Or call: 079-22960000
+
+Lost Child:
+- Immediately inform station staff
+
+Harassment or Safety Concerns:
+- Press emergency button in coach or at station
+- Women helpline: Call 181
+- Police: Call 112
+
+Security Concerns:
+- Call: 079-22960234
+- Use station intercoms
+
+General Helpline: 079-22960000
+
+=== SECTION IX: OTHER REGULATIONS AND INFORMATION ===
+
+Feedback:
+- Submit feedback forms available at all operational stations
+
+Prohibited Activities:
+- Begging inside metro premises
+- Unauthorized selling of goods
+- Putting up posters or graffiti
+
+Travel Time Limits:
+- Same station entry and exit: Maximum 20 minutes
+- Different station journey: Maximum 240 minutes (4 hours)
+
+=== SECTION VI: STATION LIST ===
+
+East-West Line Stations (Thaltej Gam to Vastral Gam):
+Thaltej Gam, Doordarshan Kendra, Gurukul Road, Gujarat University, Commerce Six Roads, Ambawadi, Shahpur, Old High Court (interchange), Ghee Kanta, Kalupur Railway Station, Kankaria East, Apparel Park, Amraiwadi, Rabari Colony, Maninagar, Khokhara Mehmedabad, Anjali, Vinzol, Nirant, Vastral, Vastral Gam
+
+North-South Line Stations (Motera to Gyaspur):
+Motera Stadium (interchange), Sabarmati, Chandlodia, Ranip, Sabarmati River, Sola Road, Kargil Ground, Gujarat High Court, GNLU (interchange), Thaltej, Doordarshan Kendra, Rajiv Nagar, Sanathal, Ognaj, Gota, Sargasan
+
+Corridor-1 (Gandhinagar Stations):
+GNLU, Koba Circle, Infocity, Gandhinagar Capital
+
+Corridor-2 (GIFT City Extension):
+GIFT City, Sargasan
