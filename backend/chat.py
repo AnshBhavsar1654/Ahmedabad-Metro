@@ -99,6 +99,7 @@ Return ONLY the JSON. No markdown formatting, no backticks, no other text."""
         text = data["candidates"][0]["content"]["parts"][0]["text"]
         return json.loads(text)
     except Exception:
+        # Fail silently and fall back to general intent rather than leaking exceptions
         return {"intent": "general"}
 
 
@@ -107,6 +108,38 @@ def _match_station(name: str, valid_stations: List[str]) -> str:
     if matches:
         return matches[0]
     return name
+
+
+def _heuristically_extract_stations(message: str, valid_stations: List[str]) -> Tuple[str, str]:
+    """
+    Looks for valid station names inside the user message.
+    Bypasses Gemini intent classification if two distinct stations are detected.
+    """
+    msg = message.lower()
+    found_stations = []
+    
+    # Sort by length descending to match longer station names first
+    sorted_stations = sorted(valid_stations, key=len, reverse=True)
+    
+    for station in sorted_stations:
+        station_lower = station.lower()
+        if f" {station_lower} " in f" {msg} " or msg.startswith(station_lower) or msg.endswith(station_lower):
+            found_stations.append(station)
+            msg = msg.replace(station_lower, "")
+            
+    if len(found_stations) < 2:
+        # Check individual words for close fuzzy matches
+        words = [w.strip("?,.!-") for w in message.split() if len(w.strip("?,.!-")) > 3]
+        for word in words:
+            matches = difflib.get_close_matches(word, valid_stations, n=1, cutoff=0.75)
+            if matches and matches[0] not in found_stations:
+                found_stations.append(matches[0])
+                if len(found_stations) == 2:
+                    break
+                    
+    if len(found_stations) >= 2:
+        return found_stations[0], found_stations[1]
+    return "", ""
 
 
 def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict] = None, model: str = None) -> Tuple[str, str]:
@@ -119,15 +152,21 @@ def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict]
     
     gemini_base_url = os.getenv("GEMINI_API_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
     
-    # 1. Classify intent
-    classification = _classify_intent_and_extract(user_message, api_key, model, gemini_base_url)
-    intent = classification.get("intent", "general")
+    all_stations = get_all_stations()
+    source_extracted, dest_extracted = _heuristically_extract_stations(user_message, all_stations)
+    
+    if source_extracted and dest_extracted:
+        intent = "route_fare"
+        classification = {"intent": "route_fare", "source": source_extracted, "destination": dest_extracted}
+    else:
+        # 1. Classify intent
+        classification = _classify_intent_and_extract(user_message, api_key, model, gemini_base_url)
+        intent = classification.get("intent", "general")
     
     if intent == "route_fare":
         source_raw = classification.get("source", "")
         dest_raw = classification.get("destination", "")
         
-        all_stations = get_all_stations()
         source = _match_station(source_raw, all_stations)
         destination = _match_station(dest_raw, all_stations)
         
@@ -182,10 +221,16 @@ def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict]
         },
     }
 
-    resp = requests.post(url, params=params, json=payload, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
+    try:
+        resp = requests.post(url, params=params, json=payload, timeout=30)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        status_code = exc.response.status_code if (exc.response is not None) else "Unknown"
+        if status_code == 429:
+            raise RuntimeError("The chatbot is currently experiencing high volume (Rate Limit Exceeded). Please wait a moment and try again.")
+        raise RuntimeError(f"Chatbot API request failed with status code {status_code}.")
 
+    data = resp.json()
     candidates = data.get("candidates") or []
     if not candidates:
         return ("Sorry, I couldn't generate a response right now.", "auto")
@@ -197,3 +242,4 @@ def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict]
         return ("Sorry, I couldn't generate a response right now.", "auto")
 
     return (text.strip(), "auto")
+

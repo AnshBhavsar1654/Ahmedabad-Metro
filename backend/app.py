@@ -166,13 +166,19 @@ def chat(data: ChatRequest):
 
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            return error_response("GEMINI_API_KEY is not configured on the server", 500)
+            return {"response": "The chatbot is currently unavailable. Please verify API configuration.", "language": "auto"}
 
         model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
         reply, language = ask_gemini(message, api_key=api_key, conversation_history=conversation_history, model=model)
         return {"response": reply, "language": language}
     except Exception as exc:
-        return error_response(f"Chat request failed: {str(exc)}", 500)
+        # Avoid leaking key or raw error details. Return 200 with friendly message for UI stability.
+        err_msg = str(exc)
+        if "Rate Limit" in err_msg or "429" in err_msg:
+            msg = "The chatbot is experiencing high traffic right now. Please try again in a moment."
+        else:
+            msg = "The chatbot is currently busy or unavailable. Please try again shortly."
+        return {"response": msg, "language": "auto"}
 
 
 if __name__ == "__main__":
