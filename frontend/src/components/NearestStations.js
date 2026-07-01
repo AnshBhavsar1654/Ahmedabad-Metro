@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
@@ -13,7 +13,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-// Create custom red icon for user location
+// Create custom red icon for user/searched location
 const userLocationIcon = new L.Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="25" height="41">
@@ -28,13 +28,109 @@ const userLocationIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+// Component to dynamically pan map center when user searches
+const ChangeMapView = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, 15);
+    }
+  }, [center, map]);
+  return null;
+};
+
+const FAMOUS_LANDMARKS = [
+  { name: 'Sabarmati Ashram', lat: 23.0605, lng: 72.5801 },
+  { name: 'Kankaria Lake', lat: 23.0062, lng: 72.5997 },
+  { name: 'Science City', lat: 23.0805, lng: 72.5029 },
+  { name: 'Manek Chowk', lat: 23.0232, lng: 72.5898 },
+  { name: 'ISKCON Temple', lat: 23.0231, lng: 72.5085 },
+  { name: 'Law Garden', lat: 23.0249, lng: 72.5630 },
+  { name: 'Ahmedabad One Mall', lat: 23.0406, lng: 72.5318 }
+];
+
 const NearestStations = () => {
   const [userLocation, setUserLocation] = useState(null);
-  const [nearestStations, setNearestStations] = useState([]); // Initialize as empty array
-  const [loading, setLoading] = useState(true);
+  const [nearestStations, setNearestStations] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [locationAccuracy, setLocationAccuracy] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Search feature states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
+  const [searchedPlaceName, setSearchedPlaceName] = useState(null);
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Load search history
+  useEffect(() => {
+    const saved = localStorage.getItem('metro_recent_searches');
+    if (saved) {
+      try {
+        setRecentSearches(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error parsing recent searches', e);
+      }
+    }
+  }, []);
+
+  // Close suggestions dropdown on window click
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setShowHistory(false);
+    };
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
+
+  const saveToHistory = (place) => {
+    let updated = [place, ...recentSearches.filter(item => item.name !== place.name)];
+    updated = updated.slice(0, 5); // Keep up to 5 items
+    setRecentSearches(updated);
+    localStorage.setItem('metro_recent_searches', JSON.stringify(updated));
+  };
+
+  const removeFromHistory = (e, name) => {
+    e.stopPropagation();
+    const updated = recentSearches.filter(item => item.name !== name);
+    setRecentSearches(updated);
+    localStorage.setItem('metro_recent_searches', JSON.stringify(updated));
+  };
+
+  // Autocomplete place suggestions from Nominatim (OpenStreetMap)
+  useEffect(() => {
+    if (searchQuery.trim().length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      setIsSuggestionsLoading(true);
+      try {
+        const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+          params: {
+            q: `${searchQuery}, Ahmedabad, Gujarat`,
+            format: 'json',
+            limit: 5,
+            addressdetails: 1
+          },
+          headers: {
+            'User-Agent': 'Ahmedabad-Metro-Explorer'
+          }
+        });
+        setSuggestions(response.data);
+      } catch (err) {
+        console.error('Autocomplete API error', err);
+      } finally {
+        setIsSuggestionsLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
   const getHighAccuracyLocation = () => {
     return new Promise((resolve, reject) => {
@@ -98,51 +194,37 @@ const NearestStations = () => {
     });
   };
 
-  const fetchLocationAndStations = useCallback(async () => {
+  const fetchStationsForCoordinates = useCallback(async (latitude, longitude, accuracy = null, placeName = null) => {
+    setLoading(true);
+    setError('');
+    setUserLocation([latitude, longitude]);
+    setLocationAccuracy(accuracy);
+    setSearchedPlaceName(placeName);
+    
     try {
-      setError('');
-      
-      const position = await getHighAccuracyLocation();
-      const { latitude, longitude, accuracy } = position.coords;
-      
-      setUserLocation([latitude, longitude]);
-      setLocationAccuracy(Math.round(accuracy));
-      
       const response = await axios.get(`${API_URL}/api/stations/nearby`, {
         params: { lat: latitude, lng: longitude }
       });
       
-      // Ensure the response data is an array
       const stationsData = response.data;
       if (Array.isArray(stationsData)) {
         setNearestStations(stationsData);
       } else if (stationsData && Array.isArray(stationsData.stations)) {
-        // Handle case where stations are nested in a 'stations' property
         setNearestStations(stationsData.stations);
       } else {
         console.warn('API response is not an array:', stationsData);
         setNearestStations([]);
         setError('Invalid response format from server');
       }
-      
     } catch (err) {
-      console.error('Error:', err);
-      setNearestStations([]); // Reset to empty array on error
-      
-      if (err.code === 1) {
-        setError('Location access denied. Please enable location services and refresh the page.');
-      } else if (err.code === 2) {
-        setError('Location not available. Please check your GPS/WiFi connection.');
-      } else if (err.code === 3) {
-        setError('Location request timed out. Please try again.');
-      } else if (err.response) {
-        // API error
+      console.error('Error fetching nearby stations:', err);
+      setNearestStations([]);
+      if (err.response) {
         setError(`Server error: ${err.response.status} - ${err.response.statusText}`);
       } else if (err.request) {
-        // Network error
         setError('Network error. Please check your internet connection and try again.');
       } else {
-        setError('Error fetching location or stations: ' + err.message);
+        setError('Error fetching stations: ' + err.message);
       }
     } finally {
       setLoading(false);
@@ -150,22 +232,47 @@ const NearestStations = () => {
     }
   }, []);
 
+  const fetchLocationAndStations = useCallback(async () => {
+    try {
+      setError('');
+      const position = await getHighAccuracyLocation();
+      const { latitude, longitude, accuracy } = position.coords;
+      await fetchStationsForCoordinates(latitude, longitude, Math.round(accuracy), null);
+    } catch (err) {
+      console.error('Error:', err);
+      // Fallback center: Ahmedabad
+      const defaultLat = 23.0225;
+      const defaultLng = 72.5714;
+      setError('Could not get your precise location. Defaulting to Ahmedabad Center. Use the search bar above to search for landmarks.');
+      await fetchStationsForCoordinates(defaultLat, defaultLng, null, "Ahmedabad Center");
+    }
+  }, [fetchStationsForCoordinates]);
+
   const handleRefreshLocation = async () => {
     setIsRefreshing(true);
     setLoading(true);
     await fetchLocationAndStations();
   };
 
-  useEffect(() => {
-    fetchLocationAndStations();
-  }, [fetchLocationAndStations]);
+  const handleSelectLocation = (place) => {
+    const lat = parseFloat(place.lat || place.latitude);
+    const lng = parseFloat(place.lon || place.longitude || place.lng);
+    const name = place.display_name || place.name;
+    
+    saveToHistory({ name, lat, lng });
+    fetchStationsForCoordinates(lat, lng, null, name);
+    
+    setSearchQuery('');
+    setSuggestions([]);
+    setShowHistory(false);
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-5 pb-10">
       <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8 flex items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Find Nearest Metro Stations</h1>
-          <p className="mt-2 text-white/90 max-w-2xl">Discover the closest metro stations to your current location</p>
+          <p className="mt-2 text-white/90 max-w-2xl">Discover the closest metro stations to any landmark in Ahmedabad</p>
         </div>
         <div className="hidden md:flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
           <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -175,59 +282,186 @@ const NearestStations = () => {
         </div>
       </div>
 
+      {/* Search Input, Landmarks, and History Container */}
+      <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-bold text-slate-800 mb-3 uppercase tracking-wider">Search Landmark or Place</h3>
+        <div className="relative flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1" onClick={(e) => e.stopPropagation()}>
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowHistory(true);
+              }}
+              onFocus={() => setShowHistory(true)}
+              placeholder="e.g. Sabarmati Ashram, Vastrapur Lake, Kalupur..."
+              className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 focus:outline-none"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSuggestions([]);
+                }}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            )}
+
+            {/* Suggestions & History Dropdown */}
+            {showHistory && (searchQuery.trim().length >= 3 || (searchQuery.trim().length === 0 && recentSearches.length > 0)) && (
+              <div className="absolute top-[105%] left-0 right-0 z-[1000] rounded-xl border border-slate-200 bg-white shadow-lg max-h-[300px] overflow-y-auto">
+                {isSuggestionsLoading && (
+                  <div className="p-4 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-brand-600" />
+                    Searching places...
+                  </div>
+                )}
+                
+                {suggestions.length > 0 && (
+                  <div className="py-2">
+                    <div className="px-4 py-1 text-xs font-bold uppercase tracking-wider text-slate-400">Search Results</div>
+                    {suggestions.map((place, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectLocation(place)}
+                        className="cursor-pointer px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-start gap-2 border-b last:border-b-0 border-slate-100"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-0.5 shrink-0 text-slate-400">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                          <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span className="truncate">{place.display_name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {searchQuery.trim().length < 3 && recentSearches.length > 0 && (
+                  <div className="py-2">
+                    <div className="px-4 py-1 text-xs font-bold uppercase tracking-wider text-slate-400">Recent Searches</div>
+                    {recentSearches.map((place, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectLocation(place)}
+                        className="cursor-pointer px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between border-b last:border-b-0 border-slate-100"
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                          <span className="truncate">{place.name}</span>
+                        </div>
+                        <button
+                          onClick={(e) => removeFromHistory(e, place.name)}
+                          className="text-slate-400 hover:text-red-500 px-2 py-1 transition"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <button
+            onClick={handleRefreshLocation}
+            className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-800 font-semibold text-sm px-5 py-3 transition shrink-0 shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Use Current Location
+          </button>
+        </div>
+
+        {/* Famous Landmarks suggestion chips */}
+        <div className="mt-4 flex flex-wrap gap-2 items-center">
+          <span className="text-xs font-semibold text-slate-400 uppercase mr-1">Famous Places:</span>
+          {FAMOUS_LANDMARKS.map((landmark, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSelectLocation(landmark)}
+              className="rounded-full bg-slate-100 hover:bg-brand-50 hover:text-brand-700 px-3 py-1.5 text-xs font-semibold text-slate-700 transition"
+            >
+              {landmark.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-6">
         {loading ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
             <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-brand-600" />
-            <p className="mt-5 text-lg font-semibold text-slate-800">{isRefreshing ? 'Refreshing location...' : 'Getting precise location...'}</p>
+            <p className="mt-5 text-lg font-semibold text-slate-800">{isRefreshing ? 'Refreshing location...' : 'Searching nearest stations...'}</p>
             <p className="mt-2 text-sm text-slate-500">This may take a few seconds for better accuracy</p>
-          </div>
-        ) : error ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-            <div className="text-4xl">⚠️</div>
-            <p className="mt-4 text-slate-800 font-semibold">{error}</p>
-            <button
-              type="button"
-              onClick={handleRefreshLocation}
-              className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-to-br from-brand-900 to-brand-700 px-8 py-3 text-white font-semibold shadow hover:-translate-y-0.5 transition"
-            >
-              Try Again
-            </button>
           </div>
         ) : (
           <>
-            <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-sm text-slate-700">
-                Location accuracy:{' '}
-                <span
+            {error && (
+              <div className="mb-5 flex items-start justify-between gap-3 rounded-xl border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm animate-pulse">
+                <div className="flex gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <div>{error}</div>
+                </div>
+                <button onClick={() => setError('')} className="text-amber-600 hover:text-amber-850 font-bold px-1">✕</button>
+              </div>
+            )}
+            
+            {locationAccuracy && (
+              <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-sm text-slate-700">
+                  Location accuracy:{' '}
+                  <span
+                    className={
+                      `font-bold ` +
+                      (locationAccuracy < 50
+                        ? 'text-emerald-600'
+                        : locationAccuracy < 100
+                          ? 'text-orange-600'
+                          : 'text-red-600')
+                    }
+                  >
+                    {locationAccuracy}m
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRefreshLocation}
+                  disabled={isRefreshing}
                   className={
-                    `font-bold ` +
-                    (locationAccuracy < 50
-                      ? 'text-emerald-600'
-                      : locationAccuracy < 100
-                        ? 'text-orange-600'
-                        : 'text-red-600')
+                    `inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold transition ` +
+                    (isRefreshing
+                      ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                      : 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100')
                   }
                 >
-                  {locationAccuracy}m
-                </span>
+                  {isRefreshing ? 'Refreshing...' : 'Refresh Location'}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleRefreshLocation}
-                disabled={isRefreshing}
-                className={
-                  `inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold transition ` +
-                  (isRefreshing
-                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                    : 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100')
-                }
-              >
-                {isRefreshing ? 'Refreshing...' : 'Refresh Location'}
-              </button>
-            </div>
+            )}
             
-            {locationAccuracy > 100 && (
+            {locationAccuracy && locationAccuracy > 100 && (
               <div className="mb-5 flex items-start gap-3 rounded-xl border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5">
                   <circle cx="12" cy="12" r="10"></circle>
@@ -240,20 +474,25 @@ const NearestStations = () => {
               </div>
             )}
             
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {userLocation && (
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
                   Nearest Stations
                   <span className="h-px flex-1 bg-gradient-to-r from-brand-900 to-transparent" />
                 </h2>
                 {nearestStations.length === 0 ? (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <p className="text-slate-700 font-semibold">No stations found nearby. This might be due to:</p>
-                    <ul className="mt-3 list-disc pl-5 text-sm text-slate-600 space-y-1">
-                      <li>Limited station data in the database</li>
-                      <li>Your location being far from metro stations</li>
-                      <li>Server connectivity issues</li>
-                    </ul>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
+                        <circle cx="12" cy="10" r="3"></circle>
+                        <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+                      </svg>
+                    </div>
+                    <p className="text-lg font-semibold text-slate-800">No stations found nearby</p>
+                    <p className="mt-2 text-sm text-slate-500 max-w-md mx-auto">
+                      No metro stations were found near the selected location. Try searching for a different landmark or place.
+                    </p>
                   </div>
                 ) : (
                   <div className="grid gap-4">
@@ -308,48 +547,53 @@ const NearestStations = () => {
                   <span className="h-px flex-1 bg-gradient-to-r from-brand-900 to-transparent" />
                 </h2>
                 <div className="overflow-hidden rounded-xl shadow">
-                  <MapContainer 
-                    center={userLocation} 
-                    zoom={15} 
-                    className="h-[420px] w-full"
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    
-                    {/* User location marker with custom red icon */}
-                    <Marker position={userLocation} icon={userLocationIcon}>
-                      <Popup>
-                        <div className="text-sm">
-                          <strong>Your Location</strong>
-                          <div>Accuracy: {locationAccuracy}m</div>
-                          <div className="mt-1 font-mono text-xs">{userLocation[0].toFixed(6)}, {userLocation[1].toFixed(6)}</div>
-                        </div>
-                      </Popup>
-                    </Marker>
-                    
-                    {/* Station markers with default blue icons */}
-                    {nearestStations.map((station, index) => (
-                      station.latitude && station.longitude ? (
-                        <Marker 
-                          key={index} 
-                          position={[station.latitude, station.longitude]}
-                        >
-                          <Popup>
-                            <div className="text-sm">
-                              <strong>{station.name || 'Unknown Station'}</strong>
-                              <div>Distance: {station.distance || 'N/A'} km</div>
-                              <div className="mt-2 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs">Rank: #{index + 1}</div>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      ) : null
-                    ))}
-                  </MapContainer>
+                  {userLocation && (
+                    <MapContainer 
+                      center={userLocation} 
+                      zoom={15} 
+                      className="h-[420px] w-full"
+                    >
+                      <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      />
+                      
+                      <ChangeMapView center={userLocation} />
+                      
+                      {/* User/Searched location marker with custom red icon */}
+                      <Marker position={userLocation} icon={userLocationIcon}>
+                        <Popup>
+                          <div className="text-sm">
+                            <strong>{searchedPlaceName || 'Your Location'}</strong>
+                            {locationAccuracy && <div>Accuracy: {locationAccuracy}m</div>}
+                            <div className="mt-1 font-mono text-xs">{userLocation[0].toFixed(6)}, {userLocation[1].toFixed(6)}</div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                      
+                      {/* Station markers with default blue icons */}
+                      {nearestStations.map((station, index) => (
+                        station.latitude && station.longitude ? (
+                          <Marker 
+                            key={index} 
+                            position={[station.latitude, station.longitude]}
+                          >
+                            <Popup>
+                              <div className="text-sm">
+                                <strong>{station.name || 'Unknown Station'}</strong>
+                                <div>Distance: {station.distance || 'N/A'} km</div>
+                                <div className="mt-2 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs">Rank: #{index + 1}</div>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        ) : null
+                      ))}
+                    </MapContainer>
+                  )}
                 </div>
               </div>
             </div>
+            )}
           </>
         )}
       </div>
