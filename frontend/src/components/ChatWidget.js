@@ -134,8 +134,8 @@ function ChatWidget() {
       {isOpen && (
         <div
           className={
-            "mb-4 w-[calc(100vw-2rem)] max-w-[420px] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(2,6,23,0.25)] " +
-            "max-h-[calc(100vh-7.5rem)] flex flex-col"
+            "fixed right-[calc(1rem+env(safe-area-inset-right))] top-[calc(5rem+env(safe-area-inset-top))] bottom-[calc(5.75rem+env(safe-area-inset-bottom))] " +
+            "w-[calc(100vw-2rem)] max-w-[420px] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(2,6,23,0.25)] flex flex-col min-h-0"
           }
         >
           {/* Header */}

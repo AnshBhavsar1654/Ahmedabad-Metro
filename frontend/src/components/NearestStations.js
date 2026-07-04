@@ -64,6 +64,8 @@ const NearestStations = () => {
   const [searchedPlaceName, setSearchedPlaceName] = useState(null);
   const [recentSearches, setRecentSearches] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [googleMapsLink, setGoogleMapsLink] = useState('');
+  const [isResolvingLink, setIsResolvingLink] = useState(false);
 
   // Load search history
   useEffect(() => {
@@ -267,6 +269,47 @@ const NearestStations = () => {
     setShowHistory(false);
   };
 
+  const handleGoogleMapsLinkSubmit = async (e) => {
+    e.preventDefault();
+
+    const link = googleMapsLink.trim();
+    if (!link) {
+      setError('Please paste a Google Maps link first.');
+      return;
+    }
+
+    setLoading(true);
+    setIsResolvingLink(true);
+    setError('');
+
+    try {
+      const response = await axios.post(`${API_URL}/api/location/resolve-google-maps`, {
+        url: link,
+      });
+
+      const latitude = parseFloat(response.data.latitude);
+      const longitude = parseFloat(response.data.longitude);
+
+      if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+        throw new Error('The link did not contain valid coordinates.');
+      }
+
+      const placeName = response.data.place_name || 'Google Maps location';
+      setGoogleMapsLink('');
+      await fetchStationsForCoordinates(latitude, longitude, null, placeName);
+    } catch (err) {
+      console.error('Google Maps link resolution error:', err);
+      setError(
+        err.response?.data?.error ||
+        err.message ||
+        'Could not resolve coordinates from the Google Maps link.'
+      );
+      setLoading(false);
+    } finally {
+      setIsResolvingLink(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-5 pb-10">
       <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8 flex items-center justify-between gap-6">
@@ -389,6 +432,38 @@ const NearestStations = () => {
             Use Current Location
           </button>
         </div>
+
+        <form onSubmit={handleGoogleMapsLinkSubmit} className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end">
+            <div className="flex-1">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                Paste Google Maps Link
+              </label>
+              <input
+                type="url"
+                value={googleMapsLink}
+                onChange={(e) => setGoogleMapsLink(e.target.value)}
+                placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/..."
+                className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 focus:outline-none"
+              />
+              <p className="mt-2 text-xs text-slate-500">
+                If search cannot find the place, paste a Google Maps share link and we will use its coordinates.
+              </p>
+            </div>
+            <button
+              type="submit"
+              disabled={isResolvingLink || !googleMapsLink.trim()}
+              className={
+                `rounded-xl px-5 py-3 text-sm font-semibold transition shrink-0 shadow-sm ` +
+                (isResolvingLink || !googleMapsLink.trim()
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  : 'bg-brand-700 text-white hover:bg-brand-800')
+              }
+            >
+              {isResolvingLink ? 'Resolving...' : 'Use Link'}
+            </button>
+          </div>
+        </form>
 
         {/* Famous Landmarks suggestion chips */}
         <div className="mt-4 flex flex-wrap gap-2 items-center">
@@ -581,7 +656,7 @@ const NearestStations = () => {
                             <Popup>
                               <div className="text-sm">
                                 <strong>{station.name || 'Unknown Station'}</strong>
-                                <div>Distance: {station.distance || 'N/A'} km</div>
+                                <div>Road distance: {station.distance || 'N/A'} km</div>
                                 <div className="mt-2 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs">Rank: #{index + 1}</div>
                               </div>
                             </Popup>

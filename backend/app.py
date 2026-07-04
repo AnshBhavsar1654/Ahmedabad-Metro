@@ -3,14 +3,14 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from dotenv import load_dotenv
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.responses import PlainTextResponse
-from geopy.distance import geodesic
 from pydantic import BaseModel, Field
 
 from chat import ask_gemini
+from location_service import get_nearby_stations_data, get_stations_with_coordinates, resolve_google_maps_location_data
 from route import calculate_route_details, get_all_stations
 
 
@@ -33,10 +33,7 @@ app.add_middleware(
 )
 
 FARE_PATH = os.path.join(os.path.dirname(__file__), "Fare Matrix.xlsx")
-STATIONS_PATH = os.path.join(os.path.dirname(__file__), "Location.xlsx")
-
 fare_matrix = pd.read_excel(FARE_PATH)
-stations_df = pd.read_excel(STATIONS_PATH)
 
 source_col = "Source"
 dest_col = "Destination"
@@ -71,19 +68,9 @@ def get_stations():
 
 
 @app.get("/api/stations/coordinates")
-def get_stations_with_coordinates():
-    """Returns all stations with their coordinates for mapping"""
+def get_stations_coordinates():
     try:
-        stations_list = []
-        for _, row in stations_df.iterrows():
-            stations_list.append(
-                {
-                    "name": row["Station"],
-                    "latitude": row["Latitude"],
-                    "longitude": row["Longitude"],
-                }
-            )
-        return stations_list
+        return get_stations_with_coordinates()
     except Exception as exc:
         return error_response(str(exc), 500)
 
@@ -125,34 +112,27 @@ def get_fare(data: RouteRequest):
 
 
 @app.get("/api/stations/nearby")
-def get_nearby_stations(lat: Optional[float] = Query(default=None), lng: Optional[float] = Query(default=None)):
+def get_nearby_stations(lat: Optional[float] = None, lng: Optional[float] = None):
     try:
-        user_lat = lat
-        user_lng = lng
-        if None in [user_lat, user_lng]:
-            return error_response("Missing latitude/longitude parameters", 400)
-        if not (-90 <= user_lat <= 90) or not (-180 <= user_lng <= 180):
-            return error_response("Invalid coordinates", 400)
-
-        stations = []
-        for _, row in stations_df.iterrows():
-            station_coords = (row["Latitude"], row["Longitude"])
-            user_coords = (user_lat, user_lng)
-            distance = geodesic(user_coords, station_coords).kilometers
-
-            stations.append(
-                {
-                    "name": row["Station"],
-                    "latitude": row["Latitude"],
-                    "longitude": row["Longitude"],
-                    "distance": round(distance, 2),
-                }
-            )
-
-        nearest_stations = sorted(stations, key=lambda x: x["distance"])[:3]
-        return nearest_stations
+        return get_nearby_stations_data(lat, lng)
+    except ValueError as exc:
+        return error_response(str(exc), 400)
     except Exception:
         return error_response("Failed to find nearby stations", 500)
+
+
+class GoogleMapsLinkRequest(BaseModel):
+    url: str = ""
+
+
+@app.post("/api/location/resolve-google-maps")
+def resolve_google_maps_location(data: GoogleMapsLinkRequest):
+    try:
+        return resolve_google_maps_location_data(data.url)
+    except ValueError as exc:
+        return error_response(str(exc), 400)
+    except Exception:
+        return error_response("Failed to resolve Google Maps link", 500)
 
 
 @app.post("/api/chat")
@@ -172,7 +152,6 @@ def chat(data: ChatRequest):
         reply, language = ask_gemini(message, api_key=api_key, conversation_history=conversation_history, model=model)
         return {"response": reply, "language": language}
     except Exception as exc:
-        # Avoid leaking key or raw error details. Return 200 with friendly message for UI stability.
         err_msg = str(exc)
         if "Rate Limit" in err_msg or "429" in err_msg:
             msg = "The chatbot is experiencing high traffic right now. Please try again in a moment."
