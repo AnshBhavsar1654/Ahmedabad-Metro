@@ -241,7 +241,7 @@
   },
   {
     "id": 31,
-    "name": "Motera Stadium (Interchange)",
+    "name": "Motera Stadium",
     "type": "Elevated",
     "corridor": "North-South",
     "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4"],
@@ -249,7 +249,7 @@
   },
   {
     "id": 32,
-    "name": "Koteshwar Road",
+    "name": "Koteshwar Road (Interchange)",
     "type": "Elevated",
     "corridor": "Corridor-1",
     "gates": ["Gate No. 1", "Gate No. 2"],

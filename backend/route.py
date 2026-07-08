@@ -16,9 +16,9 @@ for _, row in stations_df.iterrows():
     }
 
 # Define metro lines
-line1 = ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium"]
+line1 = ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium", "Koteshwar Road"]
 line2 = ["Thaltej Gam", "Thaltej", "Doordarshan Kendra", "Gurukul Road", "Gujarat University", "Commerce Six Road", "SP Stadium", "Old High Court", "Shahpur", "Ghee Kanta", "Kalupur Railway Station", "Kankaria East", "Apparel Park", "Amraivadi", "Rabari Colony", "Vastral", "Nirant Cross Road", "Vastral Gam"]
-line3 = ["Motera Stadium", "Koteshwar Road", "Vishvakarma College", "Tapovan Circle", "Narmada Canal", "Koba Circle", "Juna Koba", "Koba Gam", "GNLU", "Raysan", "Randesan", "Dholakuva Circle", "Infocity", "Sector-1", "Sector-10A", "Sachivalaya", "Akshardham", "Juna Sachivalaya", "Sector-16", "Sector-24", "Mahatma Mandir"]
+line3 = ["Koteshwar Road", "Vishvakarma College", "Tapovan Circle", "Narmada Canal", "Koba Circle", "Juna Koba", "Koba Gam", "GNLU", "Raysan", "Randesan", "Dholakuva Circle", "Infocity", "Sector-1", "Sector-10A", "Sachivalaya", "Akshardham", "Juna Sachivalaya", "Sector-16", "Sector-24", "Mahatma Mandir"]
 line4 = ["GNLU", "PDEU", "Gift City"]
 
 lines = [line1, line2, line3, line4]
@@ -38,16 +38,16 @@ for line_num, line in enumerate([line1, line2, line3, line4], 1):
 # Define interchange stations between lines
 interchange_map = {
     (1, 2): ["Old High Court"],
-    (1, 3): ["Motera Stadium"],
-    (1, 4): ["Motera Stadium", "GNLU"],
+    (1, 3): ["Koteshwar Road"],
+    (1, 4): ["Koteshwar Road", "GNLU"],
     (2, 1): ["Old High Court"],
-    (2, 3): ["Old High Court", "Motera Stadium"],
-    (2, 4): ["Old High Court", "Motera Stadium", "GNLU"],
-    (3, 1): ["Motera Stadium"],
-    (3, 2): ["Motera Stadium", "Old High Court"],
+    (2, 3): ["Old High Court", "Koteshwar Road"],
+    (2, 4): ["Old High Court", "Koteshwar Road", "GNLU"],
+    (3, 1): ["Koteshwar Road"],
+    (3, 2): ["Koteshwar Road", "Old High Court"],
     (3, 4): ["GNLU"],
-    (4, 1): ["GNLU", "Motera Stadium"],
-    (4, 2): ["GNLU", "Motera Stadium", "Old High Court"],
+    (4, 1): ["GNLU", "Koteshwar Road"],
+    (4, 2): ["GNLU", "Koteshwar Road", "Old High Court"],
     (4, 3): ["GNLU"]
 }
 

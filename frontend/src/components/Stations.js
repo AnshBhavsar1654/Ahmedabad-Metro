@@ -112,7 +112,7 @@ const Stations = () => {
                   <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#c0392b' }} />
                   <div className="min-w-0">
                     <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 2</div>
-                    <div className="mt-1 font-medium text-slate-900">APMC to Motera Stadium</div>
+                    <div className="mt-1 font-medium text-slate-900">APMC to Koteshwar Road</div>
                     <div className="mt-1 text-slate-500">North-South Corridor</div>
                   </div>
                 </div>
@@ -121,7 +121,7 @@ const Stations = () => {
                   <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#ffd700' }} />
                   <div className="min-w-0">
                     <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 3</div>
-                    <div className="mt-1 font-medium text-slate-900">Motera Stadium to Mahatma Mandir</div>
+                    <div className="mt-1 font-medium text-slate-900">Koteshwar Road to Mahatma Mandir</div>
                     <div className="mt-1 text-slate-500">Corridor-1</div>
                   </div>
                 </div>
