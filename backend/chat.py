@@ -1,245 +1,272 @@
-import os
-from typing import List, Tuple
-import requests
-import json
 import difflib
+import json
+import os
+import re
+import traceback
+from typing import Any, List, Tuple
+
 import pandas as pd
 from dotenv import load_dotenv
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.tools import tool
+from langchain_google_genai import ChatGoogleGenerativeAI
 
+from location_service import get_nearby_stations_data
 from route import calculate_route_details, get_all_stations
 
 load_dotenv()
 
-# Load Fare Matrix
 FARE_PATH = os.path.join(os.path.dirname(__file__), "Fare Matrix.xlsx")
 fare_matrix = pd.read_excel(FARE_PATH)
 
+_KB_TEXT = None
+_STATION_CATALOG_PROMPT = None
+_SYSTEM_PROMPT = None
+
+DEFAULT_GEMINI_MODELS = [
+    "gemini-2.5-flash-lite",
+    "gemini-1.5-flash-latest",
+    "gemini-2.0-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+]
+DEFAULT_TEMPERATURE = 0.2
+DEFAULT_MAX_OUTPUT_TOKENS = 768
+
 
 def _read_kb_text() -> str:
-    """
-    Reads metro knowledge base text. Supports both filenames to be safe on Linux deployments.
-    """
+    global _KB_TEXT
+    if _KB_TEXT is not None:
+        return _KB_TEXT
+
     base_dir = os.path.dirname(__file__)
-    candidates = [
-        os.path.join(base_dir, "metro_kb.txt"),
-        os.path.join(base_dir, "Metro_KB.txt"),
-    ]
-    for path in candidates:
+    for name in ("metro_kb.txt", "Metro_KB.txt"):
+        path = os.path.join(base_dir, name)
         if os.path.exists(path):
             with open(path, "r", encoding="utf-8", errors="ignore") as f:
-                return f.read()
-    raise FileNotFoundError("Knowledge base file not found (expected metro_kb.txt or Metro_KB.txt in backend/).")
-
-
-def _build_prompt(kb_text: str, user_message: str, conversation_history: List[dict] = None) -> str:
-    """
-    Builds a concise, high-signal prompt for metro Q&A grounded in the KB.
-    Includes conversation history for context when available.
-    """
-    # Get prompt template from env or use default
-    prompt_template = os.getenv(
-        "GEMINI_PROMPT_TEMPLATE",
-        """You are "Ahmedabad Metro Assistant", a helpful customer support assistant for Ahmedabad Metro.
-
-IMPORTANT RULES:
-- AUTOMATICALLY detect the language of the user's question (English, Hindi, Gujarati, or mixed languages like Hinglish/Gujarati+English).
-- Respond in the SAME language(s) the user used. If they use mixed languages (e.g., "mujhe metro ka samay batao" or "mane metro no samay ko"), respond naturally in that mixed style.
-- Answer based ONLY on the provided Knowledge Base content below. If the answer is not in the KB, say you don't know and suggest what the user can check next (e.g., official website / helpline), without making up facts.
-- Keep responses clear and practical. Use short bullet points when helpful.
-- If the user asks for route/fare between stations, ask for missing details (source/destination) instead of guessing.
-- Use the conversation history below to understand follow-up questions and maintain context.{history_context}
-
-Knowledge Base (verbatim):
-\"\"\"{kb_text}\"\"\"
-
-Current user question:
-\"\"\"{user_message}\"\"\"
-"""
-    )
-    
-    history_context = ""
-    if conversation_history and len(conversation_history) > 0:
-        history_context = "\n\nPrevious conversation context:\n"
-        for msg in conversation_history[-6:]:  # Last 6 messages for context
-            role_label = "User" if msg.get("role") == "user" else "Assistant"
-            history_context += f"{role_label}: {msg.get('text', '')}\n"
-        history_context += "\n"
-    
-    return prompt_template.format(
-        history_context=history_context,
-        kb_text=kb_text,
-        user_message=user_message
-    ).strip()
-
-
-def _classify_intent_and_extract(message: str, api_key: str, model: str, base_url: str) -> dict:
-    prompt = f"""You are a query classifier for the Ahmedabad Metro chatbot.
-Given the user's message, determine if the user is asking about the route, distance, instructions or fare between two specific stations.
-
-Message: "{message}"
-
-If the message is about a route or fare between two stations, extract the source and destination stations and return JSON in this exact format:
-{{"intent": "route_fare", "source": "station_name", "destination": "station_name"}}
-
-If the message is asking for general information (timings, rules, smart card, general metro info, etc.) or doesn't mention two stations, return:
-{{"intent": "general"}}
-
-Return ONLY the JSON. No markdown formatting, no backticks, no other text."""
-
-    url = f"{base_url}/models/{model}:generateContent"
-    params = {"key": api_key}
-    payload = {
-        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.0, "response_mime_type": "application/json"},
-    }
-    try:
-        resp = requests.post(url, params=params, json=payload, timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        text = data["candidates"][0]["content"]["parts"][0]["text"]
-        return json.loads(text)
-    except Exception:
-        # Fail silently and fall back to general intent rather than leaking exceptions
-        return {"intent": "general"}
+                _KB_TEXT = f.read()
+                return _KB_TEXT
+    raise FileNotFoundError("Knowledge base file metro_kb.txt not found in backend/.")
 
 
 def _match_station(name: str, valid_stations: List[str]) -> str:
     matches = difflib.get_close_matches(name, valid_stations, n=1, cutoff=0.5)
-    if matches:
-        return matches[0]
-    return name
+    return matches[0] if matches else name
 
 
-def _heuristically_extract_stations(message: str, valid_stations: List[str]) -> Tuple[str, str]:
-    """
-    Looks for valid station names inside the user message.
-    Bypasses Gemini intent classification if two distinct stations are detected.
-    """
-    msg = message.lower()
-    found_stations = []
-    
-    # Sort by length descending to match longer station names first
-    sorted_stations = sorted(valid_stations, key=len, reverse=True)
-    
-    for station in sorted_stations:
-        station_lower = station.lower()
-        if f" {station_lower} " in f" {msg} " or msg.startswith(station_lower) or msg.endswith(station_lower):
-            found_stations.append(station)
-            msg = msg.replace(station_lower, "")
-            
-    if len(found_stations) < 2:
-        # Check individual words for close fuzzy matches
-        words = [w.strip("?,.!-") for w in message.split() if len(w.strip("?,.!-")) > 3]
-        for word in words:
-            matches = difflib.get_close_matches(word, valid_stations, n=1, cutoff=0.75)
-            if matches and matches[0] not in found_stations:
-                found_stations.append(matches[0])
-                if len(found_stations) == 2:
-                    break
-                    
-    if len(found_stations) >= 2:
-        return found_stations[0], found_stations[1]
-    return "", ""
+def _normalize_station_name(name: str) -> str:
+    cleaned = (name or "").strip()
+    return _match_station(cleaned, get_all_stations()) if cleaned else ""
+
+
+def _fare_for_stations(source: str, destination: str) -> int:
+    if not source or not destination:
+        return 0
+    m = fare_matrix[(fare_matrix["Source"] == source) & (fare_matrix["Destination"] == destination)]
+    if len(m) == 0:
+        m = fare_matrix[(fare_matrix["Source"] == destination) & (fare_matrix["Destination"] == source)]
+        if len(m) == 0:
+            return 0
+    return int(m["Fare"].iloc[0])
+
+
+def _search_kb(query: str) -> str:
+    kb_text = _read_kb_text()
+    sections = re.split(r"\n(?==== SECTION)", kb_text)
+    words = [w.lower() for w in re.findall(r"\w+", query) if len(w) > 2]
+    if not words:
+        return kb_text[:1500]
+    scores = []
+    for sec in sections:
+        sec_lower = sec.lower()
+        score = sum(sec_lower.count(w) for w in words)
+        scores.append((score, sec.strip()))
+    scores.sort(key=lambda x: x[0], reverse=True)
+    results = [s[1] for s in scores if s[0] > 0][:3]
+    return "\n\n".join(results) if results else kb_text[:1500]
+
+
+def _convert_history(conversation_history: List[dict]) -> List[Any]:
+    messages: List[Any] = []
+    for msg in (conversation_history or [])[-6:]:
+        role = str(msg.get("role", "")).lower()
+        text = str(msg.get("text", "")).strip()
+        if not text:
+            continue
+        if role == "assistant":
+            messages.append(AIMessage(content=text))
+        else:
+            messages.append(HumanMessage(content=text))
+    return messages
+
+
+def _build_station_catalog_prompt() -> str:
+    global _STATION_CATALOG_PROMPT
+    if _STATION_CATALOG_PROMPT is None:
+        _STATION_CATALOG_PROMPT = "\n".join(f"- {s}" for s in get_all_stations())
+    return _STATION_CATALOG_PROMPT
+
+
+def _build_system_prompt() -> str:
+    global _SYSTEM_PROMPT
+    if _SYSTEM_PROMPT is None:
+        catalog = _build_station_catalog_prompt()
+        _SYSTEM_PROMPT = f"""You are Ahmedabad Metro Assistant.
+
+Instructions:
+- For simple greetings (e.g. "hello", "hi", "hey", "namaste") or general conversational remarks, respond warmly and directly. DO NOT call any tool for greetings.
+- If the user's message is about nearest stations, nearby stations, finding stations close to their location, or similar, DO NOT use any tools. Instead, reply that they should visit the nearest stations page and provide a clickable HTML link for it: <a href="/nearest-stations">Nearest Stations</a>.
+- Call tools ONLY when the user asks a specific question requiring data:
+  - metro_route: route, distance, directions, or trip planning between two stations.
+  - metro_fare: fare between two stations.
+  - metro_kb_search: metro info, hours, tickets, smart cards, NCMC, lost & found, rules, penalties, emergency contacts.
+
+Response rules:
+- Respond in the user's language (English/Gujarati/Hindi).
+- Never invent routes or fares; call matching tools when requested.
+- Infer exact station names from the catalog below.
+- Do not output raw JSON or tool signatures to the user.
+
+Station catalog:
+{catalog}
+"""
+    return _SYSTEM_PROMPT
+
+
+def _build_tools():
+    @tool("metro_route")
+    def metro_route(source: str, destination: str) -> str:
+        """Get metro route, interchanges, distance and instructions between two stations."""
+        src = _normalize_station_name(source)
+        dst = _normalize_station_name(destination)
+        if not src or not dst:
+            return "Please provide both source and destination stations."
+
+        res = calculate_route_details(src, dst)
+        if res.get("error"):
+            return f"Route lookup failed: {res['error']}"
+
+        fare = _fare_for_stations(src, dst)
+        lines = [
+            f"Route from {src} to {dst}:",
+            f"Fare: ₹{fare}",
+            f"Distance: {res['distance']} km",
+        ]
+        if res.get("interchanges"):
+            lines.append(f"Interchanges: {', '.join(res['interchanges'])}")
+        if res.get("instructions"):
+            lines.append("Steps:")
+            lines.extend(f"{i + 1}. {step}" for i, step in enumerate(res["instructions"]))
+        return "\n".join(lines)
+
+    @tool("metro_fare")
+    def metro_fare(source: str, destination: str) -> str:
+        """Calculate metro fare between two stations."""
+        src = _normalize_station_name(source)
+        dst = _normalize_station_name(destination)
+        if not src or not dst:
+            return "Please provide both source and destination stations."
+        fare = _fare_for_stations(src, dst)
+        return f"Fare from {src} to {dst}: ₹{fare}"
+
+    @tool("metro_kb_search")
+    def metro_kb_search(query: str) -> str:
+        """Retrieve relevant metro knowledge base passages for general or factual queries."""
+        try:
+            return _search_kb(query)
+        except Exception as exc:
+            return f"KB lookup failed: {exc}"
+
+    return [metro_route, metro_fare, metro_kb_search]
+
+
+def _content_to_text(content: Any) -> str:
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            txt = _content_to_text(item)
+            if txt:
+                parts.append(txt)
+        return "\n".join(parts).strip()
+    if isinstance(content, dict):
+        for k in ("text", "content", "value", "message"):
+            if k in content and content[k]:
+                return _content_to_text(content[k])
+        return json.dumps(content, ensure_ascii=False)
+    return str(content).strip()
 
 
 def ask_gemini(user_message: str, api_key: str, conversation_history: List[dict] = None, model: str = None) -> Tuple[str, str]:
-    """
-    Sends a grounded prompt to Gemini with conversation history and returns (reply_text, language_hint).
-    First checks if query intent is route/fare, and returns route details/fare directly using local logic.
-    """
-    if model is None:
-        model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-    
-    gemini_base_url = os.getenv("GEMINI_API_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
-    
-    all_stations = get_all_stations()
-    source_extracted, dest_extracted = _heuristically_extract_stations(user_message, all_stations)
-    
-    if source_extracted and dest_extracted:
-        intent = "route_fare"
-        classification = {"intent": "route_fare", "source": source_extracted, "destination": dest_extracted}
-    else:
-        # 1. Classify intent
-        classification = _classify_intent_and_extract(user_message, api_key, model, gemini_base_url)
-        intent = classification.get("intent", "general")
-    
-    if intent == "route_fare":
-        source_raw = classification.get("source", "")
-        dest_raw = classification.get("destination", "")
-        
-        source = _match_station(source_raw, all_stations)
-        destination = _match_station(dest_raw, all_stations)
-        
-        if source and destination and source != destination:
-            route_result = calculate_route_details(source, destination)
-            
-            fare_value = 0
-            try:
-                matching_fare = fare_matrix[(fare_matrix["Source"] == source) & (fare_matrix["Destination"] == destination)]
-                fare_value = int(matching_fare["Fare"].iloc[0]) if len(matching_fare) > 0 else 0
-            except Exception:
-                pass
-            
-            if not route_result.get("error"):
-                interchanges = route_result['interchanges']
-                dist = route_result['distance']
-                
-                response_text = f"🚆 **Route & Fare: {source} to {destination}**\n\n"
-                response_text += f"**Fare:** ₹{fare_value}\n"
-                response_text += f"**Distance:** {dist} km\n\n"
-                
-                if interchanges:
-                    response_text += f"**Interchange required at:** {', '.join(interchanges)}\n\n"
-                
-                response_text += "**Instructions:**\n"
-                for idx, inst in enumerate(route_result['instructions'], 1):
-                    response_text += f"{idx}. {inst}\n"
-                    
-                return (response_text, "auto")
+    """Answer a metro query using Gemini LLM with function calling tools."""
+    if not api_key:
+        return ("The chatbot is currently unavailable. Please check API key configuration.", "auto")
 
-    # 2. General Query
-    temperature = float(os.getenv("GEMINI_TEMPERATURE", "0.2"))
-    top_p = float(os.getenv("GEMINI_TOP_P", "0.9"))
-    max_output_tokens = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "512"))
-    
-    kb_text = _read_kb_text()
-    prompt = _build_prompt(kb_text=kb_text, user_message=user_message, conversation_history=conversation_history or [])
+    os.environ["GOOGLE_API_KEY"] = api_key
+    os.environ["GEMINI_API_KEY"] = api_key
 
-    url = f"{gemini_base_url}/models/{model}:generateContent"
-    params = {"key": api_key}
-    payload = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [{"text": prompt}],
-            }
-        ],
-        "generationConfig": {
-            "temperature": temperature,
-            "topP": top_p,
-            "maxOutputTokens": max_output_tokens,
-        },
-    }
+    tools = _build_tools()
+    tool_map = {t.name: t for t in tools}
 
-    try:
-        resp = requests.post(url, params=params, json=payload, timeout=30)
-        resp.raise_for_status()
-    except requests.RequestException as exc:
-        status_code = exc.response.status_code if (exc.response is not None) else "Unknown"
-        if status_code == 429:
-            raise RuntimeError("The chatbot is currently experiencing high volume (Rate Limit Exceeded). Please wait a moment and try again.")
-        raise RuntimeError(f"Chatbot API request failed with status code {status_code}.")
+    requested_model = model or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash-lite"
+    models_to_try = [requested_model]
+    for m in DEFAULT_GEMINI_MODELS:
+        if m not in models_to_try:
+            models_to_try.append(m)
 
-    data = resp.json()
-    candidates = data.get("candidates") or []
-    if not candidates:
-        return ("Sorry, I couldn't generate a response right now.", "auto")
+    last_exception = None
+    for model_name in models_to_try:
+        try:
+            llm = ChatGoogleGenerativeAI(
+                model=model_name,
+                api_key=api_key,
+                temperature=DEFAULT_TEMPERATURE,
+                max_output_tokens=DEFAULT_MAX_OUTPUT_TOKENS,
+            )
+            llm_with_tools = llm.bind_tools(tools)
 
-    content = (candidates[0].get("content") or {})
-    parts = content.get("parts") or []
-    text = parts[0].get("text") if parts else None
-    if not text:
-        return ("Sorry, I couldn't generate a response right now.", "auto")
+            messages = [SystemMessage(content=_build_system_prompt())]
+            messages.extend(_convert_history(conversation_history or []))
+            messages.append(HumanMessage(content=user_message))
 
-    return (text.strip(), "auto")
+            for _ in range(3):
+                response = llm_with_tools.invoke(messages)
+                messages.append(response)
 
+                tool_calls = getattr(response, "tool_calls", None)
+                if not tool_calls:
+                    break
+
+                for tc in tool_calls:
+                    t_name = tc.get("name")
+                    t_args = tc.get("args", {})
+                    t_id = tc.get("id", "")
+                    selected_tool = tool_map.get(t_name)
+                    if selected_tool:
+                        t_output = str(selected_tool.invoke(t_args))
+                    else:
+                        t_output = f"Tool {t_name} not found."
+                    messages.append(ToolMessage(content=t_output, tool_call_id=t_id))
+
+            reply = _content_to_text(messages[-1].content)
+            if reply:
+                return (reply, "auto")
+        except Exception as exc:
+            last_exception = exc
+            err_str = str(exc)
+            if "API_KEY_INVALID" in err_str or "API key not valid" in err_str or "400" in err_str and "key" in err_str.lower():
+                raise RuntimeError("Invalid Gemini API key provided.") from exc
+            continue
+
+    if last_exception:
+        err_text = str(last_exception)
+        print(f"[ERROR ask_gemini] All models failed. Last exception: {err_text}")
+        traceback.print_exc()
+        if "429" in err_text or "RESOURCE_EXHAUSTED" in err_text or "quota" in err_text.lower():
+            raise RuntimeError("Rate limit exceeded.") from last_exception
+        raise RuntimeError(f"Chatbot service error: {err_text}") from last_exception
+
+    return ("Sorry, I couldn't generate a response right now.", "auto")
