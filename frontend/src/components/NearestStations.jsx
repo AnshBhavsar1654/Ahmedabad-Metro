@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
+import { NearestStationsDropdownSkeleton, NearestStationsSectionSkeleton } from './Skeleton';
 const API_URL = (process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com").replace(/\/+$/, "");
 
 // Fix leaflet marker icons
@@ -366,10 +367,7 @@ const NearestStations = () => {
             {showHistory && (searchQuery.trim().length >= 3 || (searchQuery.trim().length === 0 && recentSearches.length > 0)) && (
               <div className="absolute top-[105%] left-0 right-0 z-[1000] rounded-xl border border-slate-200 bg-white shadow-lg max-h-[300px] overflow-y-auto">
                 {isSuggestionsLoading && (
-                  <div className="p-4 text-center text-sm text-slate-500 flex items-center justify-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-brand-600" />
-                    Searching places...
-                  </div>
+                  <NearestStationsDropdownSkeleton />
                 )}
                 
                 {suggestions.length > 0 && (
@@ -482,11 +480,7 @@ const NearestStations = () => {
 
       <div className="mt-6">
         {loading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-brand-600" />
-            <p className="mt-5 text-lg font-semibold text-slate-800">{isRefreshing ? 'Refreshing location...' : 'Searching nearest stations...'}</p>
-            <p className="mt-2 text-sm text-slate-500">This may take a few seconds for better accuracy</p>
-          </div>
+          <NearestStationsSectionSkeleton />
         ) : (
           <>
             {error && (

@@ -39,3 +39,12 @@
  .leaflet-tooltip.station-tooltip::before {
    border-top-color: rgba(255, 255, 255, 0.92);
  }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.shimmer {
+  animation: shimmer 1.8s ease-in-out infinite;
+}

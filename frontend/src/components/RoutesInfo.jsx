@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { GiPathDistance } from "react-icons/gi";
 import { FaSubway, FaMapMarkerAlt, FaExchangeAlt } from "react-icons/fa";
+import { RouteDetailsSkeleton } from './Skeleton';
 
 const API_URL = (process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com").replace(/\/+$/, "");
 
@@ -414,7 +415,9 @@ const RoutesInfo = () => {
         )}
       </div>
 
-      {routeDetails && (
+      {loading && <RouteDetailsSkeleton />}
+
+      {routeDetails && !loading && (
         <div className="mt-6 space-y-6">
           {/* Route Summary Cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

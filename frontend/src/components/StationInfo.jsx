@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mountain, Minus } from 'lucide-react';
 import { FaDoorOpen } from "react-icons/fa";
 import stationData from '../data/stationData.json';
+import { StationInfoSkeleton } from './Skeleton';
 
 const StationInfo = () => {
   const [stations, setStations] = useState([]);
@@ -25,14 +26,7 @@ const StationInfo = () => {
   });
 
   if (isLoading) {
-    return (
-      <div className="mx-auto max-w-6xl px-5 pb-10">
-        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-brand-600" />
-          <p className="mt-5 text-lg font-semibold text-slate-800">Loading station information...</p>
-        </div>
-      </div>
-    );
+    return <StationInfoSkeleton />;
   }
 
   return (
