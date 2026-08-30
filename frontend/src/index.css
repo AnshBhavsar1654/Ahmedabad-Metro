@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-slate-50 to-blue-100 text-slate-800 antialiased;
+    @apply bg-surface-0 text-ink-900 antialiased font-sans;
   }
 }
 
@@ -19,6 +19,10 @@
  .leaflet-top,
  .leaflet-bottom {
    z-index: 0;
+ }
+
+ .map-tiles {
+   filter: grayscale(100%) opacity(0.5);
  }
 
  .route-glow {

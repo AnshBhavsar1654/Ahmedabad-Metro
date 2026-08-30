@@ -312,20 +312,13 @@ const NearestStations = () => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-10">
-      <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8 flex items-center justify-between gap-6">
-        <div>
-          <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Find Nearest Metro Stations</h1>
-          <p className="mt-2 text-white/90 max-w-2xl">Discover the closest metro stations to any landmark in Ahmedabad</p>
-        </div>
-        <div className="hidden md:flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
-          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-        </div>
+    <div className="bg-surface-0 min-h-screen pb-10">
+      <div className="mx-auto max-w-7xl px-5 pt-8 mb-8 pb-6 border-b border-line-200">
+        <h1 className="text-3xl font-bold font-sans text-navy-900 tracking-tight">Find Nearest Metro Stations</h1>
+        <p className="text-base text-ink-600 mt-2">Discover the closest metro stations to any landmark in Ahmedabad</p>
       </div>
 
+      <div className="mx-auto max-w-7xl px-5 mt-6">
       {/* Search Input, Landmarks, and History Container */}
       <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 className="text-sm font-bold text-slate-800 mb-3 uppercase tracking-wider">Search Landmark or Place</h3>
@@ -665,6 +658,7 @@ const NearestStations = () => {
             )}
           </>
         )}
+      </div>
       </div>
     </div>
   );

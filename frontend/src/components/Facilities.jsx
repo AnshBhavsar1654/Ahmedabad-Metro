@@ -165,13 +165,14 @@ const Facilities = () => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-10">
-      <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8">
-        <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Facilities at Ahmedabad Metro</h1>
-        <p className="mt-2 text-white/90 max-w-2xl">Explore the various passenger amenities available across our metro network</p>
+    <div className="bg-surface-0 min-h-screen pb-10">
+      <div className="mx-auto max-w-7xl px-5 pt-8 mb-8 pb-6 border-b border-line-200">
+        <h1 className="text-3xl font-bold font-sans text-navy-900 tracking-tight">Facilities at Ahmedabad Metro</h1>
+        <p className="text-base text-ink-600 mt-2">Explore the various passenger amenities available across our metro network</p>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4">
+      <div className="mx-auto max-w-7xl px-5 mt-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4">
         {categories.map((category) => {
           const isActive = selectedCategory === category.id;
           const activeColors =
@@ -210,6 +211,7 @@ const Facilities = () => {
       <section className="mt-8">
         {renderFacilityCards()}
       </section>
+      </div>
     </div>
   );
 };

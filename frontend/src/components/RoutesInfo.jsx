@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MapContainer, Marker, Popup, Polyline, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { GiPathDistance } from "react-icons/gi";
-import { FaSubway, FaMapMarkerAlt, FaExchangeAlt } from "react-icons/fa";
+import { Route, MapPin, TrainFront, Banknote, Map, ArrowRightLeft } from 'lucide-react';
 import { RouteDetailsSkeleton } from './Skeleton';
 
 const API_URL = (process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com").replace(/\/+$/, "");
 
-// Metro line data (constants - moved outside component)
 const metroLines = {
   "Red Line": ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium", "Koteshwar Road"],
   "Blue Line": ["Thaltej Gam", "Thaltej", "Doordarshan Kendra", "Gurukul Road", "Gujarat University", "Commerce Six Road", "SP Stadium", "Old High Court", "Shahpur", "Ghee Kanta", "Kalupur Railway Station", "Kankaria East", "Apparel Park", "Amraivadi", "Rabari Colony", "Vastral", "Nirant Cross Road", "Vastral Gam"],
@@ -16,14 +14,14 @@ const metroLines = {
   "Violet Line": ["GNLU", "PDEU", "Gift City"]
 };
 
+// Use the UI-adjusted accessible hexes from section 1.2
 const lineColors = {
-  "Red Line": "#c0392b",
-  "Blue Line": "#3498db",
-  "Yellow Line": "#ffd700",
-  "Violet Line": "#8e44ad"
+  "Red Line": "#E0231F",
+  "Blue Line": "#0983CE",
+  "Yellow Line": "#C99A00",
+  "Violet Line": "#7B12E0"
 };
 
-// Fix leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
@@ -31,7 +29,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-// Custom icons for stations
 const createRingIcon = (borderColor, size = [16, 16], isLarge = false, borderWidth = 3) => {
   const iconSize = isLarge ? [size[0] * 1.5, size[1] * 1.5] : size;
   return L.divIcon({
@@ -42,7 +39,7 @@ const createRingIcon = (borderColor, size = [16, 16], isLarge = false, borderWid
       background-color: #ffffff;
       border: ${borderWidth}px solid ${borderColor};
       border-radius: 50%;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     "></div>`,
     iconSize: iconSize,
     iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
@@ -51,7 +48,6 @@ const createRingIcon = (borderColor, size = [16, 16], isLarge = false, borderWid
 
 const FitNetworkBounds = ({ bounds }) => {
   const map = useMap();
-
   const didFitRef = useRef(false);
 
   useEffect(() => {
@@ -83,22 +79,22 @@ const RoutesInfo = () => {
   const [routeDetails, setRouteDetails] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mapCenter] = useState([23.0225, 72.5714]); // Ahmedabad center
+  const [mapCenter] = useState([23.0225, 72.5714]);
   const [mapZoom] = useState(11);
   const [animatedPos, setAnimatedPos] = useState(null);
   const animationRafIdRef = useRef(null);
 
-  // Function to get the color of a station based on its line
   const getStationColor = (stationName) => {
     for (const [lineName, stationList] of Object.entries(metroLines)) {
       if (stationList.includes(stationName)) {
         return lineColors[lineName];
       }
     }
-    return "#666";
+    return "#4B5160"; // ink-600
   };
+  
 
-  // Fetch stations and coordinates
+
   useEffect(() => {
     fetch(`${API_URL}/api/stations`)
       .then(res => res.json())
@@ -165,10 +161,7 @@ const RoutesInfo = () => {
       const routeResponse = await fetch(`${API_URL}/api/route`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          source: selectedSource, 
-          destination: selectedDest 
-        })
+        body: JSON.stringify({ source: selectedSource, destination: selectedDest })
       });
 
       if (!routeResponse.ok) {
@@ -181,10 +174,7 @@ const RoutesInfo = () => {
       const fareResponse = await fetch(`${API_URL}/api/fare`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          source: selectedSource, 
-          destination: selectedDest 
-        })
+        body: JSON.stringify({ source: selectedSource, destination: selectedDest })
       });
 
       if (!fareResponse.ok) {
@@ -210,7 +200,6 @@ const RoutesInfo = () => {
     }
   };
 
-  // Get route polyline coordinates
   const routePolyline = useMemo(() => {
     if (!routeDetails || !routeDetails.route || Object.keys(stationCoords).length === 0) return [];
     return routeDetails.route
@@ -218,7 +207,6 @@ const RoutesInfo = () => {
       .filter(coord => coord !== undefined);
   }, [routeDetails, stationCoords]);
 
-  // Get all metro line polylines (for background)
   const allMetroLines = useMemo(() => {
     if (Object.keys(stationCoords).length === 0) return [];
     const lines = [];
@@ -247,7 +235,7 @@ const RoutesInfo = () => {
   const animatedIcon = useMemo(() => {
     return L.divIcon({
       className: 'route-anim-marker',
-      html: `<div style="width:16px;height:16px;border-radius:9999px;background:#1e40af;border:3px solid #fff;box-shadow:0 8px 16px rgba(30,64,175,0.35);"></div>`,
+      html: `<div style="width:16px;height:16px;border-radius:9999px;background:#0E2340;border:3px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`,
       iconSize: [16, 16],
       iconAnchor: [8, 8],
     });
@@ -319,439 +307,325 @@ const RoutesInfo = () => {
   }, [routePolyline]);
 
   return (
-    <div className="mx-auto max-w-7xl px-5 pb-10">
-      <div className="rounded-2xl bg-gradient-to-br from-brand-900 to-brand-700 text-white shadow-[0_10px_30px_rgba(26,42,108,0.2)] px-6 py-6 md:px-10 md:py-8 relative overflow-hidden">
-        <div className="absolute -right-10 top-1/2 hidden h-40 w-40 -translate-y-1/2 rounded-full border-8 border-white/15 md:block" />
-        <div className="relative">
-          <h1 className="text-2xl md:text-[2.2rem] font-bold tracking-tight">Plan Your Journey</h1>
-          <p className="mt-2 text-sm text-white/90">Find the best route, fare, and travel time</p>
-        </div>
+    <div className="bg-surface-0 min-h-screen pb-10">
+      <div className="mx-auto max-w-7xl px-5 pt-8 mb-8 pb-6 border-b border-line-200">
+        <h1 className="text-3xl font-bold font-sans text-navy-900 tracking-tight">Plan Journey</h1>
+        <p className="text-base text-ink-600 mt-2">Find the best route, fare, and travel time</p>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-end">
-          <div>
-            <div className="mb-2 flex items-center justify-between">
-              <div className="flex items-center gap-2 font-semibold text-slate-800">
-                <span className="h-3 w-3 rounded-full bg-red-500 shadow-[0_0_0_4px_rgba(239,68,68,0.2)]" />
-                <label>From</label>
+      <div className="mx-auto max-w-7xl px-5 mt-6">
+        {/* Form Card */}
+        <div className="rounded-lg bg-surface-1 border border-line-200 p-6">
+          <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-end">
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2 font-semibold text-ink-900 font-sans text-sm">
+                  <span className="h-2 w-2 rounded-full bg-ink-900" />
+                  <label>From</label>
+                </div>
+                <div className="font-mono text-xs text-ink-600 px-2 py-1 bg-surface-0 rounded-full border border-line-200">{stations.length} stations</div>
               </div>
-              <div className="text-xs font-semibold text-slate-500 rounded-full bg-slate-100 px-3 py-1">{stations.length} stations</div>
+              <select
+                value={selectedSource}
+                onChange={(e) => setSelectedSource(e.target.value)}
+                disabled={loading}
+                className="w-full rounded-md border border-line-200 bg-surface-0 px-4 py-2.5 text-sm font-sans text-ink-900 focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900 transition"
+              >
+                <option value="">Select departure station</option>
+                {stations.map((station) => (
+                  <option key={`src-${station}`} value={station}>{station}</option>
+                ))}
+              </select>
             </div>
-            <select
-              value={selectedSource}
-              onChange={(e) => setSelectedSource(e.target.value)}
-              disabled={loading}
-              className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:border-brand-400 transition"
-            >
-              <option value="">Select departure station</option>
-              {stations.map((station) => (
-                <option key={`src-${station}`} value={station}>{station}</option>
-              ))}
-            </select>
+
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={swapStations}
+                disabled={loading}
+                className="mt-2 inline-flex h-10 w-10 items-center justify-center rounded-md border border-line-200 bg-surface-0 text-ink-900 hover:bg-line-100 transition disabled:opacity-60"
+                aria-label="Swap"
+              >
+                <ArrowRightLeft strokeWidth={1.5} size={18} />
+              </button>
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2 font-semibold text-ink-900 font-sans text-sm">
+                  <span className="h-2 w-2 rounded-full bg-navy-900" />
+                  <label>To</label>
+                </div>
+                <div className="font-mono text-xs text-ink-600 px-2 py-1 bg-surface-0 rounded-full border border-line-200">{stations.length} stations</div>
+              </div>
+              <select
+                value={selectedDest}
+                onChange={(e) => setSelectedDest(e.target.value)}
+                disabled={loading}
+                className="w-full rounded-md border border-line-200 bg-surface-0 px-4 py-2.5 text-sm font-sans text-ink-900 focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900 transition"
+              >
+                <option value="">Select destination station</option>
+                {stations.map((station) => (
+                  <option key={`dest-${station}`} value={station}>{station}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div className="flex justify-center">
+          <div className="mt-6 flex justify-center">
             <button
               type="button"
-              onClick={swapStations}
-              disabled={loading}
-              className="mt-2 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition disabled:opacity-60"
-              aria-label="Swap"
+              onClick={handleProceed}
+              disabled={loading || !selectedSource || !selectedDest}
+              className={
+                `flex w-full md:w-auto min-w-[200px] items-center justify-center rounded-md px-6 py-2.5 text-sm font-semibold text-white transition ` +
+                (loading || !selectedSource || !selectedDest
+                  ? 'bg-ink-300 cursor-not-allowed'
+                  : 'bg-navy-900 hover:bg-navy-700 active:scale-95')
+              }
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="17 3 21 3 21 7"></polyline>
-                <polyline points="7 21 3 21 3 17"></polyline>
-                <line x1="21" y1="3" x2="14" y2="10"></line>
-                <line x1="3" y1="21" x2="10" y2="14"></line>
-              </svg>
+              {loading ? (
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/50 border-t-white" />
+              ) : (
+                'Find Route'
+              )}
             </button>
           </div>
 
-          <div>
-            <div className="mb-2 flex items-center justify-between">
-              <div className="flex items-center gap-2 font-semibold text-slate-800">
-                <span className="h-3 w-3 rounded-full bg-sky-500 shadow-[0_0_0_4px_rgba(14,165,233,0.2)]" />
-                <label>To</label>
-              </div>
-              <div className="text-xs font-semibold text-slate-500 rounded-full bg-slate-100 px-3 py-1">{stations.length} stations</div>
+          {error && (
+            <div className="mt-5 rounded-md border border-alert-600/30 bg-alert-600/10 px-4 py-3 text-sm font-semibold text-alert-600 text-center font-sans">
+              {error}
             </div>
-            <select
-              value={selectedDest}
-              onChange={(e) => setSelectedDest(e.target.value)}
-              disabled={loading}
-              className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-200 focus:border-brand-400 transition"
-            >
-              <option value="">Select destination station</option>
-              {stations.map((station) => (
-                <option key={`dest-${station}`} value={station}>{station}</option>
-              ))}
-            </select>
-          </div>
+          )}
         </div>
 
-        <button
-          type="button"
-          onClick={handleProceed}
-          disabled={loading || !selectedSource || !selectedDest}
-          className={
-            `mt-6 mx-auto flex w-full max-w-sm items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white shadow-lg transition ` +
-            (loading || !selectedSource || !selectedDest
-              ? 'bg-slate-400 cursor-not-allowed'
-              : 'bg-gradient-to-br from-brand-900 to-brand-700 hover:-translate-y-0.5 hover:shadow-xl')
-          }
-        >
-          {loading ? (
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/50 border-t-white" />
-          ) : (
-            'Find Route'
-          )}
-        </button>
+        {loading && <div className="mt-6"><RouteDetailsSkeleton /></div>}
 
-        {error && (
-          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 text-center">
-            {error}
-          </div>
-        )}
-      </div>
-
-      {loading && <RouteDetailsSkeleton />}
-
-      {routeDetails && !loading && (
-        <div className="mt-6 space-y-6">
-          {/* Route Summary Cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-2xl border-2 border-brand-200 bg-gradient-to-br from-brand-50 to-white p-6 shadow-lg">
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center text-2xl font-bold shadow-md">
-                  ₹
-                </div>
+        {routeDetails && !loading && (
+          <div className="mt-6 space-y-6">
+            {/* Route Summary Cards */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Fare</div>
-                  <div className="mt-1 text-3xl font-bold text-slate-900">₹{routeDetails.fare}</div>
+                  <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600 mb-1">Total Fare</div>
+                  <div className="font-mono text-2xl text-navy-900 tabular-nums">₹{routeDetails.fare}</div>
                 </div>
+                <Banknote className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
               </div>
-            </div>
 
-            <div className="rounded-2xl border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-white p-6 shadow-lg">
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-sky-600 to-sky-800 text-white flex items-center justify-center text-2xl shadow-md">
-                  <GiPathDistance />
-                </div>
+              <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Distance</div>
-                  <div className="mt-1 text-3xl font-bold text-slate-900">
+                  <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600 mb-1">Distance</div>
+                  <div className="font-mono text-2xl text-navy-900 tabular-nums">
                     {typeof routeDetails.distance === 'number'
                       ? `${routeDetails.distance.toFixed(2)} km`
                       : routeDetails.distance}
                   </div>
                 </div>
+                <Route className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
               </div>
-            </div>
 
-            <div className="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6 shadow-lg sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-amber-600 to-amber-800 text-white flex items-center justify-center text-2xl shadow-md">
-                  <FaSubway />
-                </div>
+              <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Stations</div>
-                  <div className="mt-1 text-3xl font-bold text-slate-900">{routeDetails.route.length} stops</div>
+                  <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600 mb-1">Stations</div>
+                  <div className="font-mono text-2xl text-navy-900 tabular-nums">{routeDetails.route.length}</div>
                 </div>
+                <TrainFront className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
+              </div>
+
+              <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
+                <div>
+                  <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600 mb-1">Interchanges</div>
+                  <div className="font-mono text-2xl text-navy-900 tabular-nums">{routeDetails.interchanges.length}</div>
+                </div>
+                <ArrowRightLeft className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
               </div>
             </div>
-          </div>
 
-          {/* Map and Route Display */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Map */}
-            <div className="rounded-2xl border-2 border-slate-200 bg-white shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-brand-900 to-brand-700 px-5 py-3 text-white">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <FaMapMarkerAlt /> Route Map
-                </h3>
+            {/* Map and Route Display */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Map */}
+              <div className="rounded-lg border border-line-200 bg-surface-1 overflow-hidden flex flex-col h-[500px]">
+                <div className="border-b border-line-200 px-4 py-3 bg-surface-0 flex items-center gap-2">
+                  <Map size={16} className="text-ink-900" />
+                  <h3 className="font-sans font-semibold text-sm text-ink-900">Route Map</h3>
+                </div>
+                <div className="flex-1 w-full relative">
+                  {Object.keys(stationCoords).length > 0 && (
+                    <MapContainer
+                      center={mapCenter}
+                      zoom={mapZoom}
+                      style={{ height: '100%', width: '100%', zIndex: 0 }}
+                      scrollWheelZoom={true}
+                    >
+                      <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; <a href='https://openstreetmap.org'>OpenStreetMap</a> contributors"
+                        className="map-tiles"
+                      />
+                      <FitNetworkBounds bounds={networkBounds} />
+                      <FitRouteBounds bounds={routeBounds} />
+                      
+                      {/* All metro lines (light) */}
+                      {allMetroLines.map((line, idx) => (
+                        <Polyline
+                          key={`line-${idx}`}
+                          positions={line.coords}
+                          pathOptions={{
+                            color: line.color,
+                            weight: 3,
+                            opacity: 0.3
+                          }}
+                        />
+                      ))}
+
+                      {/* Selected route (highlight) */}
+                      {routePolyline.length > 1 && (
+                        <>
+                          <Polyline
+                            positions={routePolyline}
+                            pathOptions={{
+                              color: '#0E2340', // navy-900 for route highlight
+                              weight: 6,
+                              opacity: 0.8
+                            }}
+                          />
+                        </>
+                      )}
+
+                      {animatedPos && (
+                        <Marker
+                          position={animatedPos}
+                          icon={animatedIcon}
+                          interactive={false}
+                          zIndexOffset={1000}
+                        />
+                      )}
+
+                      {/* All stations */}
+                      {Object.entries(stationCoords).map(([name, coords]) => {
+                        const isInRoute = routeDetails.route.includes(name);
+                        const isSource = name === selectedSource;
+                        const isDest = name === selectedDest;
+                        const isInterchange = routeDetails.interchanges.includes(name);
+
+                        const stationBorderColor = getStationColor(name);
+                        const showPermanentLabel = isSource || isDest || isInterchange;
+
+                        if (isSource) {
+                          return (
+                            <Marker key={name} position={coords} icon={createRingIcon('#12151B', [14, 14])}>
+                              <Tooltip className="station-tooltip" direction="top" offset={[0, -10]} opacity={1} permanent>
+                                <span className="font-sans font-semibold">{name}</span>
+                              </Tooltip>
+                            </Marker>
+                          );
+                        }
+                        if (isDest) {
+                          return (
+                            <Marker key={name} position={coords} icon={createRingIcon('#0E2340', [14, 14])}>
+                              <Tooltip className="station-tooltip" direction="top" offset={[0, -10]} opacity={1} permanent>
+                                <span className="font-sans font-semibold">{name}</span>
+                              </Tooltip>
+                            </Marker>
+                          );
+                        }
+                        if (isInRoute) {
+                          return (
+                            <Marker key={name} position={coords} icon={createRingIcon(stationBorderColor, [10, 10], false, 2)}>
+                              {showPermanentLabel ? (
+                                <Tooltip className="station-tooltip" direction="top" offset={[0, -10]} opacity={1} permanent>
+                                  <span className="font-sans">{name}</span>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip className="station-tooltip" direction="top" offset={[0, -10]} opacity={0.9}>
+                                  <span className="font-sans">{name}</span>
+                                </Tooltip>
+                              )}
+                            </Marker>
+                          );
+                        }
+                        return (
+                          <Marker key={name} position={coords} icon={createRingIcon(stationBorderColor, [8, 8], false, 2)}>
+                            <Tooltip className="station-tooltip" direction="top" offset={[0, -8]} opacity={0.9}>
+                              <span className="font-sans text-xs">{name}</span>
+                            </Tooltip>
+                          </Marker>
+                        );
+                      })}
+                    </MapContainer>
+                  )}
+                </div>
               </div>
-              <div className="h-[500px] w-full">
-                {Object.keys(stationCoords).length > 0 && (
-                  <MapContainer
-                    center={mapCenter}
-                    zoom={mapZoom}
-                    style={{ height: '100%', width: '100%', backgroundColor: '#f8fafc' }}
-                    scrollWheelZoom={true}
-                    zoomControl={true}
-                    dragging={true}
-                    doubleClickZoom={true}
-                    touchZoom={true}
-                    boxZoom={true}
-                    keyboard={true}
-                  >
-                    <FitNetworkBounds bounds={networkBounds} />
-                    <FitRouteBounds bounds={routeBounds} />
-                    {/* All metro lines (light) */}
-                    {allMetroLines.map((line, idx) => (
-                      <Polyline
-                        key={`line-${idx}`}
-                        positions={line.coords}
-                        pathOptions={{
-                          color: line.color,
-                          weight: 4,
-                          opacity: 0.9
-                        }}
-                      />
-                    ))}
 
-                    {/* Selected route (highlight) */}
-                    {routePolyline.length > 1 && (
-                      <>
-                        <Polyline
-                          positions={routePolyline}
-                          pathOptions={{
-                            color: '#2563eb',
-                            weight: 14,
-                            opacity: 0.25,
-                            className: 'route-glow'
-                          }}
-                        />
-                        <Polyline
-                          positions={routePolyline}
-                          pathOptions={{
-                            color: '#1d4ed8',
-                            weight: 8,
-                            opacity: 0.95
-                          }}
-                        />
-                      </>
-                    )}
+              {/* Route Details */}
+              <div className="rounded-lg border border-line-200 bg-surface-1 overflow-hidden flex flex-col h-[500px]">
+                <div className="border-b border-line-200 px-4 py-3 bg-surface-0 flex items-center gap-2">
+                  <TrainFront size={16} className="text-ink-900" />
+                  <h3 className="font-sans font-semibold text-sm text-ink-900">Your Journey</h3>
+                </div>
+                <div className="p-5 flex-1 overflow-y-auto hide-scrollbar">
+                  <div className="space-y-0 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-line-200">
+                    {/* Source */}
+                    <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active pb-6">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-line-200 bg-surface-1 text-ink-900 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                        <MapPin size={16} />
+                      </div>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-md border border-line-200 bg-surface-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="font-bold text-ink-900 font-sans">{selectedSource}</div>
+                        </div>
+                        <div className="text-sm text-ink-600 font-sans">
+                          Start
+                        </div>
+                      </div>
+                    </div>
 
-                    {animatedPos && (
-                      <Marker
-                        position={animatedPos}
-                        icon={animatedIcon}
-                        interactive={false}
-                        zIndexOffset={1000}
-                      />
-                    )}
+                    {/* Intermediate stations */}
+                    {routeDetails.route
+                      .filter((station) => station !== selectedSource && station !== selectedDest)
+                      .map((station, index) => {
+                        const routeIndex = routeDetails.route.indexOf(station);
+                        const isInterchange = routeDetails.interchanges.includes(station);
+                        const stationColor = getStationColor(station);
+                        const instruction = getStationInstruction(station, routeIndex);
 
-                    {/* All stations (light) */}
-                    {Object.entries(stationCoords).map(([name, coords]) => {
-                      const isInRoute = routeDetails.route.includes(name);
-                      const isSource = name === selectedSource;
-                      const isDest = name === selectedDest;
-                      const isInterchange = routeDetails.interchanges.includes(name);
-
-                      const stationBorderColor = getStationColor(name);
-                      const showPermanentLabel = isSource || isDest || isInterchange;
-
-                      if (isSource) {
                         return (
-                          <Marker
-                            key={name}
-                            position={coords}
-                            icon={createRingIcon('#ef4444', [18, 18])}
-                          >
-                            <Tooltip
-                              className="station-tooltip"
-                              direction="top"
-                              offset={[0, -10]}
-                              opacity={1}
-                              permanent
-                            >
-                              {name}
-                            </Tooltip>
-                            <Popup>
-                              <div className="font-bold text-red-600">FROM: {name}</div>
-                            </Popup>
-                          </Marker>
-                        );
-                      }
-                      if (isDest) {
-                        return (
-                          <Marker
-                            key={name}
-                            position={coords}
-                            icon={createRingIcon('#0ea5e9', [18, 18])}
-                          >
-                            <Tooltip
-                              className="station-tooltip"
-                              direction="top"
-                              offset={[0, -10]}
-                              opacity={1}
-                              permanent
-                            >
-                              {name}
-                            </Tooltip>
-                            <Popup>
-                              <div className="font-bold text-sky-600">TO: {name}</div>
-                            </Popup>
-                          </Marker>
-                        );
-                      }
-                      if (isInRoute) {
-                        return (
-                          <Marker
-                            key={name}
-                            position={coords}
-                            icon={createRingIcon(stationBorderColor, [12, 12], false, 2)}
-                          >
-                            {showPermanentLabel ? (
-                              <Tooltip
-                                className="station-tooltip"
-                                direction="top"
-                                offset={[0, -10]}
-                                opacity={1}
-                                permanent
-                              >
-                                {name}
-                              </Tooltip>
-                            ) : (
-                              <Tooltip
-                                className="station-tooltip"
-                                direction="top"
-                                offset={[0, -10]}
-                                opacity={0.95}
-                              >
-                                {name}
-                              </Tooltip>
-                            )}
-                            <Popup>
-                              <div className="text-sm font-medium">{name}</div>
+                          <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active pb-6">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-surface-0 bg-surface-1 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10" style={{ borderColor: isInterchange ? stationColor : '#E2E8F0' }}>
+                               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stationColor }}></div>
+                            </div>
+                            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-md border ${isInterchange ? 'border-navy-900 bg-navy-100/30' : 'border-line-100 bg-surface-1'}`}>
+                              <div className="font-semibold text-ink-900 font-sans">{station}</div>
                               {isInterchange && (
-                                <div className="text-xs text-amber-600 mt-1">
-                                  <FaExchangeAlt className="inline mr-1" /> Interchange
+                                <div className="text-sm text-navy-900 font-sans mt-1 font-medium">
+                                  Interchange {instruction && `· ${instruction}`}
                                 </div>
                               )}
-                            </Popup>
-                          </Marker>
-                        );
-                      }
-                      return (
-                        <Marker
-                          key={name}
-                          position={coords}
-                          icon={createRingIcon(stationBorderColor, [12, 12], false, 2)}
-                        >
-                          <Tooltip
-                            className="station-tooltip"
-                            direction="top"
-                            offset={[0, -8]}
-                            opacity={0.9}
-                          >
-                            {name}
-                          </Tooltip>
-                          <Popup>
-                            <div className="text-xs text-slate-500">{name}</div>
-                          </Popup>
-                        </Marker>
-                      );
-                    })}
-                  </MapContainer>
-                )}
-              </div>
-            </div>
-
-            {/* Route Details */}
-            <div className="rounded-2xl border-2 border-slate-200 bg-white shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-brand-900 to-brand-700 px-5 py-3 text-white">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <FaSubway /> Your Journey Route
-                </h3>
-              </div>
-              <div className="p-6 max-h-[500px] overflow-y-auto">
-                <div className="space-y-4">
-                  {/* Source */}
-                  <div className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-red-50 to-white border-2 border-red-200">
-                    <div className="h-10 w-10 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                      <span className="text-white font-bold text-sm">1</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold text-lg text-slate-900">{selectedSource}</div>
-                      <div className="text-sm text-slate-600 mt-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
-                          <FaMapMarkerAlt /> Start
-                        </span>
-                        <span className="ml-2 text-slate-500">{getStationInstruction(selectedSource, 0)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Intermediate stations */}
-                  {routeDetails.route
-                    .filter((station) => station !== selectedSource && station !== selectedDest)
-                    .map((station, index) => {
-                      const routeIndex = routeDetails.route.indexOf(station);
-                      const isInterchange = routeDetails.interchanges.includes(station);
-                      const stationColor = getStationColor(station);
-
-                      return (
-                        <div
-                          key={index}
-                          className={`flex items-start gap-4 p-4 rounded-xl border-2 ${
-                            isInterchange
-                              ? 'bg-gradient-to-r from-amber-50 to-white border-amber-300'
-                              : 'bg-slate-50 border-slate-200'
-                          }`}
-                        >
-                          <div
-                            className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md"
-                            style={{ backgroundColor: isInterchange ? '#f59e0b' : stationColor }}
-                          >
-                            {isInterchange ? (
-                              <FaExchangeAlt className="text-white text-sm" />
-                            ) : (
-                              <span className="text-white font-bold text-xs">{index + 2}</span>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-semibold text-slate-900">{station}</div>
-                            <div className="text-sm text-slate-600 mt-1">
-                              {isInterchange && (
-                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold mr-2">
-                                  <FaExchangeAlt /> Change Line
-                                </span>
-                              )}
-                              <span className="text-slate-500">{getStationInstruction(station, routeIndex)}</span>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
 
-                  {/* Destination */}
-                  <div className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-sky-50 to-white border-2 border-sky-200">
-                    <div className="h-10 w-10 rounded-full bg-sky-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                      <span className="text-white font-bold text-sm">✓</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold text-lg text-slate-900">{selectedDest}</div>
-                      <div className="text-sm text-slate-600 mt-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-sky-100 text-sky-700 text-xs font-semibold">
-                          <FaMapMarkerAlt /> Destination
-                        </span>
+                    {/* Destination */}
+                    <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-line-200 bg-navy-900 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                        <MapPin size={16} />
+                      </div>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-md border border-navy-900 bg-navy-100/30">
+                        <div className="font-bold text-ink-900 font-sans">{selectedDest}</div>
+                        <div className="text-sm text-navy-900 font-sans font-medium mt-1">
+                          Destination
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                {routeDetails.interchanges.length > 0 && (
-                  <div className="mt-6 rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
-                    <h4 className="text-sm font-bold text-amber-900 mb-3 flex items-center gap-2">
-                      <FaExchangeAlt /> Interchange Stations ({routeDetails.interchanges.length})
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {routeDetails.interchanges.map((station, i) => (
-                        <div key={i} className="inline-flex items-center overflow-hidden rounded-full bg-white shadow-sm border border-amber-300">
-                          <span className="bg-amber-500 px-3 py-1.5 text-xs font-bold text-white">Change</span>
-                          <span className="px-3 py-1.5 text-xs font-semibold text-slate-800">{station}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

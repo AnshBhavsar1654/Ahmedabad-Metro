@@ -1,32 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FaMapMarkedAlt } from 'react-icons/fa';
-import { HiOutlineMap } from 'react-icons/hi';
-import { MdLocationOn } from 'react-icons/md';
-import { MdSchedule } from 'react-icons/md';
+import { useNavigate, Link } from 'react-router-dom';
+import { TicketCheck, CreditCard, Users, Smartphone, ArrowRight, Map, MapPin, CalendarClock, Route } from 'lucide-react';
 
 const Home = () => {
+  const navigate = useNavigate();
+  const [temperature, setTemperature] = useState({ current: '--', condition: 'Loading...' });
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [temperature, setTemperature] = useState({ current: '--', high: '--', condition: 'Loading...' });
-  const [isLoading, setIsLoading] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
-    const checkScreenSize = () => {
-      setIsSmallScreen(window.innerWidth <= 480);
-    };
-
+    const checkScreenSize = () => setIsSmallScreen(window.innerWidth <= 480);
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
@@ -37,9 +29,7 @@ const Home = () => {
         const weatherCity = process.env.REACT_APP_WEATHER_CITY || 'Ahmedabad,IN';
         
         if (!weatherApiKey) {
-          console.warn('Weather API key not configured');
-          setTemperature({ current: 32, high: 90, condition: 'Sunny' });
-          setIsLoading(false);
+          setTemperature({ current: 32, condition: 'Sunny' });
           return;
         }
 
@@ -51,23 +41,18 @@ const Home = () => {
           const data = await response.json();
           setTemperature({
             current: Math.round(data.main.temp),
-            high: Math.round(data.main.temp_max * 1.8 + 32),
             condition: data.weather[0].main
           });
         } else {
-          setTemperature({ current: 32, high: 90, condition: 'Sunny' });
+          setTemperature({ current: 32, condition: 'Sunny' });
         }
       } catch (error) {
-        console.error('Weather fetch failed:', error);
-        setTemperature({ current: 32, high: 90, condition: 'Sunny' });
-      } finally {
-        setIsLoading(false);
+        setTemperature({ current: 32, condition: 'Sunny' });
       }
     };
 
     fetchWeather();
     const weatherTimer = setInterval(fetchWeather, 600000);
-    
     return () => clearInterval(weatherTimer);
   }, []);
 
@@ -103,7 +88,6 @@ const Home = () => {
     return iconMap[condition] || '☀️';
   };
 
-  // Updated function to determine background image based on new time periods
   const getBgImage = (hour) => {
     if (hour >= 5 && hour < 17) {
       return "/afternoon.png";
@@ -114,153 +98,133 @@ const Home = () => {
     }
   };
 
-  // Compute the background image using current time
   const bgImage = getBgImage(currentTime.getHours());
 
   const accessCards = [
-    {
-      to: "/routes",
-      icon: <FaMapMarkedAlt style={{ color: 'white', fontSize: '24px' }} />,
-      title: "Route Planning",
-      subtitle: "Plan Journey"
-    },
-    {
-      to: "/stations",
-      icon: <HiOutlineMap style={{ color: 'white', fontSize: '24px' }} />,
-      title: "Metro Map",
-      subtitle: ""
-    },
-    {
-      to: "/nearest-stations",
-      icon: <MdLocationOn size={28} color="white" />,
-      title: "Nearest",
-      subtitle: "Find Stations"
-    },
-    {
-      to: "/schedule",
-      icon: <MdSchedule size={28} color="white" />,
-      title: "Metro Schedule",
-      subtitle: "Timetable"
-    }
+    { to: "/routes", icon: <Route size={24} className="text-white" />, title: "Route Planning", subtitle: "Plan Journey" },
+    { to: "/stations", icon: <Map size={24} className="text-white" />, title: "Metro Map", subtitle: "Network" },
+    { to: "/nearest-stations", icon: <MapPin size={24} className="text-white" />, title: "Nearest", subtitle: "Find Stations" },
+    { to: "/schedule", icon: <CalendarClock size={24} className="text-white" />, title: "Schedule", subtitle: "Timetable" }
   ];
 
-  const renderAccessCards = () => {
-    return accessCards.map((card, index) => (
-      <Link
-        key={index}
-        to={card.to}
-        className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/25 bg-white/15 px-4 py-4 text-center text-white shadow-[0_8px_32px_rgba(31,38,135,0.37)] backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/25"
-      >
-        <div className="text-2xl">{card.icon}</div>
-        <div>
-          <h4 className="text-sm font-semibold drop-shadow">{card.title}</h4>
-          {card.subtitle && <p className="text-xs text-white/80">{card.subtitle}</p>}
-        </div>
-      </Link>
-    ));
+  const handleStationClick = () => {
+    navigate('/routes');
   };
 
   return (
-    <div className="w-full">
-      <section className="relative min-h-screen w-full overflow-hidden">
+    <div className="w-full bg-surface-0 min-h-screen flex flex-col">
+      
+      {/* Hero Section */}
+      <section className="relative min-h-screen w-full overflow-hidden flex flex-col">
         <img className="absolute inset-0 h-full w-full object-cover brightness-50" src={bgImage} alt="Metro Cover" />
-        <div className="relative z-10 flex min-h-screen items-center justify-center px-5 py-16">
+        
+        {/* We need pt-20 to account for fixed navbar */}
+        <div className="relative z-10 flex flex-1 items-center justify-center px-5 py-20">
           <div className="w-full max-w-3xl text-center text-white">
-            <h1 className="text-4xl sm:text-5xl font-extralight bg-gradient-to-r from-white to-amber-300 bg-clip-text text-transparent drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+            <h1 className="text-4xl sm:text-5xl font-sans font-light bg-gradient-to-r from-white to-amber-300 bg-clip-text text-transparent drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
               Welcome to Ahmedabad Metro
             </h1>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
               <div>
-                <div className="text-sm text-white/90">{formatDate(currentTime)}</div>
-                <div className="mt-1 text-2xl font-semibold">{formatTime(currentTime)}</div>
+                <div className="text-sm font-sans text-white/90">{formatDate(currentTime)}</div>
+                <div className="mt-1 text-2xl font-mono font-semibold drop-shadow-md">{formatTime(currentTime)}</div>
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="text-2xl">{getWeatherIcon(temperature.condition)}</div>
+                <div className="text-2xl drop-shadow-md">{getWeatherIcon(temperature.condition)}</div>
                 <div className="text-left">
-                  <div className="text-xl font-semibold">
-                    {isLoading ? '--' : `${temperature.current}°C`}
-                    <span className="text-sm text-white/80">{isLoading ? '' : ` / ${temperature.high}°F`}</span>
+                  <div className="text-xl font-mono font-semibold drop-shadow-md">
+                    {temperature.current}°C
                   </div>
-                  <div className="text-sm text-white/80">Ahmedabad</div>
+                  <div className="text-sm font-sans text-white/80">Ahmedabad</div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-10">
-              <h3 className="text-base font-semibold text-white/90">Frequently Used</h3>
-
-              <div className={isSmallScreen ? 'mt-4 flex gap-3 overflow-x-auto pb-2 justify-start' : 'mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4'}>
-                {renderAccessCards()}
-                {isSmallScreen && renderAccessCards()}
+            <div className="mt-16">
+              <h3 className="text-base font-semibold font-sans text-white/90">Frequently Used</h3>
+              <div className={isSmallScreen ? 'mt-4 flex gap-3 overflow-x-auto pb-2 justify-start hide-scrollbar' : 'mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4'}>
+                {accessCards.map((card, index) => (
+                  <Link
+                    key={index}
+                    to={card.to}
+                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-5 text-center shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/20"
+                  >
+                    <div>{card.icon}</div>
+                    <div>
+                      <h4 className="text-sm font-sans font-semibold drop-shadow">{card.title}</h4>
+                      {card.subtitle && <p className="text-[11px] font-sans text-white/70">{card.subtitle}</p>}
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="relative mt-6 px-5 pb-10">
+      {/* Highlighted Statistics Section */}
+      <section className="px-5 py-16 bg-surface-0 border-t border-line-200">
         <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
             {[
               { n: '54', l: 'Total Stations' },
               { n: '54', l: 'Operational' },
               { n: '68.28', l: 'Network (Km)' },
               { n: '118K+', l: 'Daily Passengers' }
             ].map((s) => (
-              <div key={s.l} className="rounded-2xl bg-slate-900/80 text-white p-5 text-center shadow transition hover:-translate-y-1">
-                <div className="text-3xl font-bold text-white">{s.n}</div>
-                <div className="mt-1 text-xs text-white/80">{s.l}</div>
+              <div key={s.l} className="rounded-lg border border-line-200 bg-surface-1 p-6 text-center">
+                <div className="text-4xl font-mono text-navy-900 font-bold">{s.n}</div>
+                <div className="mt-2 text-xs font-sans font-semibold tracking-widest text-ink-600 uppercase">{s.l}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-slate-100 px-5 py-16">
+      {/* Ticket Booking Methods */}
+      <section className="px-5 py-16 bg-surface-0">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-3xl font-bold text-slate-900">Ticket Booking Methods</h2>
-
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl bg-white p-7 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-              <div className="text-4xl">🎫</div>
-              <h3 className="mt-4 text-lg font-bold text-slate-900">Ticket Vending Machine</h3>
-              <p className="mt-2 text-sm text-slate-600">Self-service machines at all stations</p>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg bg-surface-1 p-6 text-center border border-line-200">
+              <div className="flex justify-center text-navy-900 mb-4"><TicketCheck strokeWidth={1.5} size={36} /></div>
+              <h3 className="text-base font-semibold text-ink-900 font-sans">Ticket Vending Machine</h3>
+              <p className="mt-2 text-sm text-ink-600 leading-relaxed">Self-service machines at all stations</p>
             </div>
 
-            <div className="rounded-2xl bg-white p-7 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-              <div className="text-4xl">💳</div>
-              <h3 className="mt-4 text-lg font-bold text-slate-900">NCMC Smart Card</h3>
-              <p className="mt-2 text-sm text-slate-600">Contactless payment solution</p>
+            <div className="rounded-lg bg-surface-1 p-6 text-center border border-line-200">
+              <div className="flex justify-center text-navy-900 mb-4"><CreditCard strokeWidth={1.5} size={36} /></div>
+              <h3 className="text-base font-semibold text-ink-900 font-sans">NCMC Smart Card</h3>
+              <p className="mt-2 text-sm text-ink-600 leading-relaxed">Contactless payment solution</p>
             </div>
 
-            <div className="rounded-2xl bg-white p-7 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-              <div className="text-4xl">🏪</div>
-              <h3 className="mt-4 text-lg font-bold text-slate-900">KIOSK Counter</h3>
-              <p className="mt-2 text-sm text-slate-600">Assisted service with staff support</p>
+            <div className="rounded-lg bg-surface-1 p-6 text-center border border-line-200">
+              <div className="flex justify-center text-navy-900 mb-4"><Users strokeWidth={1.5} size={36} /></div>
+              <h3 className="text-base font-semibold text-ink-900 font-sans">KIOSK Counter</h3>
+              <p className="mt-2 text-sm text-ink-600 leading-relaxed">Assisted service with staff support</p>
             </div>
 
-            <div className="rounded-2xl bg-white p-7 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-              <div className="text-4xl">📱</div>
-              <h3 className="mt-4 text-lg font-bold text-slate-900">E-Ticket (Mobile App)</h3>
-              <p className="mt-2 text-sm text-slate-600">Book e-tickets on your smartphone</p>
+            <div className="rounded-lg bg-surface-1 p-6 text-center border border-line-200">
+              <div className="flex justify-center text-navy-900 mb-4"><Smartphone strokeWidth={1.5} size={36} /></div>
+              <h3 className="text-base font-semibold text-ink-900 font-sans">E-Ticket (Mobile App)</h3>
+              <p className="mt-2 text-sm text-ink-600 leading-relaxed">Book e-tickets on your smartphone</p>
               <div className="mt-4 flex items-center justify-center gap-3">
                 <a
                   href="https://play.google.com/store/apps/details?id=com.gujaratmetrorail.gmrcamddigitalticketing&hl=en_IN&pli=1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full p-2 transition hover:scale-105"
+                  className="rounded-full p-1 transition hover:bg-line-100"
                 >
-                  <img src="https://freelogopng.com/images/all_img/1664285914google-play-logo-png.png" alt="Android" className="h-6 w-6" />
+                  <img src="https://freelogopng.com/images/all_img/1664285914google-play-logo-png.png" alt="Android" className="h-5 w-5 opacity-80 hover:opacity-100" />
                 </a>
                 <a
                   href="https://apps.apple.com/in/app/ahmedabad-metro-official-app/id6670203895"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full p-2 transition hover:scale-105"
+                  className="rounded-full p-1 transition hover:bg-line-100"
                 >
-                  <img src="https://seekvectors.com/files/download/f1f44e5b764dd072f4f711f1c079fe60.jpg" alt="iOS" className="h-6 w-6" />
+                  <img src="https://seekvectors.com/files/download/f1f44e5b764dd072f4f711f1c079fe60.jpg" alt="iOS" className="h-5 w-5 opacity-80 hover:opacity-100" />
                 </a>
               </div>
             </div>
