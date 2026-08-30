@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { TicketCheck, CreditCard, Users, Smartphone, ArrowRight, Map, MapPin, CalendarClock, Route } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { TicketCheck, CreditCard, Users, Smartphone, Map, MapPin, CalendarClock, Route } from 'lucide-react';
 
 const Home = () => {
-  const navigate = useNavigate();
   const [temperature, setTemperature] = useState({ current: '--', condition: 'Loading...' });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -106,10 +105,6 @@ const Home = () => {
     { to: "/nearest-stations", icon: <MapPin size={24} className="text-white" />, title: "Nearest", subtitle: "Find Stations" },
     { to: "/schedule", icon: <CalendarClock size={24} className="text-white" />, title: "Schedule", subtitle: "Timetable" }
   ];
-
-  const handleStationClick = () => {
-    navigate('/routes');
-  };
 
   return (
     <div className="w-full bg-surface-0 min-h-screen flex flex-col">
