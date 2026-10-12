@@ -125,8 +125,15 @@ def calculate_route_details(source: str, destination: str):
         else:
             instructions.append(station)
 
+    legs, start = [], 0
+    for i in range(1, len(route)):
+        if i == len(route) - 1 or line_at[i + 1] != line_at[i]:
+            legs.append({"line": LINE_NAMES[line_at[i]], "from": route[start], "to": route[i], "stops": i - start})
+            start = i
+
     return {
         "route": route,
+        "legs": legs,
         "interchanges": interchanges,
         "distance": round(_segment_distance(route), 2),
         "instructions": instructions,

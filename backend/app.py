@@ -1,16 +1,19 @@
+import json
 import os
+import time
+from collections import deque
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 load_dotenv()
 
-from chat import ChatServiceError, ask_gemini  # noqa: E402  (needs env loaded first)
+from chat import ChatServiceError, answer, answer_stream  # noqa: E402  (needs env loaded first)
 from keepalive import start_keepalive  # noqa: E402
 from location_service import get_nearby_stations_data, get_stations_with_coordinates, resolve_google_maps_location_data  # noqa: E402
 from route import calculate_route_details, get_all_stations, get_fare, resolve_station  # noqa: E402
@@ -129,27 +132,104 @@ CHAT_ERROR_MESSAGES = {
     "config": "The assistant isn't set up correctly right now. Please try again later.",
     "rate_limit": "The assistant is getting a lot of questions right now. Please try again in a minute.",
     "unavailable": "The assistant is unavailable right now. Please try again shortly.",
+    "too_many": "You're sending messages very quickly. Please wait a moment and try again.",
 }
 
+# Per-client limit, so one script or stuck client can't use up the model quota for everyone.
+CHAT_LIMIT_PER_MINUTE = int(os.getenv("CHAT_LIMIT_PER_MINUTE", "20"))
+_recent: Dict[str, deque] = {}
 
-@app.post("/api/chat")
-def chat(data: ChatRequest):
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")  # Render and Vercel put the real client first
+    return forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+
+
+def _over_limit(ip: str) -> bool:
+    now = time.monotonic()
+    if len(_recent) > 5000:  # forget idle clients
+        for key in [k for k, q in _recent.items() if not q or now - q[-1] > 60]:
+            del _recent[key]
+    times = _recent.setdefault(ip, deque())
+    while times and now - times[0] > 60:
+        times.popleft()
+    if len(times) >= CHAT_LIMIT_PER_MINUTE:
+        return True
+    times.append(now)
+    return False
+
+
+def _check_chat_request(data: ChatRequest, request: Request) -> Optional[JSONResponse]:
     message = data.message.strip()
     if not message:
         return error_response("Missing message")
     if len(message) > MAX_CHAT_MESSAGE_CHARS:
         return error_response(f"Message is too long (limit {MAX_CHAT_MESSAGE_CHARS} characters)")
+    if _over_limit(_client_ip(request)):
+        return error_response(CHAT_ERROR_MESSAGES["too_many"], 429)
+    return None
 
+
+def _chat_error(exc: Exception) -> JSONResponse:
+    kind = exc.kind if isinstance(exc, ChatServiceError) else "unavailable"
+    print(f"[ERROR /api/chat] {kind}: {exc}")
+    status = {"rate_limit": 429, "config": 503, "unavailable": 503}.get(kind, 500)
+    return JSONResponse(status_code=status, content={"error": CHAT_ERROR_MESSAGES[kind]})
+
+
+@app.post("/api/chat")
+async def chat(data: ChatRequest, request: Request):
+    rejected = _check_chat_request(data, request)
+    if rejected:
+        return rejected
+    started = time.monotonic()
     try:
-        reply = ask_gemini(message, api_key=os.getenv("GEMINI_API_KEY", ""), conversation_history=data.history)
-        return {"response": reply}
-    except ChatServiceError as exc:
-        print(f"[ERROR /api/chat] {exc.kind}: {exc}")
-        status = 429 if exc.kind == "rate_limit" else 503
-        return JSONResponse(status_code=status, content={"error": CHAT_ERROR_MESSAGES[exc.kind]})
+        result = await answer(data.message.strip(), api_key=os.getenv("GEMINI_API_KEY", ""), history=data.history)
     except Exception as exc:
-        print(f"[ERROR /api/chat] {exc}")
-        return JSONResponse(status_code=500, content={"error": CHAT_ERROR_MESSAGES["unavailable"]})
+        return _chat_error(exc)
+    print(f"[chat] {result['source']} in {time.monotonic() - started:.2f}s")
+    return result
+
+
+def _sse(event: dict) -> str:
+    return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+
+@app.post("/api/chat/stream")
+async def chat_stream(data: ChatRequest, request: Request):
+    """Server-sent events: {"type": "delta", "text"} pieces, then {"type": "done", "source"}.
+
+    Failures before the first piece get a normal JSON error with a status code, like /api/chat.
+    """
+    rejected = _check_chat_request(data, request)
+    if rejected:
+        return rejected
+
+    started = time.monotonic()
+    events = answer_stream(data.message.strip(), api_key=os.getenv("GEMINI_API_KEY", ""), history=data.history)
+    try:
+        first = await events.__anext__()
+    except Exception as exc:
+        return _chat_error(exc)
+
+    async def body():
+        source = first.get("source")
+        try:
+            yield _sse(first)
+            async for event in events:
+                source = event.get("source", source)
+                yield _sse(event)
+        finally:
+            await events.aclose()
+            print(f"[chat] {source or 'aborted'} streamed in {time.monotonic() - started:.2f}s "
+                  f"(first piece after {first_at:.2f}s)")
+
+    first_at = time.monotonic() - started
+    return StreamingResponse(
+        body(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 if __name__ == "__main__":

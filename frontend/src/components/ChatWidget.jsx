@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { Send, TrainFront, X, RefreshCw, User } from 'lucide-react';
 import { API_URL } from '../lib/api';
 
-const ENDPOINT = `${API_URL}/api/chat`;
-const REQUEST_TIMEOUT_MS = 60000; // free hosting can take ~50s to wake up
+const ENDPOINT = `${API_URL}/api/chat/stream`;
+const FIRST_BYTE_TIMEOUT_MS = 60000; // free hosting can take ~50s to wake up
+const IDLE_TIMEOUT_MS = 20000; // once the answer is streaming, a long silence means it stalled
 const MAX_LENGTH = 1000;
 const HISTORY_TURNS = 8;
 
@@ -43,6 +44,25 @@ const renderMessage = (text) =>
     if (/^\*\*[^*]+\*\*$/.test(part)) return <strong key={i}>{part.slice(2, -2)}</strong>;
     return part;
   });
+
+// Reads the server-sent events from /api/chat/stream: {type: 'delta', text} pieces, then {type: 'done'}.
+async function* readEvents(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let end;
+    while ((end = buffer.indexOf('\n\n')) !== -1) {
+      const block = buffer.slice(0, end);
+      buffer = buffer.slice(end + 2);
+      const data = block.split('\n').filter((l) => l.startsWith('data: ')).map((l) => l.slice(6)).join('\n');
+      if (data) yield JSON.parse(data);
+    }
+  }
+}
 
 let nextId = 0;
 const makeMessage = (role, text, extra = {}) => ({ id: ++nextId, role, text, ...extra });
@@ -87,25 +107,42 @@ function ChatWidget() {
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
+  // Wake the backend as soon as the page loads, so a sleeping free-tier server is up before the first question.
+  useEffect(() => {
+    fetch(`${API_URL}/health`).catch(() => {});
+  }, []);
+
   const send = useCallback(
-    async (rawText) => {
+    async (rawText, retryOf = null) => {
       const text = rawText.trim();
       if (!text || isLoading) return;
 
       const history = messages
-        .filter((m) => !m.greeting && !m.error)
+        .filter((m) => !m.greeting && !m.error && m.id !== retryOf?.userId)
         .slice(-HISTORY_TURNS)
         .map((m) => ({ role: m.role, text: m.text }));
 
-      setMessages((prev) => [...prev, makeMessage('user', text)]);
+      const userMessage = makeMessage('user', text);
+      // A retry replaces the failed exchange instead of stacking a duplicate under it.
+      setMessages((prev) => [...prev.filter((m) => m.id !== retryOf?.id && m.id !== retryOf?.userId), userMessage]);
       setInput('');
       setIsLoading(true);
 
       const controller = new AbortController();
       abortRef.current = controller;
-      const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      let timer = setTimeout(() => controller.abort(), FIRST_BYTE_TIMEOUT_MS);
+      const resetTimer = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => controller.abort(), IDLE_TIMEOUT_MS);
+      };
 
-      let reply;
+      const botId = ++nextId;
+      let streamed = '';
+      const showBot = (text, extra = {}) =>
+        setMessages((prev) => [...prev.filter((m) => m.id !== botId), { id: botId, role: 'bot', text, ...extra }]);
+      const fail = (message) =>
+        showBot(streamed ? `${streamed}\n\n${message}` : message, { error: true, retry: text, userId: userMessage.id });
+
       try {
         const resp = await fetch(ENDPOINT, {
           method: 'POST',
@@ -113,27 +150,34 @@ function ChatWidget() {
           body: JSON.stringify({ message: text, history }),
           signal: controller.signal,
         });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) {
-          reply = makeMessage('bot', data.error || 'The assistant ran into a problem. Please try again.', { error: true });
+        if (!resp.ok || !resp.body) {
+          const data = await resp.json().catch(() => ({}));
+          fail(data.error || 'The assistant ran into a problem. Please try again.');
         } else {
-          reply = makeMessage('bot', data.response || 'I could not come up with an answer. Try rephrasing your question.');
+          resetTimer();
+          for await (const event of readEvents(resp)) {
+            resetTimer();
+            if (event.type === 'delta') {
+              streamed += event.text;
+              if (abortRef.current !== controller) return;
+              showBot(streamed);
+            }
+          }
+          if (!streamed.trim()) showBot('I could not come up with an answer. Try rephrasing your question.');
         }
       } catch (err) {
         if (controller.signal.aborted && abortRef.current !== controller) return; // chat was cleared
-        reply = makeMessage(
-          'bot',
+        fail(
           controller.signal.aborted
             ? 'The assistant took too long to respond. Please try again.'
-            : 'Could not reach the assistant. Check your connection and try again.',
-          { error: true }
+            : 'Could not reach the assistant. Check your connection and try again.'
         );
       } finally {
-        clearTimeout(timeout);
+        clearTimeout(timer);
       }
 
       if (abortRef.current !== controller) return;
-      setMessages((prev) => [...prev, reply]);
+      abortRef.current = null;
       setIsLoading(false);
       if (!isOpenRef.current) setUnread((n) => n + 1);
       inputRef.current?.focus();
@@ -155,6 +199,8 @@ function ChatWidget() {
   };
 
   const showSuggestions = messages.length === 1 && !isLoading;
+  // Typing dots until the first words arrive; after that the answer itself grows.
+  const showTyping = isLoading && messages[messages.length - 1]?.role === 'user';
 
   return (
     <>
@@ -222,6 +268,15 @@ function ChatWidget() {
                     }
                   >
                     {m.role === 'bot' ? renderMessage(m.text) : m.text}
+                    {m.error && m.retry && !isLoading && (
+                      <button
+                        type="button"
+                        onClick={() => send(m.retry, m)}
+                        className="mt-2 block rounded-md border border-line-200 px-3 py-1 text-xs font-semibold text-accent transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      >
+                        Try again
+                      </button>
+                    )}
                   </div>
                   {m.role === 'user' && <Avatar icon={User} />}
                 </div>
@@ -242,7 +297,7 @@ function ChatWidget() {
                 </div>
               )}
 
-              {isLoading && (
+              {showTyping && (
                 <div className="flex justify-start gap-3" role="status" aria-label="Assistant is typing">
                   <Avatar icon={TrainFront} />
                   <div className="flex items-center gap-1 rounded-lg border border-line-200 bg-surface-1 px-4 py-4">

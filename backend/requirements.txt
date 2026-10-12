@@ -6,5 +6,4 @@ requests>=2.32.0
 pandas>=2.2.0
 openpyxl>=3.1.0
 geopy>=2.4.0
-langchain-core>=0.3.0
-langchain-google-genai>=2.0.0
+google-genai>=2.29.0
