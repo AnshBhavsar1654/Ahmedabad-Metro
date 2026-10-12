@@ -32,15 +32,15 @@ Ahmedabad-Metro is an open-source developer toolkit designed to facilitate the c
 
 This project aims to streamline metro system development with scalable, feature-rich components. The core features include:
 
-• 🧩 🗺️ **Geospatial Routing:** Efficient station lookup, route calculation, and nearby station discovery to optimize travel planning.
+• **Geospatial Routing:** Efficient station lookup, route calculation, and nearby station discovery to optimize travel planning.
 
-• 🗨️ 🤖 **Multilingual Chatbot:** Gujarati translation-enabled AI assistant that provides instant, context-aware responses.
+• **Multilingual Chatbot:** Gujarati translation-enabled AI assistant that provides instant, context-aware responses.
 
-• 📊 📈 **Interactive Maps & Schedules:** Dynamic visualizations of routes, schedules, and station details for better user navigation.
+• **Interactive Maps & Schedules:** Dynamic visualizations of routes, schedules, and station details for better user navigation.
 
-• 🔧 🔨 **Modular API:** RESTful endpoints for fare estimation, station info, and connectivity, supporting flexible integrations.
+• **Modular API:** RESTful endpoints for fare estimation, station info, and connectivity, supporting flexible integrations.
 
-• ⚡ 📊 **Performance & Accessibility:** Built-in tools for monitoring user experience and ensuring inclusive access across the network.
+• **Performance & Accessibility:** Built-in tools for monitoring user experience and ensuring inclusive access across the network.
 
 ## Getting Started
 
@@ -70,31 +70,30 @@ cd Ahmedabad-Metro
 
 3. **Install the dependencies:**
 
-**Using pip:**
-
 ```bash
 pip install -r backend/requirements.txt
-```
-
-**Using npm:**
-
-```bash
-npm install
+cd frontend && npm install
 ```
 
 ### Usage
 
-Run the project with:
-
-**Using pip:**
+Start the backend (port 5000), then the frontend (port 3000):
 
 ```bash
 cd backend
-uvicorn app:app --reload
+uvicorn app:app --reload --port 5000
 ```
 
-**Using npm:**
+```bash
+cd frontend
+npm start
+```
+
+Environment variables are listed in [ENV_VARIABLES.md](ENV_VARIABLES.md). The design system is in [design.md](design.md).
+
+### Testing
 
 ```bash
-npm start
+cd frontend
+npm test
 ```

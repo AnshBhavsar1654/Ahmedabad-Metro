@@ -1,216 +1,107 @@
 import React, { useState } from 'react';
 import {
-  FaUsers, FaExclamationTriangle, FaDoorOpen, FaHandsHelping, FaFire,
-  FaLifeRing, FaRoute, FaPhoneAlt, FaSortAmountUpAlt,
-  FaMapSigns, FaIdCard, FaTint, FaMedkit, FaChair,
-  FaInfoCircle, FaToilet, FaUserFriends, FaTv, FaWheelchair, FaBell
-} from 'react-icons/fa';
-import { MdElevator, MdOutlineSmartDisplay } from 'react-icons/md';
-import { GiCardExchange } from 'react-icons/gi';
+  Users, Accessibility, TriangleAlert, TrendingUp, SignpostBig, CreditCard, TicketCheck, Droplets,
+  HeartPulse, Armchair, ArrowUpDown, MonitorPlay, Toilet, Tv, Megaphone, DoorOpen, Route, HandHelping,
+  Info, LifeBuoy, Flame, FireExtinguisher, Map, Phone, Bell, Siren,
+} from 'lucide-react';
+import PageHeader from './PageHeader';
+
+const categories = [
+  { id: 'passengers', title: 'Passengers', icon: Users },
+  { id: 'differently-abled', title: 'Differently abled', icon: Accessibility },
+  { id: 'emergency', title: 'Emergency', icon: TriangleAlert },
+];
+
+const facilitiesData = {
+  passengers: [
+    { name: 'Escalators', icon: TrendingUp },
+    { name: 'Guiding signage', icon: SignpostBig },
+    { name: 'Contactless smart card', icon: CreditCard },
+    { name: 'Token vending & card recharge machines', icon: TicketCheck },
+    { name: 'Drinking water', icon: Droplets },
+    { name: 'First aid assistance', icon: HeartPulse },
+    { name: 'Passenger seating areas', icon: Armchair },
+    { name: 'Lifts & elevators', icon: ArrowUpDown },
+    { name: 'Information display boards', icon: MonitorPlay },
+    { name: 'Washrooms', icon: Toilet },
+    { name: 'Digital TV screens', icon: Tv },
+    { name: 'Public announcement system', icon: Megaphone },
+  ],
+  'differently-abled': [
+    { name: 'Wide automatic fare gates', icon: DoorOpen },
+    { name: 'Tactile path for visually impaired', icon: Route },
+    { name: 'Passenger ramps', icon: TrendingUp },
+    { name: 'Wheelchair availability at stations', icon: Accessibility },
+    { name: 'Braille call buttons & handrails in lifts', icon: ArrowUpDown },
+    { name: 'Reserved wheelchair space in trains', icon: Accessibility },
+    { name: 'Accessible washrooms', icon: Toilet },
+    { name: 'Low-height ticket counters', icon: Info },
+    { name: 'Assistance staff support', icon: HandHelping },
+  ],
+  emergency: [
+    { name: 'Emergency stop plunger', description: 'Provided on platforms to stop trains approaching the station.', icon: LifeBuoy },
+    { name: 'Emergency trip system', description: 'Provided on platforms to cut off the 750 V power supply during an emergency.', icon: TriangleAlert },
+    { name: 'Fire alarm & suppression system', description: 'Detects and deals with fire.', icon: Flame },
+    { name: 'Fire extinguishers', description: 'Portable extinguishers at stations and inside trains for small fires.', icon: FireExtinguisher },
+    { name: 'Fire hose cabinets', description: 'Available at stations to handle big fires.', icon: Flame },
+    { name: 'Emergency detrainment ramp', description: 'Available in trains to evacuate passengers safely.', icon: Route },
+    { name: 'Emergency exit signage', description: 'Illuminated signage that guides passengers to exits.', icon: SignpostBig },
+    { name: 'Emergency evacuation maps', description: 'Evacuation route maps at prominent locations in stations.', icon: Map },
+    { name: 'Medical stretchers', description: 'Available at stations for emergency rescue of passengers.', icon: HeartPulse },
+    { name: 'Passenger emergency alarm & helpline', description: 'An alarm in trains and a helpline at stations to reach officials during an emergency.', icon: Phone },
+    { name: 'Manual call point', description: 'Triggers the station alarm in case of fire.', icon: Bell },
+    { name: 'Smoke detectors', description: 'Installed at various locations to detect early signs of fire.', icon: Siren },
+  ],
+};
 
 const Facilities = () => {
-  const [selectedCategory, setSelectedCategory] = useState('passengers');
-
-  const categories = [
-    {
-      id: 'passengers',
-      title: 'Facilities for Passengers',
-      icon: <FaUsers />,
-      cssClass: 'passengers'
-    },
-    {
-      id: 'differently-abled',
-      title: 'Facilities for Differently Abled',
-      icon: <FaWheelchair />,
-      cssClass: 'differently-abled'
-    },
-    {
-      id: 'emergency',
-      title: 'Emergency Facilities',
-      icon: <FaExclamationTriangle />,
-      cssClass: 'emergency'
-    }
-  ];
-
-  const facilitiesData = {
-    passengers: [
-      { name: "Escalators", icon: <FaSortAmountUpAlt /> },
-      { name: "Guiding Signage", icon: <FaMapSigns /> },
-      { name: "Contactless Smart Card", icon: <FaIdCard /> },
-      { name: "Token Vending & Card Recharge Machines", icon: <GiCardExchange /> },
-      { name: "Drinking Water", icon: <FaTint /> },
-      { name: "First Aid Assistance", icon: <FaMedkit /> },
-      { name: "Passenger Seating Areas", icon: <FaChair /> },
-      { name: "Lifts & Elevators", icon: <MdElevator /> },
-      { name: "Information Display Boards", icon: <MdOutlineSmartDisplay /> },
-      { name: "Washrooms", icon: <FaToilet /> },
-      // ✅ New additions
-      { name: "Digital TV Screens", icon: <FaTv /> },
-      { name: "Public Announcement System", icon: <FaBell /> }
-    ],
-    'differently-abled': [
-      { name: "Wide Automatic Fare Gates", icon: <FaDoorOpen /> },
-      { name: "Tactile Path for Visually Impaired", icon: <FaRoute /> },
-      { name: "Passenger Ramps", icon: <FaHandsHelping /> },
-      { name: "Wheelchair Availability at Stations", icon: <FaWheelchair /> },
-      { name: "Braille Call Buttons & Handrails in Lifts", icon: <FaSortAmountUpAlt /> },
-      { name: "Reserved Wheelchair Space in Trains", icon: <FaWheelchair /> },
-      { name: "Accessible Washrooms", icon: <FaHandsHelping /> },
-      { name: "Low Height Ticket Counters", icon: <FaInfoCircle /> },
-      // ✅ New addition
-      { name: "Assistance Staff Support", icon: <FaUserFriends /> }
-    ],
-    emergency: [
-      {
-        facility: "Emergency Stop Plunger",
-        description: "It is provided at platforms to stop trains approaching stations.",
-        icon: <FaLifeRing />
-      },
-      {
-        facility: "Emergency Trip System",
-        description: "It is provided at Platforms to cut off 750 V Power supply during emergency.",
-        icon: <FaExclamationTriangle />
-      },
-      {
-        facility: "Fire Alarm & Suppression System",
-        description: "Fire Alarm & Suppression system is available to detect and deal with Fire.",
-        icon: <FaFire />
-      },
-      {
-        facility: "Fire Extinguishers",
-        description: "Portable Fire Extinguishers are available at Stations & inside trains to handle small fire.",
-        icon: <FaFire />
-      },
-      {
-        facility: "Fire Hose Cabinets",
-        description: "Fire Hose cabinet is available at stations to handle big fires.",
-        icon: <FaFire />
-      },
-      {
-        facility: "Emergency Detrainment Ramp",
-        description: "It is available in trains to evacuate passengers safely during emergency.",
-        icon: <FaRoute />
-      },
-      {
-        facility: "Emergency Exit Signage",
-        description: "Illuminated signage to guide passengers towards exits during emergencies.",
-        icon: <FaMapSigns />
-      },
-      {
-        facility: "Emergency Evacuation Maps",
-        description: "Evacuation route maps provided at prominent locations in stations.",
-        icon: <FaRoute />
-      },
-      {
-        facility: "Medical Stretchers",
-        description: "Stretcher is available at stations for emergency rescue of passengers.",
-        icon: <FaMedkit />
-      },
-      {
-        facility: "Passenger Emergency Alarm & Passenger Helpline",
-        description: "Passenger Emergency Alarm is provided in trains & Passenger helpline is provided at stations for passengers to communicate with officials during emergency.",
-        icon: <FaPhoneAlt />
-      },
-      {
-        facility: "Manual Call Point",
-        description: "Manual Call Point is provided to trigger alarm in station in case of Fire.",
-        icon: <FaBell />
-      },
-      // ✅ New addition
-      {
-        facility: "Smoke Detectors",
-        description: "Installed at various locations to detect early signs of fire.",
-        icon: <FaFire />
-      }
-    ]
-  };
-
-  const renderFacilityCards = () => {
-    if (selectedCategory === 'emergency') {
-      return (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {facilitiesData.emergency.map((item, index) => (
-            <div
-              key={index}
-              className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm p-5 transition hover:-translate-y-1 hover:shadow-md"
-            >
-              <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-red-600 to-red-800" />
-              <div className="text-red-600 text-3xl mb-3">{item.icon}</div>
-              <div>
-                <h3 className="font-bold text-slate-900 mb-2">{item.facility}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{item.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {facilitiesData[selectedCategory].map((facility, index) => (
-          <div
-            key={index}
-            className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm p-5 flex items-center gap-4 transition hover:-translate-y-1 hover:shadow-md"
-          >
-            <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-brand-500 to-brand-800" />
-            <div className="text-brand-600 text-3xl min-w-12 flex items-center justify-center">
-              {facility.icon}
-            </div>
-            <div className="font-semibold text-slate-700 leading-snug">{facility.name}</div>
-          </div>
-        ))}
-      </div>
-    );
-  };
+  const [selected, setSelected] = useState('passengers');
+  const isEmergency = selected === 'emergency';
 
   return (
-    <div className="bg-surface-0 min-h-screen pb-10">
-      <div className="mx-auto max-w-7xl px-5 pt-8 mb-8 pb-6 border-b border-line-200">
-        <h1 className="text-3xl font-bold font-sans text-navy-900 tracking-tight">Facilities at Ahmedabad Metro</h1>
-        <p className="text-base text-ink-600 mt-2">Explore the various passenger amenities available across our metro network</p>
-      </div>
+    <div className="min-h-screen bg-surface-0 pb-10">
+      <PageHeader title="Facilities" subtitle="Passenger amenities available across the metro network" />
 
-      <div className="mx-auto max-w-7xl px-5 mt-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4">
-        {categories.map((category) => {
-          const isActive = selectedCategory === category.id;
-          const activeColors =
-            category.id === 'passengers'
-              ? 'bg-indigo-600 border-indigo-600'
-              : category.id === 'differently-abled'
-                ? 'bg-emerald-600 border-emerald-600'
-                : 'bg-red-600 border-red-600';
+      <div className="mx-auto mt-6 max-w-7xl px-5">
+        <div className="flex flex-col gap-3 sm:flex-row" role="tablist" aria-label="Facility categories">
+          {categories.map(({ id, title, icon: Icon }) => {
+            const isActive = selected === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setSelected(id)}
+                className={
+                  'flex items-center gap-3 rounded-md border px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ' +
+                  (isActive ? 'border-accent bg-navy-900 text-white' : 'border-line-200 bg-surface-1 text-ink-900 hover:border-accent')
+                }
+              >
+                <Icon strokeWidth={1.75} size={20} />
+                {title}
+              </button>
+            );
+          })}
+        </div>
 
-          const hoverBorder =
-            category.id === 'passengers'
-              ? 'hover:border-indigo-600'
-              : category.id === 'differently-abled'
-                ? 'hover:border-emerald-600'
-                : 'hover:border-red-600';
-
-          return (
-            <button
-              key={category.id}
-              type="button"
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {facilitiesData[selected].map(({ name, description, icon: Icon }) => (
+            <li
+              key={name}
               className={
-                `flex items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition shadow-sm ` +
-                (isActive
-                  ? `${activeColors} text-white shadow-md`
-                  : `bg-white border-slate-200 text-slate-800 hover:-translate-y-0.5 hover:shadow-md ${hoverBorder}`)
+                'flex items-start gap-4 rounded-lg border border-line-200 bg-surface-1 p-5 ' +
+                (isEmergency ? 'border-l-4 border-l-alert-600' : '')
               }
-              onClick={() => setSelectedCategory(category.id)}
             >
-              <span className={isActive ? 'text-2xl' : 'text-2xl text-slate-700'}>{category.icon}</span>
-              <span className="font-semibold text-sm sm:text-base leading-snug">{category.title}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <section className="mt-8">
-        {renderFacilityCards()}
-      </section>
+              <Icon strokeWidth={1.75} size={26} className={`shrink-0 ${isEmergency ? 'text-alert-600' : 'text-accent'}`} />
+              <div>
+                <h3 className="font-sans text-sm font-semibold leading-snug text-ink-900">{name}</h3>
+                {description && <p className="mt-1 text-sm leading-relaxed text-ink-600">{description}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

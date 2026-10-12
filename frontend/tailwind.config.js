@@ -1,29 +1,22 @@
 /** @type {import('tailwindcss').Config} */
+
+// Colours are CSS variables (RGB channels) defined in src/index.css, so one class works in light and dark.
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 module.exports = {
+  darkMode: 'class',
   content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   theme: {
     extend: {
       colors: {
-        ink: {
-          900: '#12151B',
-          600: '#4B5160',
-          300: '#9BA0AC',
-        },
-        line: {
-          200: '#DFE1DA',
-          100: '#ECEDE8',
-        },
-        surface: {
-          0: '#F4F5F1',
-          1: '#FFFFFF',
-        },
-        navy: {
-          900: '#0E2340',
-          700: '#16335A',
-          100: '#E8EDF4',
-        },
-        alert: { 600: '#C81E1E' },
-        go:    { 600: '#1B7A4B' },
+        ink: { 900: token('ink-900'), 600: token('ink-600'), 300: token('ink-300') },
+        line: { 200: token('line-200'), 100: token('line-100') },
+        surface: { 0: token('surface-0'), 1: token('surface-1') },
+        // navy = filled chrome (navbar, headers, primary buttons). accent = navy-as-ink: links, icons, outlines.
+        navy: { 900: token('navy-900'), 700: token('navy-700'), 100: token('navy-100') },
+        accent: token('accent'),
+        alert: { 600: token('alert-600') },
+        go: { 600: token('go-600') },
       },
       fontFamily: {
         sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],

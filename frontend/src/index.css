@@ -3,6 +3,47 @@
 @tailwind utilities;
 
 @layer base {
+  /* Colour tokens as RGB channels so Tailwind opacity modifiers (bg-navy-900/60) keep working. */
+  :root {
+    --ink-900: 18 21 27;
+    --ink-600: 75 81 96;
+    --ink-300: 155 160 172;
+    --line-200: 223 225 218;
+    --line-100: 236 237 232;
+    --surface-0: 244 245 241;
+    --surface-1: 255 255 255;
+    --navy-900: 14 35 64;
+    --navy-700: 22 51 90;
+    --navy-100: 232 237 244;
+    --accent: 14 35 64;
+    --alert-600: 200 30 30;
+    --go-600: 27 122 75;
+    color-scheme: light;
+  }
+
+  .dark {
+    --ink-900: 232 234 238;
+    --ink-600: 160 167 180;
+    --ink-300: 107 114 128;
+    --line-200: 42 49 64;
+    --line-100: 32 38 51;
+    --surface-0: 15 19 26;
+    --surface-1: 23 28 37;
+    --navy-900: 23 50 90;
+    --navy-700: 33 66 120;
+    --navy-100: 26 42 68;
+    --accent: 141 180 240;
+    --alert-600: 239 68 68;
+    --go-600: 74 200 130;
+    color-scheme: dark;
+  }
+
+  *,
+  ::before,
+  ::after {
+    --tw-ring-offset-color: rgb(var(--surface-0));
+  }
+
   html {
     scroll-behavior: smooth;
   }
@@ -12,43 +53,75 @@
   }
 }
 
- .leaflet-container {
-   z-index: 0;
- }
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
 
- .leaflet-top,
- .leaflet-bottom {
-   z-index: 0;
- }
+/* Keep Leaflet panes below the fixed navbar, chat widget and dropdowns. */
+.leaflet-container,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 0;
+}
 
- .map-tiles {
-   filter: grayscale(100%) opacity(0.5);
- }
+.leaflet-tooltip.station-tooltip {
+  background: rgb(var(--surface-1));
+  border: 1px solid rgb(var(--line-200));
+  color: rgb(var(--ink-900));
+  font-size: 11px;
+  line-height: 1.1;
+  padding: 2px 6px;
+  border-radius: 6px;
+  box-shadow: none;
+}
 
- .route-glow {
-   filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.55)) drop-shadow(0 0 12px rgba(29, 78, 216, 0.35));
- }
+.leaflet-tooltip.station-tooltip::before {
+  border-top-color: rgb(var(--surface-1));
+}
 
- .leaflet-tooltip.station-tooltip {
-   background: rgba(255, 255, 255, 0.92);
-   border: 1px solid rgba(15, 23, 42, 0.12);
-   color: rgb(15, 23, 42);
-   font-size: 10px;
-   line-height: 1.1;
-   padding: 2px 6px;
-   border-radius: 8px;
-   box-shadow: 0 6px 14px rgba(0,0,0,0.10);
- }
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip,
+.leaflet-bar a {
+  background: rgb(var(--surface-1));
+  color: rgb(var(--ink-900));
+}
 
- .leaflet-tooltip.station-tooltip::before {
-   border-top-color: rgba(255, 255, 255, 0.92);
- }
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  border-bottom-color: rgb(var(--line-200));
+}
+
+.leaflet-bar a:hover {
+  background: rgb(var(--surface-0));
+}
+
+.shimmer {
+  background: linear-gradient(90deg, rgb(var(--line-100)) 25%, rgb(var(--surface-0)) 50%, rgb(var(--line-100)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
 
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-.shimmer {
-  animation: shimmer 1.8s ease-in-out infinite;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

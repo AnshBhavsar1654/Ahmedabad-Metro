@@ -1,11 +1,15 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { MapContainer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Route, MapPin, TrainFront, Banknote, Map, ArrowRightLeft } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Route, TrainFront, Banknote, Map, ArrowRightLeft } from 'lucide-react';
+import PageHeader from './PageHeader';
+import BaseTiles from './BaseTiles';
 import { RouteDetailsSkeleton } from './Skeleton';
-
-const API_URL = (process.env.REACT_APP_API_BASE_URL || "https://ahmedabad-metro-backend.onrender.com").replace(/\/+$/, "");
+import { API_URL } from '../lib/api';
+import { LINES, lineColor } from '../lib/lines';
+import { useTheme, mapPalette } from '../lib/theme';
 
 const metroLines = {
   "Red Line": ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium", "Koteshwar Road"],
@@ -14,13 +18,7 @@ const metroLines = {
   "Violet Line": ["GNLU", "PDEU", "Gift City"]
 };
 
-// Use the UI-adjusted accessible hexes from section 1.2
-const lineColors = {
-  "Red Line": "#E0231F",
-  "Blue Line": "#0983CE",
-  "Yellow Line": "#C99A00",
-  "Violet Line": "#7B12E0"
-};
+const lineByName = Object.fromEntries(LINES.map((l) => [l.name, l]));
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -29,22 +27,15 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-const createRingIcon = (borderColor, size = [16, 16], isLarge = false, borderWidth = 3) => {
-  const iconSize = isLarge ? [size[0] * 1.5, size[1] * 1.5] : size;
-  return L.divIcon({
+const createRingIcon = (borderColor, fill, size = [16, 16], borderWidth = 3) =>
+  L.divIcon({
     className: 'custom-marker',
-    html: `<div style="
-      width: ${iconSize[0]}px;
-      height: ${iconSize[1]}px;
-      background-color: #ffffff;
-      border: ${borderWidth}px solid ${borderColor};
-      border-radius: 50%;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    "></div>`,
-    iconSize: iconSize,
-    iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+    html: `<div style="width:${size[0]}px;height:${size[1]}px;background-color:${fill};border:${borderWidth}px solid ${borderColor};border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`,
+    iconSize: size,
+    iconAnchor: [size[0] / 2, size[1] / 2],
   });
-};
+
+const MAP_CENTER = [23.0225, 72.5714];
 
 const FitNetworkBounds = ({ bounds }) => {
   const map = useMap();
@@ -74,43 +65,44 @@ const FitRouteBounds = ({ bounds }) => {
 const RoutesInfo = () => {
   const [stations, setStations] = useState([]);
   const [stationCoords, setStationCoords] = useState({});
-  const [selectedSource, setSelectedSource] = useState('');
-  const [selectedDest, setSelectedDest] = useState('');
+  const prefill = useLocation().state;
+  const { theme } = useTheme();
+  const palette = mapPalette(theme);
+  const [selectedSource, setSelectedSource] = useState(prefill?.source || '');
+  const [selectedDest, setSelectedDest] = useState(prefill?.destination || '');
   const [routeDetails, setRouteDetails] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mapCenter] = useState([23.0225, 72.5714]);
-  const [mapZoom] = useState(11);
   const [animatedPos, setAnimatedPos] = useState(null);
   const animationRafIdRef = useRef(null);
 
   const getStationColor = (stationName) => {
     for (const [lineName, stationList] of Object.entries(metroLines)) {
       if (stationList.includes(stationName)) {
-        return lineColors[lineName];
+        return lineColor(lineByName[lineName], theme);
       }
     }
-    return "#4B5160"; // ink-600
+    return palette.neutral;
   };
   
 
 
   useEffect(() => {
-    fetch(`${API_URL}/api/stations`)
-      .then(res => res.json())
-      .then(data => setStations(data))
-      .catch(err => setError('Failed to load stations'));
+    const getJson = async (path) => {
+      const res = await fetch(`${API_URL}${path}`);
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      return res.json();
+    };
 
-    fetch(`${API_URL}/api/stations/coordinates`)
-      .then(res => res.json())
-      .then(data => {
-        const coordsMap = {};
-        data.forEach(station => {
-          coordsMap[station.name] = [station.latitude, station.longitude];
-        });
-        setStationCoords(coordsMap);
+    getJson('/api/stations')
+      .then((data) => setStations(Array.isArray(data) ? data : []))
+      .catch(() => setError('Could not load the station list. Refresh the page to try again.'));
+
+    getJson('/api/stations/coordinates')
+      .then((data) => {
+        setStationCoords(Object.fromEntries(data.map((st) => [st.name, [st.latitude, st.longitude]])));
       })
-      .catch(err => console.error('Failed to load station coordinates:', err));
+      .catch((err) => console.error('Failed to load station coordinates:', err));
   }, []);
 
   const swapStations = () => {
@@ -119,37 +111,19 @@ const RoutesInfo = () => {
     setSelectedDest(temp);
   };
 
-  const getStationInstruction = (station, index) => {
-    if (!routeDetails || !routeDetails.instructions) return '';
-    
-    if (index === 0 && routeDetails.instructions.length > 0) {
-      const instruction = routeDetails.instructions[0];
-      const match = instruction.match(/\(Take .+?\)$/);
-      return match ? ` ${match[0]}` : '';
-    }
-    
-    if (routeDetails.interchanges.includes(station)) {
-      const instructionIndex = routeDetails.route.indexOf(station);
-      if (instructionIndex >= 0 && instructionIndex < routeDetails.instructions.length) {
-        const instruction = routeDetails.instructions[instructionIndex];
-        if (instruction.includes('Change from')) {
-          const match = instruction.match(/\(Change from .+?\)$/);
-          return match ? ` ${match[0]}` : '';
-        }
-      }
-    }
-    
-    return '';
+  // instructions[i] describes route[i], e.g. "(Take Red Line)" or "(Change from Red Line to Blue Line)".
+  const getStationInstruction = (index) => {
+    const match = routeDetails?.instructions?.[index]?.match(/\(((?:Take|Change from) .+)\)$/);
+    return match ? match[1] : '';
   };
 
-  const handleProceed = async () => {
+  const handleProceed = useCallback(async () => {
     if (!selectedSource || !selectedDest) {
-      setError('Please select both source and destination');
+      setError('Choose both a departure and a destination station.');
       return;
     }
-    
     if (selectedSource === selectedDest) {
-      setError('Source and destination cannot be the same');
+      setError('Departure and destination must be different stations.');
       return;
     }
 
@@ -157,48 +131,41 @@ const RoutesInfo = () => {
     setError('');
     setRouteDetails(null);
 
+    const post = async (path) => {
+      const res = await fetch(`${API_URL}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: selectedSource, destination: selectedDest }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Something went wrong. Please try again.');
+      return body;
+    };
+
     try {
-      const routeResponse = await fetch(`${API_URL}/api/route`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: selectedSource, destination: selectedDest })
-      });
-
-      if (!routeResponse.ok) {
-        const errorData = await routeResponse.json();
-        throw new Error(errorData.error || 'Failed to calculate route');
-      }
-
-      const routeData = await routeResponse.json();
-
-      const fareResponse = await fetch(`${API_URL}/api/fare`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: selectedSource, destination: selectedDest })
-      });
-
-      if (!fareResponse.ok) {
-        const errorData = await fareResponse.json();
-        throw new Error(errorData.error || 'Failed to calculate fare');
-      }
-
-      const fareData = await fareResponse.json();
-
+      const [routeData, fareData] = await Promise.all([post('/api/route'), post('/api/fare')]);
       setRouteDetails({
         route: routeData.route || [],
         interchanges: routeData.interchanges || [],
         instructions: routeData.instructions || [],
-        fare: fareData.fare || 0,
-        distance: routeData.distance || 0
+        fare: fareData.fare ?? null,
+        distance: routeData.distance || 0,
       });
-
     } catch (err) {
-      setError(err.message);
-      console.error('API Error:', err);
+      setError(err instanceof TypeError ? 'Could not reach the server. Check your connection and try again.' : err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedSource, selectedDest]);
+
+  // Arriving from the home planner: run the search straight away.
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (!autoRan.current && prefill?.source && prefill?.destination) {
+      autoRan.current = true;
+      handleProceed();
+    }
+  }, [prefill, handleProceed]);
 
   const routePolyline = useMemo(() => {
     if (!routeDetails || !routeDetails.route || Object.keys(stationCoords).length === 0) return [];
@@ -215,11 +182,11 @@ const RoutesInfo = () => {
         .map(station => stationCoords[station])
         .filter(coord => coord !== undefined);
       if (coords.length > 1) {
-        lines.push({ name: lineName, coords, color: lineColors[lineName] });
+        lines.push({ name: lineName, coords, color: lineColor(lineByName[lineName], theme) });
       }
     });
     return lines;
-  }, [stationCoords]);
+  }, [stationCoords, theme]);
 
   const networkBounds = useMemo(() => {
     const coords = Object.values(stationCoords);
@@ -235,11 +202,11 @@ const RoutesInfo = () => {
   const animatedIcon = useMemo(() => {
     return L.divIcon({
       className: 'route-anim-marker',
-      html: `<div style="width:16px;height:16px;border-radius:9999px;background:#0E2340;border:3px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`,
+      html: `<div style="width:16px;height:16px;border-radius:9999px;background:${palette.route};border:3px solid ${palette.fill};box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`,
       iconSize: [16, 16],
       iconAnchor: [8, 8],
     });
-  }, []);
+  }, [palette]);
 
   useEffect(() => {
     if (!routePolyline || routePolyline.length < 2) {
@@ -308,10 +275,7 @@ const RoutesInfo = () => {
 
   return (
     <div className="bg-surface-0 min-h-screen pb-10">
-      <div className="mx-auto max-w-7xl px-5 pt-8 mb-8 pb-6 border-b border-line-200">
-        <h1 className="text-3xl font-bold font-sans text-navy-900 tracking-tight">Plan Journey</h1>
-        <p className="text-base text-ink-600 mt-2">Find the best route, fare, and travel time</p>
-      </div>
+      <PageHeader title="Plan Journey" subtitle="Find the route, fare and distance between any two stations" />
 
       <div className="mx-auto max-w-7xl px-5 mt-6">
         {/* Form Card */}
@@ -321,17 +285,17 @@ const RoutesInfo = () => {
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2 font-semibold text-ink-900 font-sans text-sm">
                   <span className="h-2 w-2 rounded-full bg-ink-900" />
-                  <label>From</label>
+                  <label htmlFor="route-from">From</label>
                 </div>
-                <div className="font-mono text-xs text-ink-600 px-2 py-1 bg-surface-0 rounded-full border border-line-200">{stations.length} stations</div>
               </div>
               <select
+                id="route-from"
                 value={selectedSource}
                 onChange={(e) => setSelectedSource(e.target.value)}
                 disabled={loading}
-                className="w-full rounded-md border border-line-200 bg-surface-0 px-4 py-2.5 text-sm font-sans text-ink-900 focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900 transition"
+                className="w-full rounded-md border border-line-200 bg-surface-0 px-4 py-2.5 text-sm font-sans text-ink-900 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition"
               >
-                <option value="">Select departure station</option>
+                <option value="">Choose departure station</option>
                 {stations.map((station) => (
                   <option key={`src-${station}`} value={station}>{station}</option>
                 ))}
@@ -344,7 +308,7 @@ const RoutesInfo = () => {
                 onClick={swapStations}
                 disabled={loading}
                 className="mt-2 inline-flex h-10 w-10 items-center justify-center rounded-md border border-line-200 bg-surface-0 text-ink-900 hover:bg-line-100 transition disabled:opacity-60"
-                aria-label="Swap"
+                aria-label="Swap departure and destination"
               >
                 <ArrowRightLeft strokeWidth={1.5} size={18} />
               </button>
@@ -353,18 +317,18 @@ const RoutesInfo = () => {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2 font-semibold text-ink-900 font-sans text-sm">
-                  <span className="h-2 w-2 rounded-full bg-navy-900" />
-                  <label>To</label>
+                  <span className="h-2 w-2 rounded-full bg-accent" />
+                  <label htmlFor="route-to">To</label>
                 </div>
-                <div className="font-mono text-xs text-ink-600 px-2 py-1 bg-surface-0 rounded-full border border-line-200">{stations.length} stations</div>
               </div>
               <select
+                id="route-to"
                 value={selectedDest}
                 onChange={(e) => setSelectedDest(e.target.value)}
                 disabled={loading}
-                className="w-full rounded-md border border-line-200 bg-surface-0 px-4 py-2.5 text-sm font-sans text-ink-900 focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900 transition"
+                className="w-full rounded-md border border-line-200 bg-surface-0 px-4 py-2.5 text-sm font-sans text-ink-900 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition"
               >
-                <option value="">Select destination station</option>
+                <option value="">Choose destination station</option>
                 {stations.map((station) => (
                   <option key={`dest-${station}`} value={station}>{station}</option>
                 ))}
@@ -387,13 +351,13 @@ const RoutesInfo = () => {
               {loading ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/50 border-t-white" />
               ) : (
-                'Find Route'
+                'Find route'
               )}
             </button>
           </div>
 
           {error && (
-            <div className="mt-5 rounded-md border border-alert-600/30 bg-alert-600/10 px-4 py-3 text-sm font-semibold text-alert-600 text-center font-sans">
+            <div role="alert" className="mt-5 rounded-md border-l-4 border-alert-600 bg-surface-0 px-4 py-3 text-sm text-ink-900">
               {error}
             </div>
           )}
@@ -407,16 +371,16 @@ const RoutesInfo = () => {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
                 <div>
-                  <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600 mb-1">Total Fare</div>
-                  <div className="font-mono text-2xl text-navy-900 tabular-nums">₹{routeDetails.fare}</div>
+                  <div className="font-sans text-xs font-medium text-ink-600 mb-1">Fare</div>
+                  <div className="font-mono text-2xl text-accent tabular-nums">{routeDetails.fare != null ? `₹${routeDetails.fare}` : '—'}</div>
                 </div>
                 <Banknote className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
               </div>
 
               <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
                 <div>
-                  <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600 mb-1">Distance</div>
-                  <div className="font-mono text-2xl text-navy-900 tabular-nums">
+                  <div className="font-sans text-xs font-medium text-ink-600 mb-1">Distance</div>
+                  <div className="font-mono text-2xl text-accent tabular-nums">
                     {typeof routeDetails.distance === 'number'
                       ? `${routeDetails.distance.toFixed(2)} km`
                       : routeDetails.distance}
@@ -427,16 +391,16 @@ const RoutesInfo = () => {
 
               <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
                 <div>
-                  <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600 mb-1">Stations</div>
-                  <div className="font-mono text-2xl text-navy-900 tabular-nums">{routeDetails.route.length}</div>
+                  <div className="font-sans text-xs font-medium text-ink-600 mb-1">Stations</div>
+                  <div className="font-mono text-2xl text-accent tabular-nums">{routeDetails.route.length}</div>
                 </div>
                 <TrainFront className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
               </div>
 
               <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
                 <div>
-                  <div className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600 mb-1">Interchanges</div>
-                  <div className="font-mono text-2xl text-navy-900 tabular-nums">{routeDetails.interchanges.length}</div>
+                  <div className="font-sans text-xs font-medium text-ink-600 mb-1">Interchanges</div>
+                  <div className="font-mono text-2xl text-accent tabular-nums">{routeDetails.interchanges.length}</div>
                 </div>
                 <ArrowRightLeft className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
               </div>
@@ -453,16 +417,12 @@ const RoutesInfo = () => {
                 <div className="flex-1 w-full relative">
                   {Object.keys(stationCoords).length > 0 && (
                     <MapContainer
-                      center={mapCenter}
-                      zoom={mapZoom}
+                      center={MAP_CENTER}
+                      zoom={11}
                       style={{ height: '100%', width: '100%', zIndex: 0 }}
                       scrollWheelZoom={true}
                     >
-                      <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution="&copy; <a href='https://openstreetmap.org'>OpenStreetMap</a> contributors"
-                        className="map-tiles"
-                      />
+                      <BaseTiles />
                       <FitNetworkBounds bounds={networkBounds} />
                       <FitRouteBounds bounds={routeBounds} />
                       
@@ -485,7 +445,7 @@ const RoutesInfo = () => {
                           <Polyline
                             positions={routePolyline}
                             pathOptions={{
-                              color: '#0E2340', // navy-900 for route highlight
+                              color: palette.route,
                               weight: 6,
                               opacity: 0.8
                             }}
@@ -514,7 +474,7 @@ const RoutesInfo = () => {
 
                         if (isSource) {
                           return (
-                            <Marker key={name} position={coords} icon={createRingIcon('#12151B', [14, 14])}>
+                            <Marker key={name} position={coords} icon={createRingIcon(palette.ink, palette.fill, [14, 14])}>
                               <Tooltip className="station-tooltip" direction="top" offset={[0, -10]} opacity={1} permanent>
                                 <span className="font-sans font-semibold">{name}</span>
                               </Tooltip>
@@ -523,7 +483,7 @@ const RoutesInfo = () => {
                         }
                         if (isDest) {
                           return (
-                            <Marker key={name} position={coords} icon={createRingIcon('#0E2340', [14, 14])}>
+                            <Marker key={name} position={coords} icon={createRingIcon(palette.route, palette.fill, [14, 14])}>
                               <Tooltip className="station-tooltip" direction="top" offset={[0, -10]} opacity={1} permanent>
                                 <span className="font-sans font-semibold">{name}</span>
                               </Tooltip>
@@ -532,7 +492,7 @@ const RoutesInfo = () => {
                         }
                         if (isInRoute) {
                           return (
-                            <Marker key={name} position={coords} icon={createRingIcon(stationBorderColor, [10, 10], false, 2)}>
+                            <Marker key={name} position={coords} icon={createRingIcon(stationBorderColor, palette.fill, [10, 10], 2)}>
                               {showPermanentLabel ? (
                                 <Tooltip className="station-tooltip" direction="top" offset={[0, -10]} opacity={1} permanent>
                                   <span className="font-sans">{name}</span>
@@ -546,7 +506,7 @@ const RoutesInfo = () => {
                           );
                         }
                         return (
-                          <Marker key={name} position={coords} icon={createRingIcon(stationBorderColor, [8, 8], false, 2)}>
+                          <Marker key={name} position={coords} icon={createRingIcon(stationBorderColor, palette.fill, [8, 8], 2)}>
                             <Tooltip className="station-tooltip" direction="top" offset={[0, -8]} opacity={0.9}>
                               <span className="font-sans text-xs">{name}</span>
                             </Tooltip>
@@ -564,63 +524,31 @@ const RoutesInfo = () => {
                   <TrainFront size={16} className="text-ink-900" />
                   <h3 className="font-sans font-semibold text-sm text-ink-900">Your Journey</h3>
                 </div>
-                <div className="p-5 flex-1 overflow-y-auto hide-scrollbar">
-                  <div className="space-y-0 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-line-200">
-                    {/* Source */}
-                    <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active pb-6">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-line-200 bg-surface-1 text-ink-900 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                        <MapPin size={16} />
-                      </div>
-                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-md border border-line-200 bg-surface-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="font-bold text-ink-900 font-sans">{selectedSource}</div>
+                <ol className="flex-1 overflow-y-auto p-5 hide-scrollbar">
+                  {routeDetails.route.map((station, index) => {
+                    const isFirst = index === 0;
+                    const isLast = index === routeDetails.route.length - 1;
+                    const isInterchange = routeDetails.interchanges.includes(station);
+                    const note = getStationInstruction(index);
+                    const color = getStationColor(station);
+                    return (
+                      <li key={station} className="relative flex gap-4 pb-5 last:pb-0">
+                        {!isLast && <span className="absolute left-[7px] top-4 h-full w-0.5 bg-line-200" aria-hidden="true" />}
+                        <span
+                          className="relative z-10 mt-1 h-4 w-4 shrink-0 rounded-full border-[3px] bg-surface-1"
+                          style={{ borderColor: isFirst || isLast ? palette.route : color }}
+                          aria-hidden="true"
+                        />
+                        <div className="min-w-0">
+                          <div className={`font-sans text-sm text-ink-900 ${isFirst || isLast || isInterchange ? 'font-semibold' : ''}`}>{station}</div>
+                          {isFirst && <div className="text-xs text-ink-600">Start: {note}</div>}
+                          {isLast && <div className="text-xs text-ink-600">Destination</div>}
+                          {isInterchange && <div className="text-xs font-medium text-accent">{note}</div>}
                         </div>
-                        <div className="text-sm text-ink-600 font-sans">
-                          Start
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Intermediate stations */}
-                    {routeDetails.route
-                      .filter((station) => station !== selectedSource && station !== selectedDest)
-                      .map((station, index) => {
-                        const routeIndex = routeDetails.route.indexOf(station);
-                        const isInterchange = routeDetails.interchanges.includes(station);
-                        const stationColor = getStationColor(station);
-                        const instruction = getStationInstruction(station, routeIndex);
-
-                        return (
-                          <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active pb-6">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-surface-0 bg-surface-1 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10" style={{ borderColor: isInterchange ? stationColor : '#E2E8F0' }}>
-                               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stationColor }}></div>
-                            </div>
-                            <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-md border ${isInterchange ? 'border-navy-900 bg-navy-100/30' : 'border-line-100 bg-surface-1'}`}>
-                              <div className="font-semibold text-ink-900 font-sans">{station}</div>
-                              {isInterchange && (
-                                <div className="text-sm text-navy-900 font-sans mt-1 font-medium">
-                                  Interchange {instruction && `· ${instruction}`}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                    {/* Destination */}
-                    <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-line-200 bg-navy-900 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                        <MapPin size={16} />
-                      </div>
-                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-md border border-navy-900 bg-navy-100/30">
-                        <div className="font-bold text-ink-900 font-sans">{selectedDest}</div>
-                        <div className="text-sm text-navy-900 font-sans font-medium mt-1">
-                          Destination
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                      </li>
+                    );
+                  })}
+                </ol>
               </div>
             </div>
           </div>

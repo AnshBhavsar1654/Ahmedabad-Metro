@@ -1,95 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Home,
-  Route,
-  TrainFront,
-  MapPin,
-  Accessibility,
-  Clock,
-  Phone,
-  Info,
-  Menu,
-  X
-} from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
+import { Home, Route, TrainFront, MapPin, Accessibility, Clock, Phone, Info, Menu, X } from 'lucide-react';
+
+const NAV_ITEMS = [
+  { to: '/', label: 'Home', icon: Home },
+  { to: '/routes', label: 'Plan Journey', icon: Route },
+  { to: '/stations', label: 'Metro Map', icon: TrainFront },
+  { to: '/nearest-stations', label: 'Nearest Stations', icon: MapPin },
+  { to: '/facilities', label: 'Facilities', icon: Accessibility },
+  { to: '/schedule', label: 'Schedule', icon: Clock },
+  { to: '/contact', label: 'Contact', icon: Phone },
+  { to: '/stations-info', label: 'Stations Info', icon: Info },
+];
+
+const iconProps = { strokeWidth: 1.75, size: 20 };
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const location = useLocation();
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const closeMenu = () => setIsMenuOpen(false);
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    closeMenu(); // Close menu on route change
-  }, [location]);
+    setIsMenuOpen(false);
+  }, [pathname]);
 
-  const isActiveLink = (path) => location.pathname === path;
+  const desktopClass = (to) =>
+    'flex items-center gap-2 whitespace-nowrap border-b-2 px-2.5 py-2 text-sm font-medium transition-colors ' +
+    (pathname === to ? 'border-white text-white' : 'border-transparent text-white/70 hover:text-white');
 
-  const baseLinkClass =
-    'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap';
-
-  const linkClass = (path) =>
-    `${baseLinkClass} ${
-      isActiveLink(path)
-        ? 'border-b-2 border-white text-white'
-        : 'text-white/70 hover:text-white border-b-2 border-transparent'
-    }`;
-
-  const mobileLinkClass = (path) =>
-    `flex items-center gap-3 px-4 py-3 text-base font-medium transition-colors border-b border-white/10 ${
-      isActiveLink(path)
-        ? 'text-white bg-navy-700'
-        : 'text-white/70 hover:text-white hover:bg-navy-700/50'
-    }`;
-
-  const iconProps = { strokeWidth: 1.75, size: 20 };
+  const mobileClass = (to) =>
+    'flex items-center gap-3 border-b border-white/10 px-4 py-3 text-base font-medium transition-colors ' +
+    (pathname === to ? 'bg-navy-700 text-white' : 'text-white/70 hover:bg-navy-700/50 hover:text-white');
 
   return (
-    <nav className="fixed top-0 z-[2000] w-full bg-navy-900 border-b border-navy-900">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 min-h-[64px]">
-        <Link to="/" className="flex items-center gap-2 no-underline text-white" onClick={closeMenu}>
-          <img src="/logo.png" alt="Ahmedabad Metro Logo" className="h-10 w-10" />
-          <span className="font-bold text-lg font-sans">Ahmedabad Metro</span>
+    <nav className="fixed top-0 z-[2000] w-full bg-navy-900" aria-label="Main">
+      <div className="mx-auto flex min-h-[64px] max-w-7xl items-center justify-between px-5 py-3">
+        <Link to="/" className="flex shrink-0 items-center gap-2 text-white no-underline">
+          <img src="/logo.png" alt="" className="h-10 w-10" />
+          <span className="whitespace-nowrap font-sans text-lg font-bold">Ahmedabad Metro</span>
         </Link>
 
-        <div className="hidden items-center gap-2 lg:flex">
-          <Link to="/" className={linkClass('/')} onClick={closeMenu}><Home {...iconProps} /> Home</Link>
-          <Link to="/routes" className={linkClass('/routes')} onClick={closeMenu}><Route {...iconProps} /> Plan Journey</Link>
-          <Link to="/stations" className={linkClass('/stations')} onClick={closeMenu}><TrainFront {...iconProps} /> Metro Map</Link>
-          <Link to="/nearest-stations" className={linkClass('/nearest-stations')} onClick={closeMenu}><MapPin {...iconProps} /> Nearest Stations</Link>
-          <Link to="/facilities" className={linkClass('/facilities')} onClick={closeMenu}><Accessibility {...iconProps} /> Facilities</Link>
-          <Link to="/schedule" className={linkClass('/schedule')} onClick={closeMenu}><Clock {...iconProps} /> Schedule</Link>
-          <Link to="/contact" className={linkClass('/contact')} onClick={closeMenu}><Phone {...iconProps} /> Contact</Link>
-          <Link to="/stations-info" className={linkClass('/stations-info')} onClick={closeMenu}><Info {...iconProps} /> Stations Info</Link>
+        <div className="hidden items-center xl:flex">
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <Link key={to} to={to} className={desktopClass(to)} aria-current={pathname === to ? 'page' : undefined}>
+              <Icon {...iconProps} /> {label}
+            </Link>
+          ))}
+          <ThemeToggle className="ml-2" />
         </div>
 
-        <button
-          type="button"
-          className="lg:hidden inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-navy-700 transition"
-          onClick={toggleMenu}
-          aria-label="Toggle menu"
-          aria-expanded={isMenuOpen}
-        >
-          {isMenuOpen ? <X {...iconProps} /> : <Menu {...iconProps} />}
-        </button>
+        <div className="flex items-center gap-1 xl:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-md p-2 text-white transition hover:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            onClick={() => setIsMenuOpen((open) => !open)}
+            aria-label="Toggle menu"
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
+          >
+            {isMenuOpen ? <X {...iconProps} /> : <Menu {...iconProps} />}
+          </button>
+        </div>
       </div>
 
       <div
-        className={
-          `lg:hidden overflow-hidden transition-[max-height] duration-300 ease-in-out bg-navy-900 ` +
-          (isMenuOpen ? 'max-h-[500px]' : 'max-h-0')
-        }
+        id="mobile-menu"
+        className={`overflow-hidden bg-navy-900 shadow-lg transition-[max-height] duration-300 ease-in-out xl:hidden ${isMenuOpen ? 'max-h-[560px]' : 'max-h-0'}`}
       >
         <div className="flex flex-col pb-4">
-          <Link to="/" className={mobileLinkClass('/')} onClick={closeMenu}><Home {...iconProps} /> Home</Link>
-          <Link to="/routes" className={mobileLinkClass('/routes')} onClick={closeMenu}><Route {...iconProps} /> Plan Journey</Link>
-          <Link to="/stations" className={mobileLinkClass('/stations')} onClick={closeMenu}><TrainFront {...iconProps} /> Metro Map</Link>
-          <Link to="/nearest-stations" className={mobileLinkClass('/nearest-stations')} onClick={closeMenu}><MapPin {...iconProps} /> Nearest Stations</Link>
-          <Link to="/facilities" className={mobileLinkClass('/facilities')} onClick={closeMenu}><Accessibility {...iconProps} /> Facilities</Link>
-          <Link to="/schedule" className={mobileLinkClass('/schedule')} onClick={closeMenu}><Clock {...iconProps} /> Schedule</Link>
-          <Link to="/contact" className={mobileLinkClass('/contact')} onClick={closeMenu}><Phone {...iconProps} /> Contact</Link>
-          <Link to="/stations-info" className={mobileLinkClass('/stations-info')} onClick={closeMenu}><Info {...iconProps} /> Stations Info</Link>
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <Link key={to} to={to} className={mobileClass(to)} aria-current={pathname === to ? 'page' : undefined} tabIndex={isMenuOpen ? 0 : -1}>
+              <Icon {...iconProps} /> {label}
+            </Link>
+          ))}
         </div>
       </div>
     </nav>

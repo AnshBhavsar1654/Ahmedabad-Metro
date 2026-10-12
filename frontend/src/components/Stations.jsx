@@ -1,146 +1,70 @@
 import React, { useState } from 'react';
+import { Download, Info } from 'lucide-react';
+import PageHeader from './PageHeader';
+import LineLegend from './LineLegend';
+import { LINES } from '../lib/lines';
+
+const downloadClass =
+  'inline-flex items-center justify-center gap-2 rounded-md bg-navy-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2';
 
 const Stations = () => {
   const [showInfo, setShowInfo] = useState(true);
 
-  const handleDownloadPDF = (filePath, fileName) => {
-    const link = document.createElement('a');
-    link.href = filePath;
-    link.download = fileName;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
-    <div className="bg-surface-0 min-h-screen pb-10">
-      <div className="mx-auto max-w-7xl px-5 pt-8 mb-8 pb-6 border-b border-line-200">
-        <h1 className="text-3xl font-bold font-sans text-navy-900 tracking-tight">Ahmedabad Metro Map</h1>
-        <p className="text-base text-ink-600 mt-2">Interactive map of all metro stations and lines</p>
-      </div>
+    <div className="min-h-screen bg-surface-0 pb-10">
+      <PageHeader title="Metro Map" subtitle="Interactive map of all metro stations and lines">
+        <LineLegend />
+      </PageHeader>
 
-      <div className="mx-auto max-w-7xl px-5 mt-6">
+      <div className="mx-auto mt-6 max-w-7xl px-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <button
-          type="button"
-          className={
-            `inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition ` +
-            (showInfo
-              ? 'bg-brand-50 text-brand-900 border-brand-200'
-              : 'bg-white text-slate-900 border-slate-200 hover:bg-slate-50')
-          }
-          onClick={() => setShowInfo(!showInfo)}
-        >
-          {showInfo ? 'Hide Info' : 'Show Info'}
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-        </button>
-
-        <div className="flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow hover:-translate-y-0.5 transition"
-            onClick={() => handleDownloadPDF('/Route.pdf', 'Ahmedabad_Metro_Route_Guide.pdf')}
+            aria-expanded={showInfo}
+            onClick={() => setShowInfo((v) => !v)}
+            className={
+              'inline-flex items-center gap-2 self-start rounded-md border px-4 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ' +
+              (showInfo ? 'border-accent bg-navy-100 text-accent' : 'border-line-200 bg-surface-1 text-ink-900 hover:border-accent')
+            }
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7,10 12,15 17,10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Download Route Guide
+            <Info strokeWidth={1.75} size={16} />
+            {showInfo ? 'Hide line summary' : 'Show line summary'}
           </button>
 
-          <button
-            type="button"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow hover:-translate-y-0.5 transition"
-            onClick={() => handleDownloadPDF('/Map.pdf', 'Ahmedabad_Metro_Map.pdf')}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7,10 12,15 17,10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Download Metro Map
-          </button>
-        </div>
-      </div>
-
-      {showInfo && (
-        <div className="mt-6 grid gap-5 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-800 shadow-sm md:col-span-2">
-            <div className="relative">
-              <div className="flex flex-col gap-2 border-b border-slate-200 pb-3 text-center lg:flex-row lg:items-end lg:justify-between lg:text-left">
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-800">
-                    Line summary
-                  </div>
-                  <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-900 md:text-xl">Metro Lines</h3>
-                  <p className="mt-1 max-w-2xl text-sm text-slate-600">
-                    Four metro corridors shown in a compact view.
-                  </p>
-                </div>
-                <div className="hidden rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 lg:inline-flex">
-                  4 Active Lines
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-col gap-3 text-sm lg:flex-row lg:items-stretch lg:justify-between">
-                <div className="flex flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50">
-                  <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#3498db' }} />
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 1</div>
-                    <div className="mt-1 font-medium text-slate-900">Vastral Gam to Thaltej Gam</div>
-                    <div className="mt-1 text-slate-500">East-West Corridor</div>
-                  </div>
-                </div>
-
-                <div className="flex flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50">
-                  <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#c0392b' }} />
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 2</div>
-                    <div className="mt-1 font-medium text-slate-900">APMC to Koteshwar Road</div>
-                    <div className="mt-1 text-slate-500">North-South Corridor</div>
-                  </div>
-                </div>
-
-                <div className="flex flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50">
-                  <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#ffd700' }} />
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 3</div>
-                    <div className="mt-1 font-medium text-slate-900">Koteshwar Road to Mahatma Mandir</div>
-                    <div className="mt-1 text-slate-500">Corridor-1</div>
-                  </div>
-                </div>
-
-                <div className="flex flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50">
-                  <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full border border-white shadow-sm" style={{ backgroundColor: '#8e44ad' }} />
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Line 4</div>
-                    <div className="mt-1 font-medium text-slate-900">GNLU to GIFT City</div>
-                    <div className="mt-1 text-slate-500">Corridor-2</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <a href="/Route.pdf" download="Ahmedabad_Metro_Route_Guide.pdf" className={downloadClass}>
+              <Download strokeWidth={1.75} size={16} /> Download route guide
+            </a>
+            <a href="/Map.pdf" download="Ahmedabad_Metro_Map.pdf" className={downloadClass}>
+              <Download strokeWidth={1.75} size={16} /> Download metro map
+            </a>
           </div>
         </div>
-      )}
 
-      <div className="mt-6 overflow-hidden rounded-2xl border-2 border-brand-800/20 bg-white shadow-[0_15px_35px_rgba(0,0,0,0.1)]">
-        <iframe
-          src="https://www.google.com/maps/d/u/0/embed?mid=1OiBaXz-gpGhD-bGCv55xJBy-mz6O7R0"
-          width="100%"
-          height="600"
-          style={{ border: 0 }}
-          allowFullScreen=""
-          loading="lazy"
-          title="Ahmedabad Metro Map"
-        ></iframe>
-      </div>
+        {showInfo && (
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {LINES.map((line) => (
+              <li key={line.id} className="flex items-start gap-3 rounded-lg border border-line-200 bg-surface-1 p-4">
+                <span className="mt-1 h-4 w-4 shrink-0 rounded-full border border-line-200" style={{ backgroundColor: line.swatch }} aria-hidden="true" />
+                <div className="min-w-0">
+                  <div className="font-sans text-sm font-semibold text-ink-900">{line.name}</div>
+                  <div className="mt-1 text-sm text-ink-900">{line.from} to {line.to}</div>
+                  <div className="mt-1 text-xs text-ink-600">{line.label}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-6 overflow-hidden rounded-lg border border-line-200 bg-surface-1">
+          <iframe
+            src="https://www.google.com/maps/d/u/0/embed?mid=1OiBaXz-gpGhD-bGCv55xJBy-mz6O7R0"
+            className="block h-[70vh] min-h-[420px] w-full border-0"
+            allowFullScreen
+            loading="lazy"
+            title="Ahmedabad Metro Map"
+          />
+        </div>
       </div>
     </div>
   );

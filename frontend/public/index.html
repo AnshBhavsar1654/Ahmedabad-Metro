@@ -4,16 +4,25 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#1976d2" />
+    <meta name="theme-color" content="#0E2340" />
     <meta
       name="description"
       content="Ahmedabad Metro - Your gateway to efficient urban transportation in Ahmedabad, Gujarat"
     />
-    <!-- Changed from react logo to metro-related icon -->
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('metro_theme');
+          if (t !== 'dark' && t !== 'light') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          if (t === 'dark') document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
     <title>Ahmedabad Metro</title>
   </head>
   <body>

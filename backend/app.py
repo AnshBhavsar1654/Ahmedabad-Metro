@@ -1,22 +1,30 @@
 import os
+from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional
 
-import pandas as pd
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
-
-from chat import ask_gemini
-from location_service import get_nearby_stations_data, get_stations_with_coordinates, resolve_google_maps_location_data
-from route import calculate_route_details, get_all_stations
-
 
 load_dotenv()
 
-app = FastAPI(title="Ahmedabad Metro API")
+from chat import ChatServiceError, ask_gemini  # noqa: E402  (needs env loaded first)
+from keepalive import start_keepalive  # noqa: E402
+from location_service import get_nearby_stations_data, get_stations_with_coordinates, resolve_google_maps_location_data  # noqa: E402
+from route import calculate_route_details, get_all_stations, get_fare, resolve_station  # noqa: E402
+
+MAX_CHAT_MESSAGE_CHARS = 1000
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    stop_keepalive = start_keepalive()
+    yield
+    stop_keepalive()
+
+
+app = FastAPI(title="Ahmedabad Metro API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,17 +35,9 @@ app.add_middleware(
         "http://127.0.0.1:3000",
     ],
     allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Content-Type"],
 )
-
-FARE_PATH = os.path.join(os.path.dirname(__file__), "Fare Matrix.xlsx")
-fare_matrix = pd.read_excel(FARE_PATH)
-
-source_col = "Source"
-dest_col = "Destination"
-fare_col = "Fare"
 
 
 class RouteRequest(BaseModel):
@@ -50,6 +50,10 @@ class ChatRequest(BaseModel):
     history: List[Dict[str, Any]] = Field(default_factory=list)
 
 
+class GoogleMapsLinkRequest(BaseModel):
+    url: str = ""
+
+
 def error_response(message: str, status_code: int = 400):
     return JSONResponse(status_code=status_code, content={"error": message})
 
@@ -59,34 +63,29 @@ def home():
     return PlainTextResponse("Backend is running!")
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.get("/api/stations")
-def get_stations():
-    try:
-        return get_all_stations()
-    except Exception as exc:
-        return error_response(str(exc), 500)
+def list_stations():
+    return get_all_stations()
 
 
 @app.get("/api/stations/coordinates")
-def get_stations_coordinates():
-    try:
-        return get_stations_with_coordinates()
-    except Exception as exc:
-        return error_response(str(exc), 500)
+def list_station_coordinates():
+    return get_stations_with_coordinates()
 
 
 @app.post("/api/route")
 def get_route(data: RouteRequest):
-    source = data.source.strip()
-    destination = data.destination.strip()
+    if not data.source.strip() or not data.destination.strip():
+        return error_response("Missing source or destination")
 
-    if not source or not destination:
-        return error_response("Missing source or destination", 400)
-
-    result = calculate_route_details(source, destination)
-
+    result = calculate_route_details(data.source, data.destination)
     if result["error"]:
-        return error_response(result["error"], 400)
+        return error_response(result["error"])
 
     return {
         "route": result["route"],
@@ -97,18 +96,11 @@ def get_route(data: RouteRequest):
 
 
 @app.post("/api/fare")
-def get_fare(data: RouteRequest):
-    source = data.source.strip()
-    destination = data.destination.strip()
+def calculate_fare(data: RouteRequest):
+    source, destination = resolve_station(data.source), resolve_station(data.destination)
     if not source or not destination:
-        return error_response("Missing source or destination", 400)
-
-    try:
-        matching_fare = fare_matrix[(fare_matrix[source_col] == source) & (fare_matrix[dest_col] == destination)]
-        fare_value = int(matching_fare[fare_col].iloc[0]) if len(matching_fare) > 0 else 0
-        return {"fare": fare_value}
-    except Exception as exc:
-        return error_response(f"Fare calculation failed: {str(exc)}", 400)
+        return error_response("Unknown source or destination station")
+    return {"fare": get_fare(source, destination)}
 
 
 @app.get("/api/stations/nearby")
@@ -116,13 +108,10 @@ def get_nearby_stations(lat: Optional[float] = None, lng: Optional[float] = None
     try:
         return get_nearby_stations_data(lat, lng)
     except ValueError as exc:
-        return error_response(str(exc), 400)
-    except Exception:
+        return error_response(str(exc))
+    except Exception as exc:
+        print(f"[ERROR /api/stations/nearby] {exc}")
         return error_response("Failed to find nearby stations", 500)
-
-
-class GoogleMapsLinkRequest(BaseModel):
-    url: str = ""
 
 
 @app.post("/api/location/resolve-google-maps")
@@ -130,40 +119,40 @@ def resolve_google_maps_location(data: GoogleMapsLinkRequest):
     try:
         return resolve_google_maps_location_data(data.url)
     except ValueError as exc:
-        return error_response(str(exc), 400)
-    except Exception:
+        return error_response(str(exc))
+    except Exception as exc:
+        print(f"[ERROR /api/location/resolve-google-maps] {exc}")
         return error_response("Failed to resolve Google Maps link", 500)
+
+
+CHAT_ERROR_MESSAGES = {
+    "config": "The assistant isn't set up correctly right now. Please try again later.",
+    "rate_limit": "The assistant is getting a lot of questions right now. Please try again in a minute.",
+    "unavailable": "The assistant is unavailable right now. Please try again shortly.",
+}
 
 
 @app.post("/api/chat")
 def chat(data: ChatRequest):
+    message = data.message.strip()
+    if not message:
+        return error_response("Missing message")
+    if len(message) > MAX_CHAT_MESSAGE_CHARS:
+        return error_response(f"Message is too long (limit {MAX_CHAT_MESSAGE_CHARS} characters)")
+
     try:
-        message = (data.message or "").strip()
-        if not message:
-            return error_response("Missing message", 400)
-
-        conversation_history = data.history if isinstance(data.history, list) else []
-
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            return {"response": "The chatbot is currently unavailable. Please verify API configuration.", "language": "auto"}
-
-        reply, language = ask_gemini(message, api_key=api_key, conversation_history=conversation_history)
-        return {"response": reply, "language": language}
+        reply = ask_gemini(message, api_key=os.getenv("GEMINI_API_KEY", ""), conversation_history=data.history)
+        return {"response": reply}
+    except ChatServiceError as exc:
+        print(f"[ERROR /api/chat] {exc.kind}: {exc}")
+        status = 429 if exc.kind == "rate_limit" else 503
+        return JSONResponse(status_code=status, content={"error": CHAT_ERROR_MESSAGES[exc.kind]})
     except Exception as exc:
         print(f"[ERROR /api/chat] {exc}")
-        err_msg = str(exc)
-        if "Rate Limit" in err_msg or "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
-            msg = "The chatbot is experiencing high traffic right now. Please try again in a moment."
-        elif "Invalid" in err_msg or "API key" in err_msg:
-            msg = "The chatbot is currently unavailable. Please check GEMINI_API_KEY configuration."
-        else:
-            msg = "The chatbot is currently busy or unavailable. Please try again shortly."
-        return {"response": msg, "language": "auto"}
+        return JSONResponse(status_code=500, content={"error": CHAT_ERROR_MESSAGES["unavailable"]})
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.environ.get("PORT", 5000))
-    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run("app:app", host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

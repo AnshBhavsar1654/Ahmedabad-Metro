@@ -2,7 +2,7 @@ Ahmedabad Metro System - Structured Knowledge Base
 
 === SECTION I: GENERAL OVERVIEW ===
 
-Total Stations: 56
+Total Stations: 54
 Number of Lines: 4
 - East-West Line
 - North-South Line
@@ -81,9 +81,9 @@ Peak Hours on Weekdays:
 Train Frequency: Varies by line and time (see Section V)
 
 Line Interchanges (no additional fare charged):
-- Old High Court station
-- Motera Stadium station
-- GNLU station
+- Old High Court station (Red Line and Blue Line)
+- Koteshwar Road station (Red Line and Yellow Line)
+- GNLU station (Yellow Line and Violet Line)
 
 Luggage Policy:
 - Maximum weight allowed: 25 kg
@@ -179,14 +179,14 @@ Travel Time Limits:
 
 === SECTION VI: STATION LIST ===
 
-East-West Line Stations (Thaltej Gam to Vastral Gam):
-Thaltej Gam, Doordarshan Kendra, Gurukul Road, Gujarat University, Commerce Six Roads, Ambawadi, Shahpur, Old High Court (interchange), Ghee Kanta, Kalupur Railway Station, Kankaria East, Apparel Park, Amraiwadi, Rabari Colony, Maninagar, Khokhara Mehmedabad, Anjali, Vinzol, Nirant, Vastral, Vastral Gam
+Red Line (North-South Corridor, APMC to Koteshwar Road):
+APMC, Jivraj Park, Rajivnagar, Shreyas, Paldi, Gandhigram, Old High Court, Usmanpura, Vijaynagar, Vadaj, Ranip, Sabarmati Railway Station, AEC, Sabarmati, Motera Stadium, Koteshwar Road
 
-North-South Line Stations (Motera to Gyaspur):
-Motera Stadium (interchange), Sabarmati, Chandlodia, Ranip, Sabarmati River, Sola Road, Kargil Ground, Gujarat High Court, GNLU (interchange), Thaltej, Doordarshan Kendra, Rajiv Nagar, Sanathal, Ognaj, Gota, Sargasan
+Blue Line (East-West Corridor, Thaltej Gam to Vastral Gam):
+Thaltej Gam, Thaltej, Doordarshan Kendra, Gurukul Road, Gujarat University, Commerce Six Road, SP Stadium, Old High Court, Shahpur, Ghee Kanta, Kalupur Railway Station, Kankaria East, Apparel Park, Amraivadi, Rabari Colony, Vastral, Nirant Cross Road, Vastral Gam
 
-Corridor-1 (Gandhinagar Stations):
-GNLU, Koba Circle, Infocity, Gandhinagar Capital
+Yellow Line (Corridor-1, Koteshwar Road to Mahatma Mandir):
+Koteshwar Road, Vishvakarma College, Tapovan Circle, Narmada Canal, Koba Circle, Juna Koba, Koba Gam, GNLU, Raysan, Randesan, Dholakuva Circle, Infocity, Sector-1, Sector-10A, Sachivalaya, Akshardham, Juna Sachivalaya, Sector-16, Sector-24, Mahatma Mandir
 
-Corridor-2 (GIFT City Extension):
-GIFT City, Sargasan
+Violet Line (Corridor-2, GNLU to Gift City):
+GNLU, PDEU, Gift City

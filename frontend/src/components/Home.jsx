@@ -1,226 +1,259 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { TicketCheck, CreditCard, Users, Smartphone, Map, MapPin, CalendarClock, Route } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  TicketCheck, CreditCard, Users, Smartphone, Map, MapPin, CalendarClock, Route, ArrowRight,
+  Sun, Cloud, CloudRain, CloudLightning, Snowflake, CloudFog, ExternalLink,
+} from 'lucide-react';
+import { API_URL } from '../lib/api';
 
-const Home = () => {
-  const [temperature, setTemperature] = useState({ current: '--', condition: 'Loading...' });
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
+const WEATHER_ICONS = {
+  Clear: Sun,
+  Clouds: Cloud,
+  Rain: CloudRain,
+  Drizzle: CloudRain,
+  Thunderstorm: CloudLightning,
+  Snow: Snowflake,
+  Mist: CloudFog,
+  Haze: CloudFog,
+  Smoke: CloudFog,
+  Dust: CloudFog,
+  Fog: CloudFog,
+};
 
+const QUICK_LINKS = [
+  { to: '/routes', icon: Route, title: 'Plan Journey', subtitle: 'Route and fare' },
+  { to: '/stations', icon: Map, title: 'Metro Map', subtitle: 'Network' },
+  { to: '/nearest-stations', icon: MapPin, title: 'Nearest Stations', subtitle: 'Near you' },
+  { to: '/schedule', icon: CalendarClock, title: 'Schedule', subtitle: 'Timetable' },
+];
+
+const NETWORK_FACTS = [
+  { value: '54', label: 'stations' },
+  { value: '4', label: 'lines' },
+  { value: '68.28 km', label: 'network' },
+  { value: '118K+', label: 'daily riders' },
+];
+
+const TICKET_METHODS = [
+  { icon: TicketCheck, title: 'Ticket vending machine', text: 'Self-service machines at all stations' },
+  { icon: CreditCard, title: 'NCMC smart card', text: 'Tap in and out with a contactless card' },
+  { icon: Users, title: 'Kiosk counter', text: 'Staff-assisted ticketing at the station' },
+];
+
+// Cover photo follows the time of day.
+const coverFor = (hour) => (hour >= 5 && hour < 17 ? '/afternoon.png' : hour >= 17 && hour < 20 ? '/evening.png' : '/cover.png');
+
+// Ticks on its own so the rest of the page doesn't re-render every second.
+const Clock = () => {
+  const [now, setNow] = useState(new Date());
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const checkScreenSize = () => setIsSmallScreen(window.innerWidth <= 480);
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+  return (
+    <div>
+      <div className="text-sm text-white/90">
+        {now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+      </div>
+      <div className="mt-1 font-mono text-2xl font-semibold tabular-nums">
+        {now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+      </div>
+    </div>
+  );
+};
+
+const Weather = () => {
+  const [weather, setWeather] = useState(null);
 
   useEffect(() => {
-    const fetchWeather = async () => {
+    const key = process.env.REACT_APP_WEATHER_API_KEY;
+    if (!key) return undefined;
+    const city = process.env.REACT_APP_WEATHER_CITY || 'Ahmedabad,IN';
+    const controller = new AbortController();
+
+    const load = async () => {
       try {
-        const weatherApiKey = process.env.REACT_APP_WEATHER_API_KEY;
-        const weatherCity = process.env.REACT_APP_WEATHER_CITY || 'Ahmedabad,IN';
-        
-        if (!weatherApiKey) {
-          setTemperature({ current: 32, condition: 'Sunny' });
-          return;
-        }
-
-        const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${weatherCity}&appid=${weatherApiKey}&units=metric`
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${key}&units=metric`,
+          { signal: controller.signal }
         );
-        
-        if (response.ok) {
-          const data = await response.json();
-          setTemperature({
-            current: Math.round(data.main.temp),
-            condition: data.weather[0].main
-          });
-        } else {
-          setTemperature({ current: 32, condition: 'Sunny' });
-        }
-      } catch (error) {
-        setTemperature({ current: 32, condition: 'Sunny' });
+        if (!res.ok) return;
+        const data = await res.json();
+        setWeather({ temp: Math.round(data.main.temp), condition: data.weather[0].main });
+      } catch {
+        /* weather is optional; show nothing if it fails */
       }
     };
 
-    fetchWeather();
-    const weatherTimer = setInterval(fetchWeather, 600000);
-    return () => clearInterval(weatherTimer);
+    load();
+    const timer = setInterval(load, 600000);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
   }, []);
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    });
+  if (!weather) return null;
+  const Icon = WEATHER_ICONS[weather.condition] || Cloud;
+  return (
+    <div className="flex items-center gap-3">
+      <Icon strokeWidth={1.5} size={30} aria-hidden="true" />
+      <div className="text-left">
+        <div className="font-mono text-xl font-semibold tabular-nums">{weather.temp}°C</div>
+        <div className="text-sm text-white/80">Ahmedabad, {weather.condition.toLowerCase()}</div>
+      </div>
+    </div>
+  );
+};
+
+const selectClass =
+  'w-full rounded-md border border-line-200 bg-surface-1 px-3 py-2.5 text-sm text-ink-900 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-line-100';
+
+// The primary task, right on the hero: pick two stations and jump to the planner with the result.
+const JourneyPlanner = () => {
+  const navigate = useNavigate();
+  const [stations, setStations] = useState(null);
+  const [source, setSource] = useState('');
+  const [destination, setDestination] = useState('');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/stations`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setStations(Array.isArray(data) ? data : []))
+      .catch((err) => err.name !== 'AbortError' && setStations([]));
+    return () => controller.abort();
+  }, []);
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    navigate('/routes', { state: source && destination && source !== destination ? { source, destination } : null });
   };
 
-  const formatDate = (date) => {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const getWeatherIcon = (condition) => {
-    const iconMap = {
-      'Clear': '☀️',
-      'Clouds': '☁️',
-      'Rain': '🌧️',
-      'Drizzle': '🌦️',
-      'Thunderstorm': '⛈️',
-      'Snow': '❄️',
-      'Mist': '🌫️',
-      'Haze': '🌫️',
-      'Sunny': '☀️'
-    };
-    return iconMap[condition] || '☀️';
-  };
-
-  const getBgImage = (hour) => {
-    if (hour >= 5 && hour < 17) {
-      return "/afternoon.png";
-    } else if (hour >= 17 && hour < 20) {
-      return "/evening.png";
-    } else {
-      return "/cover.png";
-    }
-  };
-
-  const bgImage = getBgImage(currentTime.getHours());
-
-  const accessCards = [
-    { to: "/routes", icon: <Route size={24} className="text-white" />, title: "Route Planning", subtitle: "Plan Journey" },
-    { to: "/stations", icon: <Map size={24} className="text-white" />, title: "Metro Map", subtitle: "Network" },
-    { to: "/nearest-stations", icon: <MapPin size={24} className="text-white" />, title: "Nearest", subtitle: "Find Stations" },
-    { to: "/schedule", icon: <CalendarClock size={24} className="text-white" />, title: "Schedule", subtitle: "Timetable" }
-  ];
+  const loading = stations === null;
+  const unavailable = stations !== null && stations.length === 0;
+  const canGo = unavailable || (source && destination && source !== destination);
 
   return (
-    <div className="w-full bg-surface-0 min-h-screen flex flex-col">
-      
-      {/* Hero Section */}
-      <section className="relative min-h-screen w-full overflow-hidden flex flex-col">
-        <img className="absolute inset-0 h-full w-full object-cover brightness-50" src={bgImage} alt="Metro Cover" />
-        
-        {/* We need pt-20 to account for fixed navbar */}
-        <div className="relative z-10 flex flex-1 items-center justify-center px-5 py-20">
+    <form onSubmit={onSubmit} className="rounded-lg border border-line-200 bg-surface-1 p-4 text-left shadow-lg" aria-label="Plan a journey">
+      <div className="mb-3 font-sans text-base font-semibold text-ink-900">Where are you headed?</div>
+      <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+        {!unavailable && (
+          <>
+            <div>
+              <label htmlFor="home-from" className="mb-1 block text-xs font-medium text-ink-600">From</label>
+              <select id="home-from" value={source} onChange={(e) => setSource(e.target.value)} disabled={loading} className={selectClass}>
+                <option value="">{loading ? 'Loading stations…' : 'Choose station'}</option>
+                {(stations || []).map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="home-to" className="mb-1 block text-xs font-medium text-ink-600">To</label>
+              <select id="home-to" value={destination} onChange={(e) => setDestination(e.target.value)} disabled={loading} className={selectClass}>
+                <option value="">{loading ? 'Loading stations…' : 'Choose station'}</option>
+                {(stations || []).map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </>
+        )}
+        <button
+          type="submit"
+          disabled={!canGo}
+          className={`inline-flex items-center justify-center gap-2 rounded-md bg-navy-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-ink-300 ${unavailable ? 'md:col-span-3' : ''}`}
+        >
+          Find route <ArrowRight strokeWidth={1.75} size={16} />
+        </button>
+      </div>
+    </form>
+  );
+};
+
+const Home = () => {
+  const [cover, setCover] = useState(() => coverFor(new Date().getHours()));
+
+  useEffect(() => {
+    const timer = setInterval(() => setCover(coverFor(new Date().getHours())), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="flex min-h-full w-full flex-col bg-surface-0">
+      <section className="relative flex min-h-[calc(100vh-4rem)] w-full flex-col overflow-hidden">
+        <img className="absolute inset-0 h-full w-full object-cover" src={cover} alt="" />
+        <div className="absolute inset-0 bg-navy-900/60" aria-hidden="true" />
+
+        <div className="relative z-10 flex flex-1 items-center justify-center px-5 py-12">
           <div className="w-full max-w-3xl text-center text-white">
-            <h1 className="text-4xl sm:text-5xl font-sans font-light bg-gradient-to-r from-white to-amber-300 bg-clip-text text-transparent drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
-              Welcome to Ahmedabad Metro
-            </h1>
+            <h1 className="font-sans text-4xl font-light tracking-tight drop-shadow-lg sm:text-5xl">Welcome to Ahmedabad Metro</h1>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
-              <div>
-                <div className="text-sm font-sans text-white/90">{formatDate(currentTime)}</div>
-                <div className="mt-1 text-2xl font-mono font-semibold drop-shadow-md">{formatTime(currentTime)}</div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="text-2xl drop-shadow-md">{getWeatherIcon(temperature.condition)}</div>
-                <div className="text-left">
-                  <div className="text-xl font-mono font-semibold drop-shadow-md">
-                    {temperature.current}°C
-                  </div>
-                  <div className="text-sm font-sans text-white/80">Ahmedabad</div>
-                </div>
-              </div>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+              <Clock />
+              <Weather />
             </div>
 
-            <div className="mt-16">
-              <h3 className="text-base font-semibold font-sans text-white/90">Frequently Used</h3>
-              <div className={isSmallScreen ? 'mt-4 flex gap-3 overflow-x-auto pb-2 justify-start hide-scrollbar' : 'mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4'}>
-                {accessCards.map((card, index) => (
+            <div className="mt-10">
+              <JourneyPlanner />
+            </div>
+
+            <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {QUICK_LINKS.map(({ to, icon: Icon, title, subtitle }) => (
+                <li key={to}>
                   <Link
-                    key={index}
-                    to={card.to}
-                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-5 text-center shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/20"
+                    to={to}
+                    className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 py-4 text-center backdrop-blur-sm transition hover:-translate-y-0.5 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
-                    <div>{card.icon}</div>
-                    <div>
-                      <h4 className="text-sm font-sans font-semibold drop-shadow">{card.title}</h4>
-                      {card.subtitle && <p className="text-[11px] font-sans text-white/70">{card.subtitle}</p>}
-                    </div>
+                    <Icon strokeWidth={1.75} size={24} />
+                    <span className="text-sm font-semibold">{title}</span>
+                    <span className="text-xs text-white/70">{subtitle}</span>
                   </Link>
-                ))}
-              </div>
-            </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
+
+        <ul className="relative z-10 flex gap-8 overflow-x-auto border-t border-white/15 bg-navy-900 px-5 py-3 text-white sm:justify-center">
+          {NETWORK_FACTS.map(({ value, label }) => (
+            <li key={label} className="flex shrink-0 items-baseline gap-2">
+              <span className="font-mono text-base font-semibold tabular-nums">{value}</span>
+              <span className="text-sm text-white/70">{label}</span>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* Highlighted Statistics Section */}
-      <section className="px-5 py-16 bg-surface-0 border-t border-line-200">
+      <section className="px-5 py-14">
         <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-            {[
-              { n: '54', l: 'Total Stations' },
-              { n: '54', l: 'Operational' },
-              { n: '68.28', l: 'Network (Km)' },
-              { n: '118K+', l: 'Daily Passengers' }
-            ].map((s) => (
-              <div key={s.l} className="rounded-lg border border-line-200 bg-surface-1 p-6 text-center">
-                <div className="text-4xl font-mono text-navy-900 font-bold">{s.n}</div>
-                <div className="mt-2 text-xs font-sans font-semibold tracking-widest text-ink-600 uppercase">{s.l}</div>
+          <h2 className="font-sans text-xl font-semibold text-ink-900">Ways to buy a ticket</h2>
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {TICKET_METHODS.map(({ icon: Icon, title, text }) => (
+              <div key={title} className="rounded-lg border border-line-200 bg-surface-1 p-6">
+                <Icon strokeWidth={1.5} size={32} className="text-accent" />
+                <h3 className="mt-4 font-sans text-base font-semibold text-ink-900">{title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-ink-600">{text}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Ticket Booking Methods */}
-      <section className="px-5 py-16 bg-surface-0">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-lg bg-surface-1 p-6 text-center border border-line-200">
-              <div className="flex justify-center text-navy-900 mb-4"><TicketCheck strokeWidth={1.5} size={36} /></div>
-              <h3 className="text-base font-semibold text-ink-900 font-sans">Ticket Vending Machine</h3>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">Self-service machines at all stations</p>
-            </div>
-
-            <div className="rounded-lg bg-surface-1 p-6 text-center border border-line-200">
-              <div className="flex justify-center text-navy-900 mb-4"><CreditCard strokeWidth={1.5} size={36} /></div>
-              <h3 className="text-base font-semibold text-ink-900 font-sans">NCMC Smart Card</h3>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">Contactless payment solution</p>
-            </div>
-
-            <div className="rounded-lg bg-surface-1 p-6 text-center border border-line-200">
-              <div className="flex justify-center text-navy-900 mb-4"><Users strokeWidth={1.5} size={36} /></div>
-              <h3 className="text-base font-semibold text-ink-900 font-sans">KIOSK Counter</h3>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">Assisted service with staff support</p>
-            </div>
-
-            <div className="rounded-lg bg-surface-1 p-6 text-center border border-line-200">
-              <div className="flex justify-center text-navy-900 mb-4"><Smartphone strokeWidth={1.5} size={36} /></div>
-              <h3 className="text-base font-semibold text-ink-900 font-sans">E-Ticket (Mobile App)</h3>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">Book e-tickets on your smartphone</p>
-              <div className="mt-4 flex items-center justify-center gap-3">
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.gujaratmetrorail.gmrcamddigitalticketing&hl=en_IN&pli=1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full p-1 transition hover:bg-line-100"
-                >
-                  <img src="https://freelogopng.com/images/all_img/1664285914google-play-logo-png.png" alt="Android" className="h-5 w-5 opacity-80 hover:opacity-100" />
-                </a>
-                <a
-                  href="https://apps.apple.com/in/app/ahmedabad-metro-official-app/id6670203895"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full p-1 transition hover:bg-line-100"
-                >
-                  <img src="https://seekvectors.com/files/download/f1f44e5b764dd072f4f711f1c079fe60.jpg" alt="iOS" className="h-5 w-5 opacity-80 hover:opacity-100" />
-                </a>
+            <div className="rounded-lg border border-line-200 bg-surface-1 p-6">
+              <Smartphone strokeWidth={1.5} size={32} className="text-accent" />
+              <h3 className="mt-4 font-sans text-base font-semibold text-ink-900">E-ticket (mobile app)</h3>
+              <p className="mt-1 text-sm leading-relaxed text-ink-600">Book tickets on your phone</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[
+                  { href: 'https://play.google.com/store/apps/details?id=com.gujaratmetrorail.gmrcamddigitalticketing&hl=en_IN&pli=1', label: 'Google Play' },
+                  { href: 'https://apps.apple.com/in/app/ahmedabad-metro-official-app/id6670203895', label: 'App Store' },
+                ].map(({ href, label }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-line-200 px-3 py-1.5 text-sm font-medium text-accent transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  >
+                    {label} <ExternalLink size={14} strokeWidth={1.75} />
+                  </a>
+                ))}
               </div>
             </div>
           </div>
