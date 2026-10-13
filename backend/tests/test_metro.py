@@ -9,9 +9,13 @@ client = TestClient(app)
 
 
 def test_all_stations_are_routable():
+    from metro.network import station_status
+
     stations = get_all_stations()
-    assert len(stations) == 54
-    assert all(calculate_route_details(stations[0], s)["error"] is None for s in stations[1:])
+    assert len(stations) == 62
+    assert sum(station_status(s) == "operational" for s in stations) == 53
+    usable = [s for s in stations if station_status(s) != "under construction"]
+    assert all(calculate_route_details("Paldi", s)["error"] is None for s in usable if s != "Paldi")
 
 
 def test_route_through_two_interchanges():
@@ -110,7 +114,8 @@ def test_departures_and_fare_table_endpoints():
     assert client.get("/api/departures", params={"station": "thaltej"}).json()["directions"] == []
     assert client.get("/api/departures", params={"station": "mars"}).status_code == 400
     fares = client.get("/api/fares/from", params={"station": "Paldi"}).json()
-    assert len(fares) == 53 and {"station": "Thaltej", "fare": 15} in fares
+    assert len(fares) == 61 and {"station": "Thaltej", "fare": 15} in fares
+    assert {"station": "Airport", "fare": None} in fares  # work in progress: no fare published yet
 
 
 def test_journey_trains_only_list_trains_that_reach_the_destination():
@@ -235,7 +240,9 @@ def test_legs_follow_line_changes():
 
 
 def test_fares_are_the_same_both_ways_for_every_pair():
-    stations = get_all_stations()
+    from metro.network import is_operational
+
+    stations = [s for s in get_all_stations() if is_operational(s)]
     assert all(get_fare(a, b) == get_fare(b, a) is not None for a in stations for b in stations)
     assert get_fare("Sector-16", "Gift City") == 20  # the sheet disagrees with itself here; see scripts/build_network.py
 
@@ -262,14 +269,16 @@ def test_interchanges_agree_between_excel_network_and_knowledge_base():
     with open(DATA_DIR / "metro_kb.txt", encoding="utf-8") as f:
         section = f.read().split("Line Interchanges")[1].split("\n\n")[0]
     names = {"Red Line": "red", "Blue Line": "blue", "Yellow Line": "yellow", "Violet Line": "violet"}
+    names.update({"Pink Line": "pink", "Light Blue Line": "lightblue"})
     from_kb = {
-        station: {names[a], names[b]}
-        for station, a, b in re.findall(r"- (.+?) station \((\w+ Line) and (\w+ Line)\)", section)
+        station: {names[line] for line in re.split(r", | and ", lines)}
+        for station, lines in re.findall(r"- (.+?) station \((.+?)\)", section)
     }
     assert from_network == from_kb == {
         "Old High Court": {"red", "blue"},
-        "Koteshwar Road": {"red", "yellow"},
+        "Koteshwar Road": {"red", "yellow", "pink"},
         "GNLU": {"yellow", "violet"},
+        "Gift City": {"violet", "lightblue"},
     }
 
 
@@ -285,3 +294,87 @@ def test_nearby_stations_work_without_the_routing_service(monkeypatch):
     nearest = locations.get_nearby_stations_data(23.0185, 72.5624)  # at Paldi
     assert [s["name"] for s in nearest][0] == "Paldi" and len(nearest) == 3
     assert all(s["distance_type"] == "straight" and s["path"] is None for s in nearest)
+
+
+def test_nearby_stations_fall_back_from_walking_to_driving_routes(monkeypatch):
+    import requests
+
+    from metro import locations
+
+    class Reply:
+        def __init__(self, data):
+            self.data = data
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return self.data
+
+    def fake_get(url, params=None, **kwargs):
+        if "routed-foot" in url:
+            raise requests.ConnectionError("walking service down")
+        if "/table/" in url:
+            n = len(url.rsplit("/", 1)[1].split(";")) - 1
+            return Reply({"distances": [[0, *[1000.0 * (i + 1) for i in range(n)]]], "durations": [[0, *[60.0] * n]]})
+        return Reply({"routes": [{"geometry": {"coordinates": [[72.56, 23.02], [72.57, 23.03]]}}]})
+
+    monkeypatch.setattr(locations.requests, "get", fake_get)
+    nearest = locations.get_nearby_stations_data(23.0185, 72.5624)
+    assert [s["distance_type"] for s in nearest] == ["road"] * 3 and nearest[0]["walk_minutes"] is None
+    assert nearest[0]["path"][0] == [23.0185, 72.5624] and len(nearest[0]["path"]) == 4
+
+
+
+# ---------------------------------------------------------------- stations that aren't open
+
+def test_sabarmati_is_work_in_progress_and_trips_through_it_are_not_flagged():
+    to_sabarmati = client.post("/api/route", json={"source": "Paldi", "destination": "Sabarmati"}).json()
+    assert to_sabarmati["route"][-1] == "Sabarmati" and to_sabarmati["not_operational"] == {"Sabarmati": "work in progress"}
+    assert client.post("/api/fare", json={"source": "Sabarmati", "destination": "Paldi"}).json() == {"fare": None}
+    through = calculate_route_details("AEC", "Motera Stadium")
+    assert "Sabarmati" in through["route"] and through["not_operational"] == {}  # trains just pass through
+    assert client.get("/api/departures", params={"station": "Sabarmati"}).json()["directions"] == []
+
+
+def test_work_in_progress_stations_route_but_have_no_fare():
+    body = client.post("/api/route", json={"source": "Paldi", "destination": "Airport"}).json()
+    assert body["route"][-1] == "Airport" and "Koteshwar Road" in body["route"]
+    assert body["not_operational"]["Airport"] == "work in progress"
+    assert client.post("/api/fare", json={"source": "Paldi", "destination": "Airport"}).json() == {"fare": None}
+    gift = calculate_route_details("GNLU", "Shahpur (Gandhinagar)")
+    assert [leg["line"] for leg in gift["legs"]] == ["Violet Line", "Light Blue Line"]
+    lines = {l["id"]: l["status"] for l in client.get("/api/lines").json()}
+    assert lines["pink"] == lines["lightblue"] == "work in progress" and lines["red"] == "operational"
+
+
+def test_nearest_stations_only_list_open_stations(monkeypatch):
+    import requests
+
+    from metro import locations
+
+    monkeypatch.setattr(locations.requests, "get", lambda *a, **k: (_ for _ in ()).throw(requests.ConnectionError()))
+    near_sabarmati = [s["name"] for s in locations.get_nearby_stations_data(23.08563, 72.592206)]
+    near_airport = [s["name"] for s in locations.get_nearby_stations_data(23.07188, 72.61976)]
+    assert "Sabarmati" not in near_sabarmati and "Airport" not in near_airport
+
+
+def test_frontend_network_matches_the_backend():
+    """frontend/src/lib/network.js keeps its own copy of line order and station status for the diagram."""
+    import os
+    import re
+
+    from metro.network import NETWORK, station_status
+
+    path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "src", "lib", "network.js")
+    if not os.path.exists(path):
+        pytest.skip("frontend not checked out")
+    js = open(path, encoding="utf-8").read()
+    block = js.split("export const LINE_STATIONS = {")[1].split("};")[0]
+    frontend_lines = {lid: re.findall(r"'([^']+)'", body) for lid, body in re.findall(r"(\w+): \[([^\]]*)\]", block)}
+    assert frontend_lines == {line["id"]: line["stations"] for line in NETWORK.lines}
+    frontend_named = dict(re.findall(r"^  (\w+): '(construction|wip)',", js, re.M))
+    assert {s: "under construction" for s, v in frontend_named.items() if v == "construction"} == {
+        s: v for s, v in NETWORK.status.items() if v == "under construction"}
+    wip = {s for s in NETWORK.coords if station_status(s) == "work in progress"}
+    assert wip == set(frontend_lines["pink"][1:] + frontend_lines["lightblue"][1:]) | {s for s, v in frontend_named.items() if v == "wip"}

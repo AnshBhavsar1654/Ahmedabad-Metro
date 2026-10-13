@@ -6,9 +6,11 @@ import stationData from '../data/stationData.json';
 import PageHeader from './PageHeader';
 import { LINES, lineByCorridor, lineColor } from '../lib/lines';
 import { useTheme } from '../lib/theme';
-import { STATION_LINES, networkName as toNetworkName } from '../lib/network';
+import { STATION_LINES, networkName as toNetworkName, stationStatus } from '../lib/network';
+import { useI18n } from '../i18n';
 
-const filters = [{ key: 'all', label: 'All stations' }, ...LINES.map((l) => ({ key: l.corridor, label: l.corridor, line: l }))];
+// Lines still being built have no gate data yet, so they get no filter.
+const filters = [{ key: 'all' }, ...LINES.filter((l) => !l.wip).map((l) => ({ key: l.corridor, line: l }))];
 
 const SubHeading = ({ children }) => (
   <h4 className="border-b border-line-200 pb-2 font-sans text-sm font-semibold text-ink-900">{children}</h4>
@@ -16,6 +18,7 @@ const SubHeading = ({ children }) => (
 
 const StationInfo = () => {
   const { theme } = useTheme();
+  const { t, station: localName, gate, facility } = useI18n();
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -27,29 +30,31 @@ const StationInfo = () => {
       const name = toNetworkName(s.name);
       return name ? STATION_LINES[name].includes(lineByCorridor[filter].id) : s.corridor === filter;
     };
-    return stationData.filter((s) => servesFilter(s) && (!term || s.name.toLowerCase().includes(term)));
-  }, [filter, searchTerm]);
+    // Match the English name or the name in the rider's script.
+    const matches = (s) => !term || s.name.toLowerCase().includes(term) || String(localName(toNetworkName(s.name) || s.name)).toLowerCase().includes(term);
+    return stationData.filter((s) => servesFilter(s) && matches(s));
+  }, [filter, searchTerm, localName]);
 
   return (
     <div className="min-h-screen bg-surface-0 pb-10">
-      <PageHeader title="Entry–Exit Information" subtitle="Gate details and accessibility facilities by station" />
+      <PageHeader title={t('info.title')} subtitle={t('info.subtitle')} />
 
       <div className="mx-auto mt-6 max-w-7xl px-5">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative w-full max-w-xl">
-            <label htmlFor="station-search" className="sr-only">Search stations</label>
+            <label htmlFor="station-search" className="sr-only">{t('info.search')}</label>
             <Search strokeWidth={1.75} size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-600" />
             <input
               id="station-search"
               type="search"
-              placeholder="Search stations"
+              placeholder={t('info.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded-md border border-line-200 bg-surface-1 py-2.5 pl-10 pr-4 text-sm text-ink-900 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
 
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by corridor">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('info.filter')}>
             {filters.map((f) => (
               <button
                 key={f.key}
@@ -62,19 +67,19 @@ const StationInfo = () => {
                 }
               >
                 {f.line && <span className="h-2.5 w-2.5 rounded-full border border-white/50" style={{ backgroundColor: f.line.swatch }} aria-hidden="true" />}
-                {f.label}
+                {f.line ? t(`corridor.${f.line.id}`) : t('info.all')}
               </button>
             ))}
           </div>
         </div>
 
         <p className="mb-6 font-mono text-xs text-ink-600" aria-live="polite">
-          Showing {filteredStations.length} of {stationData.length} stations
+          {t('info.showing', { n: filteredStations.length, total: stationData.length })}
         </p>
 
         {filteredStations.length === 0 && (
           <p className="rounded-lg border border-line-200 bg-surface-1 p-8 text-center text-sm text-ink-600">
-            No stations match "{searchTerm}". Check the spelling or clear the corridor filter.
+            {t('info.noMatch', { term: searchTerm })}
           </p>
         )}
 
@@ -90,10 +95,15 @@ const StationInfo = () => {
                   style={{ borderLeftColor: line ? lineColor(line, theme) : undefined }}
                 >
                   <div className="min-w-0">
-                    <h3 className="font-sans text-base font-semibold text-ink-900">{station.name}</h3>
+                    <h3 className="font-sans text-base font-semibold text-ink-900">{networkName ? localName(networkName) : station.name}</h3>
+                    {networkName && stationStatus(networkName) !== 'operational' && (
+                      <span className="mt-1 mr-2 inline-flex rounded-full border border-alert-600/40 bg-alert-600/10 px-2 py-0.5 text-[11px] font-semibold text-alert-600">
+                        {t(`status.${stationStatus(networkName)}`)}
+                      </span>
+                    )}
                     {networkName && (
                       <Link to={`/stations?station=${encodeURIComponent(networkName)}`} className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline">
-                        <MapPin size={12} strokeWidth={2} /> Next trains and fares
+                        <MapPin size={12} strokeWidth={2} /> {t('info.nextLink')}
                       </Link>
                     )}
                   </div>
@@ -104,37 +114,37 @@ const StationInfo = () => {
                       ))}
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <TypeIcon size={12} strokeWidth={1.75} /> {station.type}
+                      <TypeIcon size={12} strokeWidth={1.75} /> {t(`station.${station.type}`)}
                     </span>
                   </div>
                 </div>
 
                 <div className="grid flex-1 gap-6 p-5 sm:grid-cols-2">
                   <div>
-                    <SubHeading>Operational gates</SubHeading>
+                    <SubHeading>{t('info.gates')}</SubHeading>
                     <ul className="mt-3 space-y-2">
-                      {station.gates.map((gate) => (
-                        <li key={gate} className="flex items-start gap-2 text-sm text-ink-900">
+                      {station.gates.map((g) => (
+                        <li key={g} className="flex items-start gap-2 text-sm text-ink-900">
                           <DoorOpen size={16} strokeWidth={1.75} className="mt-0.5 shrink-0 text-ink-600" />
-                          {gate}
+                          {gate(g)}
                         </li>
                       ))}
                     </ul>
                   </div>
 
                   <div>
-                    <SubHeading>Facilities</SubHeading>
+                    <SubHeading>{t('info.facilities')}</SubHeading>
                     {station.facilities.length > 0 ? (
                       <ul className="mt-3 space-y-2">
-                        {station.facilities.map((facility) => (
-                          <li key={facility} className="flex items-start gap-2 text-sm text-ink-900">
+                        {station.facilities.map((f) => (
+                          <li key={f} className="flex items-start gap-2 text-sm text-ink-900">
                             <Accessibility size={16} strokeWidth={1.75} className="mt-0.5 shrink-0 text-ink-600" />
-                            {facility}
+                            {facility(f)}
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="mt-3 text-sm text-ink-600">No dedicated facilities listed</p>
+                      <p className="mt-3 text-sm text-ink-600">{t('info.noFacilities')}</p>
                     )}
                   </div>
                 </div>

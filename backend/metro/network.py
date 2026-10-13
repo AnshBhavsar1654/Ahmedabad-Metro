@@ -8,6 +8,10 @@ Dijkstra gives the quickest route; Yen's algorithm gives the next-quickest genui
 planner keeps working once the network has loops or parallel lines (more than one way between two stations).
 
 Fares are looked up per origin and destination: GMRC charges by the two stations, whatever the route.
+
+Station status comes from Location.xlsx: "operational", "under construction" (trains pass through, nobody
+boards or leaves: never a start or end of a journey) or "work in progress" (a line being built: routes are
+shown so riders can plan ahead, but there are no fares or trains yet).
 """
 import heapq
 import json
@@ -17,6 +21,7 @@ from metro import DATA_DIR
 
 
 State = Tuple[str, str]  # (station, line id)
+OPERATIONAL, UNDER_CONSTRUCTION, WORK_IN_PROGRESS = "operational", "under construction", "work in progress"
 _START, _END = ("", "start"), ("", "end")
 
 
@@ -25,6 +30,7 @@ class Network:
     def __init__(self, data: Dict):
         self.transfer_minutes = float(data.get("transfer_minutes", 5))
         self.coords = {name: (c["lat"], c["lon"]) for name, c in data["stations"].items()}
+        self.status = {name: c.get("status", OPERATIONAL) for name, c in data["stations"].items()}
         self.lines = data["lines"]
         self.line_name = {l["id"]: l["name"] for l in self.lines}
         self.fares = data.get("fares", {})
@@ -33,7 +39,11 @@ class Network:
         # Riding edges, both directions, keyed by state.
         self._ride: Dict[State, List[Tuple[State, float, float]]] = {}
         self.station_lines: Dict[str, List[str]] = {}
+        # Track geometry of each segment, stored in the direction it was built (from -> to).
+        self.geometry: Dict[Tuple[str, str, str], List[List[float]]] = {}
         for seg in data["segments"]:
+            self.geometry[(seg["line"], seg["from"], seg["to"])] = seg.get("geometry") or [
+                list(self.coords[seg["from"]]), list(self.coords[seg["to"]])]
             a, b, line = (seg["from"], seg["line"]), (seg["to"], seg["line"]), seg["line"]
             self._ride.setdefault(a, []).append((b, float(seg["minutes"]), float(seg["km"])))
             self._ride.setdefault(b, []).append((a, float(seg["minutes"]), float(seg["km"])))
@@ -123,11 +133,13 @@ class Network:
             return None  # passes a station twice: never a sensible journey
 
         # Line used to reach each station along the route, and the legs between line changes.
-        legs, km = [], 0.0
+        legs, km, geometry = [], 0.0, []
         for a, b in zip(states, states[1:]):
             if a[0] == b[0]:
                 continue  # a change of line
             km += next(d for nxt, _, d in self._ride[a] if nxt == b)
+            piece = self.segment_geometry(a[1], a[0], b[0])
+            geometry += piece[1:] if geometry else piece
             line = self.line_name[a[1]]
             if legs and legs[-1]["line"] == line and legs[-1]["to"] == a[0]:
                 legs[-1]["to"], legs[-1]["stops"] = b[0], legs[-1]["stops"] + 1
@@ -148,6 +160,7 @@ class Network:
             "interchanges": interchanges,
             "distance": round(km, 2),
             "minutes": round(minutes, 1),
+            "geometry": geometry,
             "instructions": instructions,
             "error": None,
         }
@@ -171,15 +184,32 @@ class Network:
                 break
         return routes
 
+    def segment_geometry(self, line: str, a: str, b: str) -> List[List[float]]:
+        """Track between two neighbouring stations, in the direction a -> b."""
+        if (line, a, b) in self.geometry:
+            return self.geometry[(line, a, b)]
+        return list(reversed(self.geometry[(line, b, a)]))
+
+    def line_geometry(self, line: Dict) -> List[List[float]]:
+        """A whole line's track, first station to last."""
+        out: List[List[float]] = []
+        for a, b in zip(line["stations"], line["stations"][1:]):
+            piece = self.segment_geometry(line["id"], a, b)
+            out += piece[1:] if out else piece
+        return out
+
     def resolve(self, name: str) -> Optional[str]:
         return self._lookup.get((name or "").strip().lower())
 
     def fare(self, source: str, destination: str) -> Optional[int]:
+        """None when either station isn't open: no fare is published (or bought) for it yet."""
+        if self.status.get(source) != OPERATIONAL or self.status.get(destination) != OPERATIONAL:
+            return None
         return self.fares.get(source, {}).get(destination)
 
 
 def _empty(error: str):
-    return {"route": [], "legs": [], "interchanges": [], "distance": 0, "minutes": None, "instructions": [], "error": error}
+    return {"route": [], "legs": [], "interchanges": [], "distance": 0, "minutes": None, "geometry": [], "instructions": [], "error": error}
 
 
 with open(DATA_DIR / "network.json", encoding="utf-8") as _f:
@@ -188,6 +218,37 @@ with open(DATA_DIR / "network.json", encoding="utf-8") as _f:
 # Line order and names as the rest of the app expects them.
 LINE_NAMES = [l["name"] for l in NETWORK.lines]
 LINES: List[List[str]] = [l["stations"] for l in NETWORK.lines]
+
+
+def get_line_geometries() -> List[Dict]:
+    """Every line with its track geometry, for drawing the network on a map."""
+    return [
+        {"id": l["id"], "name": l["name"], "status": l.get("status", OPERATIONAL), "stations": l["stations"],
+         "geometry": NETWORK.line_geometry(l)}
+        for l in NETWORK.lines
+    ]
+
+
+def journey_not_open(result: Dict) -> Dict[str, str]:
+    """Stations of a journey that aren't open, and that matter to the rider: the start and end, and every stop
+    on a line still being built. A closed station the train only passes through (Sabarmati, for a Red Line trip)
+    doesn't count."""
+    building = {l["name"] for l in NETWORK.lines if l.get("status") == WORK_IN_PROGRESS}
+    route = result["route"]
+    used = {route[0], route[-1]}
+    for leg in result["legs"]:
+        if leg["line"] in building:
+            i, j = route.index(leg["from"]), route.index(leg["to"])
+            used.update(route[i:j + 1])
+    return {s: station_status(s) for s in route if s in used and not is_operational(s)}
+
+
+def station_status(name: str) -> str:
+    return NETWORK.status.get(name, OPERATIONAL)
+
+
+def is_operational(name: str) -> bool:
+    return station_status(name) == OPERATIONAL
 
 
 def get_all_stations() -> List[str]:
@@ -217,9 +278,13 @@ def calculate_route_details(source: str, destination: str):
         return _empty(f"Station '{destination}' not found")
     if src == dst:
         return _empty("Source and destination cannot be the same")
+    for name in (src, dst):
+        if station_status(name) == UNDER_CONSTRUCTION:
+            return _empty(f"{name} station is under construction and not open yet")
     routes = find_routes(src, dst)
     if not routes:
         return _empty("No route found between these stations")
     best = dict(routes[0])
     best["alternatives"] = routes[1:]
+    best["not_operational"] = journey_not_open(best)
     return best

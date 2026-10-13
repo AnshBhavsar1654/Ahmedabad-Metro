@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, unquote, urljoin, urlparse
 
 import requests
 
-from metro.network import NETWORK
+from metro.network import NETWORK, is_operational
 
 def straight_line_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Great-circle distance in km (only used to shortlist stations before asking for road distances)."""
@@ -15,8 +15,13 @@ def straight_line_km(lat1: float, lon1: float, lat2: float, lon2: float) -> floa
     return 2 * 6371 * asin(sqrt(a))
 
 
-OSRM_TABLE_URL = "https://router.project-osrm.org/table/v1/driving"
-OSRM_ROUTE_URL = "https://router.project-osrm.org/route/v1/driving"
+# Routing services, best first: walking routes (FOSSGIS, OpenStreetMap's German chapter), then driving routes
+# (OSRM demo server) if that is down. Both are free for light use; send few requests and identify the app.
+ROUTERS = [
+    ("walk", "https://routing.openstreetmap.de/routed-foot", "foot"),
+    ("road", "https://router.project-osrm.org", "driving"),
+]
+ROUTER_HEADERS = {"User-Agent": "AhmedabadMetroApp/1.0 (nearest-station finder)"}
 
 # Only these hosts are fetched server-side (and every redirect hop is checked against them).
 ALLOWED_MAPS_HOSTS = {
@@ -107,49 +112,41 @@ def _resolve_google_maps_url(url: str):
     }
 
 
-def _get_road_distances_km(user_lat: float, user_lng: float, stations: List[Dict[str, Any]]) -> Optional[List[Optional[float]]]:
-    """Driving distances from the user to each station via OSRM, or None if unavailable."""
-    if not stations:
-        return []
-
-    coordinates = [f"{user_lng},{user_lat}"]
-    coordinates.extend(f"{s['longitude']},{s['latitude']}" for s in stations)
-
+def _table(base: str, profile: str, lat: float, lng: float, stations: List[Dict[str, Any]]):
+    """Distances (km) and durations (min) from the user to each station, or None if the service is unavailable."""
+    coordinates = ";".join([f"{lng},{lat}", *(f"{s['longitude']},{s['latitude']}" for s in stations)])
     try:
         response = requests.get(
-            f"{OSRM_TABLE_URL}/" + ";".join(coordinates),
-            params={
-                "sources": "0",
-                "destinations": ";".join(str(i) for i in range(1, len(coordinates))),
-                "annotations": "distance",
-            },
-            timeout=12,
+            f"{base}/table/v1/{profile}/{coordinates}",
+            params={"sources": "0", "annotations": "distance,duration"},
+            headers=ROUTER_HEADERS,
+            timeout=10,
         )
         response.raise_for_status()
-        distances = response.json().get("distances")
-    except (requests.RequestException, ValueError):
+        data = response.json()
+        distances, durations = data["distances"][0][1:], data["durations"][0][1:]
+    except (requests.RequestException, ValueError, KeyError, IndexError, TypeError):
         return None
-
-    if not distances or not distances[0] or len(distances[0]) != len(stations):
+    if len(distances) != len(stations) or any(d is None for d in distances):
         return None
-    return [d / 1000 if d is not None else None for d in distances[0]]
+    return [d / 1000 for d in distances], [t / 60 if t is not None else None for t in durations]
 
 
-def _get_road_path(user_lat: float, user_lng: float, station: Dict[str, Any]) -> Optional[List[List[float]]]:
-    """Road path from the user to a station as [[lat, lng], ...] (simplified), or None if OSRM is unavailable.
-    Starts and ends exactly at the two markers, so the drawn line joins them."""
+def _route_path(base: str, profile: str, lat: float, lng: float, station: Dict[str, Any]) -> Optional[List[List[float]]]:
+    """Path from the user to a station as [[lat, lng], ...], or None. Starts and ends exactly at the two markers."""
     try:
         response = requests.get(
-            f"{OSRM_ROUTE_URL}/{user_lng},{user_lat};{station['longitude']},{station['latitude']}",
-            params={"overview": "simplified", "geometries": "geojson"},
-            timeout=8,
+            f"{base}/route/v1/{profile}/{lng},{lat};{station['longitude']},{station['latitude']}",
+            params={"overview": "full", "geometries": "geojson"},
+            headers=ROUTER_HEADERS,
+            timeout=10,
         )
         response.raise_for_status()
         coords = response.json()["routes"][0]["geometry"]["coordinates"]
     except (requests.RequestException, ValueError, KeyError, IndexError):
         return None
-    path = [[round(lat, 6), round(lng, 6)] for lng, lat in coords]
-    return [[user_lat, user_lng], *path, [station["latitude"], station["longitude"]]]
+    path = [[round(p_lat, 6), round(p_lng, 6)] for p_lng, p_lat in coords]
+    return [[lat, lng], *path, [station["latitude"], station["longitude"]]]
 
 
 def get_stations_with_coordinates():
@@ -163,24 +160,37 @@ def get_nearby_stations_data(lat: Optional[float], lng: Optional[float]):
     if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
         raise ValueError("Invalid coordinates")
 
-    stations = get_stations_with_coordinates()
+    # Only stations a rider can use today.
+    stations = [s for s in get_stations_with_coordinates() if is_operational(s["name"])]
 
     # Pre-select the closest candidates by straight line so the routing request stays small.
     for station in stations:
         station["straight"] = straight_line_km(lat, lng, station["latitude"], station["longitude"])
     candidates = sorted(stations, key=lambda s: s["straight"])[:8]
 
-    road_distances = _get_road_distances_km(lat, lng, candidates)
-    for index, station in enumerate(candidates):
-        road = road_distances[index] if road_distances else None
-        station["distance"] = round(road if road is not None else station["straight"], 1)
-        station["distance_type"] = "road" if road is not None else "straight"  # the card says which
+    # Walking distance and time from the first routing service that answers; a straight line if none does.
+    router = None
+    for kind, base, profile in ROUTERS:
+        table = _table(base, profile, lat, lng, candidates)
+        if table:
+            router = (kind, base, profile)
+            for station, km, minutes in zip(candidates, *table):
+                station.update(distance=round(km, 1), distance_type=kind,
+                               walk_minutes=round(minutes) if kind == "walk" and minutes is not None else None)
+            break
+    for station in candidates:
+        if router is None:
+            station.update(distance=round(station["straight"], 1), distance_type="straight", walk_minutes=None)
         station.pop("straight")
     nearest = sorted(candidates, key=lambda s: s["distance"])[:3]
 
-    # The road path to each of the three, fetched together. Without one the map draws a straight line.
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        paths = list(pool.map(lambda st: _get_road_path(lat, lng, st), nearest))
+    # The path to each of the three, from the same service, fetched together. Without one the map draws a
+    # straight line.
+    paths = [None] * len(nearest)
+    if router:
+        _, base, profile = router
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            paths = list(pool.map(lambda st: _route_path(base, profile, lat, lng, st), nearest))
     for station, path in zip(nearest, paths):
         station["path"] = path
     return nearest

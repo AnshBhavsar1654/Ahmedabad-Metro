@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useI18n } from '../i18n';
 import { Home, Route, TrainFront, MapPin, Accessibility, Clock, Phone, Info, Menu, X } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Home', icon: Home },
-  { to: '/routes', label: 'Plan Journey', icon: Route },
-  { to: '/stations', label: 'Metro Map', icon: TrainFront },
-  { to: '/nearest-stations', label: 'Nearest Stations', icon: MapPin },
-  { to: '/facilities', label: 'Facilities', icon: Accessibility },
-  { to: '/schedule', label: 'Schedule', icon: Clock },
-  { to: '/contact', label: 'Contact', icon: Phone },
-  { to: '/stations-info', label: 'Stations Info', icon: Info },
+  { to: '/', label: 'nav.home', icon: Home },
+  { to: '/routes', label: 'nav.routes', icon: Route },
+  { to: '/stations', label: 'nav.stations', icon: TrainFront },
+  { to: '/nearest-stations', label: 'nav.nearest', icon: MapPin },
+  { to: '/facilities', label: 'nav.facilities', icon: Accessibility },
+  { to: '/schedule', label: 'nav.schedule', icon: Clock },
+  { to: '/contact', label: 'nav.contact', icon: Phone },
+  { to: '/stations-info', label: 'nav.stationsInfo', icon: Info },
 ];
 
 const iconProps = { strokeWidth: 1.75, size: 20 };
@@ -19,6 +21,7 @@ const iconProps = { strokeWidth: 1.75, size: 20 };
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { pathname } = useLocation();
+  const { t } = useI18n();
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -33,29 +36,31 @@ function Navbar() {
     (pathname === to ? 'bg-chrome-700 text-white' : 'text-white/70 hover:bg-chrome-700/50 hover:text-white');
 
   return (
-    <nav className="fixed top-0 z-[2000] w-full border-b border-white/10 bg-chrome-900" aria-label="Main">
+    <nav className="fixed top-0 z-[2000] w-full border-b border-white/10 bg-chrome-900" aria-label={t('nav.main')}>
       <div className="mx-auto flex min-h-[64px] max-w-7xl items-center justify-between px-5 py-3">
         <Link to="/" className="flex shrink-0 items-center gap-2 text-white no-underline">
           <img src="/logo.png" alt="" className="h-10 w-10" />
-          <span className="whitespace-nowrap font-sans text-lg font-bold">Ahmedabad Metro</span>
+          <span className="whitespace-nowrap font-sans text-lg font-bold">{t('app.name')}</span>
         </Link>
 
         <div className="hidden items-center xl:flex">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <Link key={to} to={to} className={desktopClass(to)} aria-current={pathname === to ? 'page' : undefined}>
-              <Icon {...iconProps} /> {label}
+              <Icon {...iconProps} /> {t(label)}
             </Link>
           ))}
-          <ThemeToggle className="ml-2" />
+          <LanguageSwitcher className="ml-2" />
+          <ThemeToggle />
         </div>
 
         <div className="flex items-center gap-1 xl:hidden">
+          <LanguageSwitcher />
           <ThemeToggle />
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-md p-2 text-white transition hover:bg-chrome-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             onClick={() => setIsMenuOpen((open) => !open)}
-            aria-label="Toggle menu"
+            aria-label={t('nav.menu')}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
           >
@@ -71,7 +76,7 @@ function Navbar() {
         <div className="flex flex-col pb-4">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <Link key={to} to={to} className={mobileClass(to)} aria-current={pathname === to ? 'page' : undefined} tabIndex={isMenuOpen ? 0 : -1}>
-              <Icon {...iconProps} /> {label}
+              <Icon {...iconProps} /> {t(label)}
             </Link>
           ))}
         </div>

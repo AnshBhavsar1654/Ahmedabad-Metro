@@ -2,19 +2,29 @@ Ahmedabad Metro System - Structured Knowledge Base
 
 === SECTION I: GENERAL OVERVIEW ===
 
-Total Stations: 54
-Number of Lines: 4
-- East-West Line
-- North-South Line
-- Corridor-1
-- Corridor-2
+Total Stations: 62 (53 operational; Sabarmati and 8 stations on two new lines are work in progress)
+Number of Lines: 6 (4 running, 2 being built)
+- East-West Line (Blue Line)
+- North-South Line (Red Line)
+- Corridor-1 (Yellow Line)
+- Corridor-2 (Violet Line)
+- Airport Corridor (Pink Line, work in progress)
+- GIFT City Extension (Light Blue Line, work in progress)
 
 Operational Hours: 6:30 AM to 11:00 PM daily
 Extended Hours: Up to 12:30 AM during major events at Narendra Modi Stadium
 
-Operational Length (as of May 2025): 58.66 km
+Network Length: 76.64 km
 Phase 1: 40.03 km, 32 stations
-Phase 2: 28.25 km, 22 stations (8 Gandhinagar stations under construction)
+Phase 2: 28.25 km, 22 stations
+Phase 2A (Airport Corridor, Pink Line): Koteshwar Road to Airport, 6.03 km, 5 new stations, work in progress
+Phase 2B (GIFT City Extension, Light Blue Line): GIFT City to Shahpur, 3.33 km, 3 new stations, work in progress
+
+Stations Not Open Yet:
+- Sabarmati station (Red Line) is work in progress, not open yet. Trains pass through without stopping; riders cannot board or get off there yet, and it has no fare yet.
+- Pink Line stations (work in progress, not running yet): Ashram Road, Koteshwar Prachin Mandir, Sabarmati River, Sardarnagar, Airport (underground)
+- Light Blue Line stations (work in progress, not running yet): GIFT City House, Gujarat Biotechnology University, Shahpur (Gandhinagar). This Shahpur is near GIFT City, not the Shahpur station on the Blue Line.
+- Fares for work-in-progress stations have not been published yet.
 
 Fares:
 - Minimum Fare: Rs 5
@@ -82,8 +92,9 @@ Train Frequency: Varies by line and time (see Section V)
 
 Line Interchanges (no additional fare charged):
 - Old High Court station (Red Line and Blue Line)
-- Koteshwar Road station (Red Line and Yellow Line)
+- Koteshwar Road station (Red Line, Yellow Line and Pink Line)
 - GNLU station (Yellow Line and Violet Line)
+- Gift City station (Violet Line and Light Blue Line)
 
 Luggage Policy:
 - Maximum weight allowed: 25 kg
@@ -115,6 +126,9 @@ North-South Line:
 
 Corridor-1 (Gandhinagar):
 - Frequency: Every 30 to 70 minutes (may vary up to 355 minutes based on schedule)
+
+Pink Line and Light Blue Line:
+- Not running yet (work in progress)
 
 Corridor-2 (GIFT City):
 - Frequency: Every 33 to 355 minutes
@@ -180,7 +194,7 @@ Travel Time Limits:
 === SECTION VI: STATION LIST ===
 
 Red Line (North-South Corridor, APMC to Koteshwar Road):
-APMC, Jivraj Park, Rajivnagar, Shreyas, Paldi, Gandhigram, Old High Court, Usmanpura, Vijaynagar, Vadaj, Ranip, Sabarmati Railway Station, AEC, Sabarmati, Motera Stadium, Koteshwar Road
+APMC, Jivraj Park, Rajivnagar, Shreyas, Paldi, Gandhigram, Old High Court, Usmanpura, Vijaynagar, Vadaj, Ranip, Sabarmati Railway Station, AEC, Sabarmati (work in progress), Motera Stadium, Koteshwar Road
 
 Blue Line (East-West Corridor, Thaltej Gam to Vastral Gam):
 Thaltej Gam, Thaltej, Doordarshan Kendra, Gurukul Road, Gujarat University, Commerce Six Road, SP Stadium, Old High Court, Shahpur, Ghee Kanta, Kalupur Railway Station, Kankaria East, Apparel Park, Amraivadi, Rabari Colony, Vastral, Nirant Cross Road, Vastral Gam
@@ -190,3 +204,9 @@ Koteshwar Road, Vishvakarma College, Tapovan Circle, Narmada Canal, Koba Circle,
 
 Violet Line (Corridor-2, GNLU to Gift City):
 GNLU, PDEU, Gift City
+
+Pink Line (Airport Corridor, Koteshwar Road to Airport, work in progress):
+Koteshwar Road, Ashram Road, Koteshwar Prachin Mandir, Sabarmati River, Sardarnagar, Airport
+
+Light Blue Line (GIFT City Extension, Gift City to Shahpur, work in progress):
+Gift City, GIFT City House, Gujarat Biotechnology University, Shahpur (Gandhinagar)

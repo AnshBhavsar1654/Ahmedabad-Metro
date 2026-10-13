@@ -8,7 +8,7 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 from metro import timetable
-from metro.network import get_all_stations
+from metro.network import get_all_stations, journey_not_open
 
 
 # ==================================================================================================
@@ -71,6 +71,15 @@ NAMES_LOCAL = {
     "Mahatma Mandir": ("મહાત્મા મંદિર", "महात्मा मंदिर"),
     "PDEU": ("પીડીઈયુ", "पीडीईयू"),
     "Gift City": ("ગિફ્ટ સિટી", "गिफ्ट सिटी"),
+    # Pink Line (Airport Corridor) and Light Blue Line (GIFT City Extension): work in progress.
+    "Ashram Road": ("આશ્રમ રોડ", "आश्रम रोड"),
+    "Koteshwar Prachin Mandir": ("કોટેશ્વર પ્રાચીન મંદિર", "कोटेश्वर प्राचीन मंदिर"),
+    "Sabarmati River": ("સાબરમતી નદી", "साबरमती नदी"),
+    "Sardarnagar": ("સરદારનગર", "सरदारनगर"),
+    "Airport": ("એરપોર્ટ", "एयरपोर्ट"),
+    "GIFT City House": ("ગિફ્ટ સિટી હાઉસ", "गिफ्ट सिटी हाउस"),
+    "Gujarat Biotechnology University": ("ગુજરાત બાયોટેકનોલોજી યુનિવર્સિટી", "गुजरात बायोटेक्नोलॉजी यूनिवर्सिटी"),
+    "Shahpur (Gandhinagar)": ("શાહપુર (ગાંધીનગર)", "शाहपुर (गांधीनगर)"),
 }
 
 # Extra Latin spellings (lowercase). Canonical names are added automatically.
@@ -106,6 +115,12 @@ EXTRA_LATIN = {
     "Koteshwar Road": ["koteshwar", "koteshwar rd"],
     "Tapovan Circle": ["tapovan"],
     "Narmada Canal": ["narmada kenal"],
+    "Koteshwar Prachin Mandir": ["koteshwar mandir", "koteshwar temple", "koteshwar mahadev"],
+    "Sardarnagar": ["sardar nagar"],
+    "Airport": ["ahmedabad airport", "svpi airport", "sardar vallabhbhai patel airport"],
+    "GIFT City House": ["gift house"],
+    "Gujarat Biotechnology University": ["biotechnology university", "biotech university", "gbu"],
+    "Shahpur (Gandhinagar)": ["shahpur gandhinagar", "shahpur circle", "shahpur gift city"],
 }
 
 # Lines in the rider's language.
@@ -114,6 +129,8 @@ LINE_LOCAL = {
     "Blue Line": ("વાદળી લાઇન", "नीली लाइन"),
     "Yellow Line": ("પીળી લાઇન", "पीली लाइन"),
     "Violet Line": ("જાંબલી લાઇન", "बैंगनी लाइन"),
+    "Pink Line": ("ગુલાબી લાઇન", "गुलाबी लाइन"),
+    "Light Blue Line": ("આછી વાદળી લાઇન", "हल्की नीली लाइन"),
 }
 
 
@@ -369,6 +386,18 @@ FARE_UNAVAILABLE = {
     "hi": "{a} से {b} का किराया नहीं मिला। स्टेशन काउंटर पर या /routes पेज पर देखें।",
 }
 
+UNDER_CONSTRUCTION = {
+    "en": "{a} station is under construction and not open yet. Trains pass through without stopping, so choose a nearby station such as AEC or Motera Stadium.",
+    "gu": "{a} સ્ટેશન બાંધકામ હેઠળ છે અને હજુ ખુલ્યું નથી. ટ્રેનો ત્યાં રોકાયા વગર પસાર થાય છે, તેથી AEC કે મોટેરા સ્ટેડિયમ જેવું નજીકનું સ્ટેશન પસંદ કરો.",
+    "hi": "{a} स्टेशन निर्माणाधीन है और अभी खुला नहीं है। ट्रेनें वहाँ बिना रुके गुज़रती हैं, इसलिए AEC या मोटेरा स्टेडियम जैसा पास का स्टेशन चुनें।",
+}
+
+WORK_IN_PROGRESS = {
+    "en": "{a} isn't open yet (work in progress), so trains don't stop there and no fare has been published.",
+    "gu": "{a} હજુ ખુલ્યું નથી (કામ ચાલુ છે), તેથી ત્યાં ટ્રેનો રોકાતી નથી અને ભાડું જાહેર થયું નથી.",
+    "hi": "{a} अभी खुला नहीं है (काम जारी है), इसलिए वहाँ ट्रेनें नहीं रुकतीं और किराया घोषित नहीं हुआ है।",
+}
+
 DEGRADED = {
     "en": "The assistant is busy right now, so here is the closest information I have:",
     "gu": "સહાયક હાલમાં વ્યસ્ત છે, તેથી મારી પાસે સૌથી નજીકની માહિતી આ છે:",
@@ -433,6 +462,12 @@ def route_reply(src: str, dst: str, fare: Optional[int], result: Dict, lang: str
         "gu": f"અંતર લગભગ {km} કિમી, {count} સ્ટેશન, આશરે {mins} મિનિટ.",
         "hi": f"दूरी लगभग {km} किमी, {count} स्टेशन, लगभग {mins} मिनट।",
     }[lang]
+    if "work in progress" in journey_not_open(result).values():
+        steps.append({
+            "en": "Part of this journey isn't open yet (work in progress): trains don't stop there yet and no fare has been published.",
+            "gu": "આ મુસાફરીનો ભાગ હજુ ખુલ્યો નથી (કામ ચાલુ છે): ત્યાં હજુ ટ્રેનો રોકાતી નથી અને ભાડું જાહેર થયું નથી.",
+            "hi": "इस यात्रा का कुछ हिस्सा अभी खुला नहीं है (काम जारी है): वहाँ अभी ट्रेनें नहीं रुकतीं और किराया घोषित नहीं हुआ है।",
+        }[lang])
     if timetable.through_service(result["legs"]):
         steps.append({
             "en": "Through trains run all the way, so you can stay on board (times on /schedule).",

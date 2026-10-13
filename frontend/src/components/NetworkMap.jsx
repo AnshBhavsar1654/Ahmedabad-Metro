@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Minus, Plus, Maximize2 } from 'lucide-react';
 import { LINES, lineColor } from '../lib/lines';
 import { useTheme } from '../lib/theme';
-import { DIAGRAM_VIEWBOX, LINE_STATIONS, STATION_LINES, STATION_POSITIONS, isInterchange, linePoints } from '../lib/network';
+import { useI18n } from '../i18n';
+import { DIAGRAM_VIEWBOX, LINE_STATIONS, STATION_LINES, STATION_POSITIONS, isInterchange, linePoints, stationStatus } from '../lib/network';
 
 const ZOOMS = [1, 1.35, 1.8, 2.4];
 const MIN_WIDTH = 720; // below this the labels get too small to read, so the diagram scrolls instead
@@ -17,6 +18,7 @@ const zoomButton =
  */
 const NetworkMap = ({ selected, onSelect, highlight = null, route = null }) => {
   const { theme } = useTheme();
+  const { t, station: localName, line: lineName } = useI18n();
   const [zoom, setZoom] = useState(0);
   const { x, y, width, height } = DIAGRAM_VIEWBOX;
   const onRoute = route ? new Set(route) : null;
@@ -30,13 +32,13 @@ const NetworkMap = ({ selected, onSelect, highlight = null, route = null }) => {
   return (
     <div className="relative">
       <div className="absolute right-3 top-3 z-10 flex flex-col overflow-hidden rounded-md border border-line-200 bg-surface-1 shadow-lg">
-        <button type="button" className={zoomButton} onClick={() => setZoom((z) => Math.min(z + 1, ZOOMS.length - 1))} disabled={zoom === ZOOMS.length - 1} aria-label="Zoom in">
+        <button type="button" className={zoomButton} onClick={() => setZoom((z) => Math.min(z + 1, ZOOMS.length - 1))} disabled={zoom === ZOOMS.length - 1} aria-label={t('diagram.zoomIn')}>
           <Plus strokeWidth={1.75} size={18} />
         </button>
-        <button type="button" className={`${zoomButton} border-y border-line-200`} onClick={() => setZoom((z) => Math.max(z - 1, 0))} disabled={zoom === 0} aria-label="Zoom out">
+        <button type="button" className={`${zoomButton} border-y border-line-200`} onClick={() => setZoom((z) => Math.max(z - 1, 0))} disabled={zoom === 0} aria-label={t('diagram.zoomOut')}>
           <Minus strokeWidth={1.75} size={18} />
         </button>
-        <button type="button" className={zoomButton} onClick={() => setZoom(0)} disabled={zoom === 0} aria-label="Fit diagram">
+        <button type="button" className={zoomButton} onClick={() => setZoom(0)} disabled={zoom === 0} aria-label={t('diagram.fit')}>
           <Maximize2 strokeWidth={1.75} size={16} />
         </button>
       </div>
@@ -47,7 +49,7 @@ const NetworkMap = ({ selected, onSelect, highlight = null, route = null }) => {
           style={{ width: `${ZOOMS[zoom] * 100}%`, minWidth: `${MIN_WIDTH * ZOOMS[zoom]}px` }}
           className="block select-none"
           role="group"
-          aria-label="Ahmedabad Metro network diagram. Select a station for details."
+          aria-label={t('diagram.aria')}
         >
           {LINES.map((line) => (
             <polyline
@@ -58,7 +60,8 @@ const NetworkMap = ({ selected, onSelect, highlight = null, route = null }) => {
               strokeWidth={9}
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity={dimLine(line.id) ? 0.15 : 1}
+              strokeDasharray={line.wip ? '14 10' : undefined}
+              opacity={dimLine(line.id) ? 0.15 : line.wip ? 0.85 : 1}
               className="transition-opacity"
             />
           ))}
@@ -67,6 +70,8 @@ const NetworkMap = ({ selected, onSelect, highlight = null, route = null }) => {
             const lines = STATION_LINES[name];
             const interchange = isInterchange(name);
             const isSelected = name === selected;
+            const status = stationStatus(name);
+            const notOpen = status !== 'operational';
             const color = lineColor(LINES.find((l) => l.id === lines[0]), theme);
             const lx = sx + label.dx;
             const ly = sy + label.dy;
@@ -76,7 +81,7 @@ const NetworkMap = ({ selected, onSelect, highlight = null, route = null }) => {
                 role="button"
                 tabIndex={0}
                 aria-pressed={isSelected}
-                aria-label={`${name}, ${lines.map((id) => LINES.find((l) => l.id === id).name).join(' and ')}`}
+                aria-label={`${localName(name)}, ${lines.map((id) => lineName(LINES.find((l) => l.id === id).name)).join(', ')}${notOpen ? `, ${t(`status.${status}`)}` : ''}`}
                 onClick={() => activate(name)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -93,7 +98,15 @@ const NetworkMap = ({ selected, onSelect, highlight = null, route = null }) => {
                 {interchange ? (
                   <circle cx={sx} cy={sy} r={9} fill="rgb(var(--surface-1))" stroke="rgb(var(--ink-900))" strokeWidth={3.5} />
                 ) : (
-                  <circle cx={sx} cy={sy} r={6} fill="rgb(var(--surface-1))" stroke={color} strokeWidth={3.5} />
+                  <circle
+                    cx={sx}
+                    cy={sy}
+                    r={6}
+                    fill="rgb(var(--surface-1))"
+                    stroke={notOpen ? 'rgb(var(--ink-600))' : color}
+                    strokeWidth={3.5}
+                    strokeDasharray={notOpen ? '3 2.4' : undefined}
+                  />
                 )}
                 <text
                   x={lx}
@@ -105,7 +118,7 @@ const NetworkMap = ({ selected, onSelect, highlight = null, route = null }) => {
                   fill="rgb(var(--ink-900))"
                   className="font-sans"
                 >
-                  {name}
+                  {localName(name)}
                 </text>
               </g>
             );

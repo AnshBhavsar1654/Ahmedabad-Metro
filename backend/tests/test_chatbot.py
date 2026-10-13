@@ -375,3 +375,19 @@ def test_rate_limit_per_client(monkeypatch):
     other = client.post("/api/chat", json={"message": "hello"}, headers={"x-forwarded-for": "203.0.113.10"})
     assert other.status_code == 200
     app_module._recent.clear()
+
+
+def test_stations_that_are_not_open():
+    assert "isn't open yet" in ask("fare from paldi to sabarmati")
+    assert "work in progress" not in ask("route from aec to motera stadium")  # only passes Sabarmati
+    assert "work in progress" in ask("fare from vadaj to airport")
+    route = ask("route from paldi to airport")
+    assert "Pink Line" in route and "work in progress" in route and "₹" not in route
+    assert "Light Blue Line" in ask("gift city to shahpur gandhinagar")
+    old_shahpur = ask("fare from paldi to shahpur")  # the Blue Line station: change at Old High Court
+    assert "₹10" in old_shahpur and "Old High Court" in old_shahpur
+
+
+def test_light_blue_is_not_taken_for_blue():
+    assert chat.get_line_stations("light blue")["line"] == "Light Blue Line"
+    assert chat.get_line_stations("blue line")["line"] == "Blue Line"

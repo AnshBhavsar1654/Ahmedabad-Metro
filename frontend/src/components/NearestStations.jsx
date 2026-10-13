@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { Search, X, LocateFixed, Link as LinkIcon, MapPin, History, CircleAlert, Navigation, ChevronRight } from 'lucide-react';
 import LineBadge from './LineBadge';
 import { STATION_LINES } from '../lib/network';
+import { useI18n } from '../i18n';
 import PageHeader from './PageHeader';
 import BaseTiles from './BaseTiles';
 import { useTheme, mapPalette } from '../lib/theme';
@@ -73,35 +74,52 @@ const pointAlong = (path, fraction) => {
   return path[path.length - 1];
 };
 
-const LABEL_CLEARANCE_PX = 44; // a pill is about 50 x 18 px
-const LABEL_SPOTS = [0.5, 0.62, 0.38, 0.72, 0.3, 0.8, 0.22, 0.88];
+const LABEL_SPOTS = [0.5, 0.62, 0.38, 0.72, 0.3, 0.8, 0.22, 0.88, 0.15, 0.94];
+
+// Screen rectangles (px) as [left, top, right, bottom].
+const box = (cx, cy, w, h) => [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2];
+const overlap = (a, b) => Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])) * Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
+const pillWidth = (text) => text.length * 6.8 + 16; // 11px monospace, plus padding
+const nameWidth = (text) => text.length * 6.6 + 14; // 11px semibold sans, plus padding
 
 // Distance written on each path. Paths to nearby stations often share a stretch, and short ones end right at
 // a pin, so each label tries spots along its path (in screen pixels, at the current zoom) and takes the first
-// one clear of the start, the pins and the labels already placed.
+// one that covers nothing: not the start, a pin, a station name, or another label. Failing that, the one that
+// covers least.
 const DistanceLabels = ({ stations, start, colors }) => {
+  const { t, station: localName } = useI18n();
   const map = useMap();
   const [, setZoom] = useState(map.getZoom());
   useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
 
-  const avoid = [start, ...stations.map((st) => [st.latitude, st.longitude])].map((p) => map.latLngToContainerPoint(p));
-  const placed = [];
+  const at = (p) => map.latLngToContainerPoint(p);
+  const s0 = at(start);
+  const taken = [box(s0.x, s0.y, 30, 30)];
+  stations.forEach((st) => {
+    const p = at([st.latitude, st.longitude]);
+    taken.push(box(p.x, p.y, 30, 30));
+    const w = nameWidth(localName(st.name));
+    taken.push([p.x + 14, p.y - 10, p.x + 14 + w, p.y + 10]); // the name label, right of the pin
+  });
+
   return stations.map((station, index) => {
     const path = station.path || [start, [station.latitude, station.longitude]];
+    const text = distanceText(station, t);
     let best = null;
     for (const fraction of LABEL_SPOTS) {
       const latlng = pointAlong(path, fraction);
-      const px = map.latLngToContainerPoint(latlng);
-      const clearance = Math.min(...[...avoid, ...placed].map((q) => px.distanceTo(q)));
-      if (!best || clearance > best.clearance) best = { latlng, px, clearance };
-      if (clearance >= LABEL_CLEARANCE_PX) break;
+      const p = at(latlng);
+      const rect = box(p.x, p.y, pillWidth(text), 20);
+      const covered = taken.reduce((sum, t) => sum + overlap(rect, t), 0);
+      if (!best || covered < best.covered) best = { latlng, rect, covered };
+      if (covered === 0) break;
     }
-    placed.push(best.px);
+    taken.push(best.rect);
     return (
       <Marker
         key={`distance-${station.name}`}
         position={best.latlng}
-        icon={distanceLabelIcon(distanceText(station), colors[index])}
+        icon={distanceLabelIcon(text, colors[index])}
         interactive={false}
         zIndexOffset={500}
       />
@@ -109,8 +127,19 @@ const DistanceLabels = ({ stations, start, colors }) => {
   });
 };
 
-const distanceText = (station) =>
-  station.distance == null ? 'distance unavailable' : `${station.distance_type === 'straight' ? '≈ ' : ''}${station.distance} km`;
+const distanceText = (station, t) => {
+  if (station.distance == null) return t('near.unavailable');
+  const km = `${station.distance} ${t('unit.km')}`;
+  if (station.distance_type === 'walk' && station.walk_minutes != null) return `${km} · ${station.walk_minutes} ${t('unit.min')}`;
+  return `${station.distance_type === 'straight' ? '≈ ' : ''}${km}`;
+};
+
+// How the distance was measured, in words, for the cards (translation keys).
+const DISTANCE_KIND = {
+  walk: 'near.walk',
+  road: 'near.road',
+  straight: 'near.straight',
+};
 
 // Frame the searched point together with the stations found for it.
 const FitToPoints = ({ points }) => {
@@ -142,7 +171,7 @@ const writeHistory = (items) => {
 const getPosition = (options) =>
   new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error('Geolocation is not supported by this browser.'));
+      reject(new Error('near.noGeo'));
       return;
     }
     navigator.geolocation.getCurrentPosition(resolve, reject, options);
@@ -159,27 +188,42 @@ const getBestPosition = async () => {
 
 const describeRequestError = (err) => {
   if (err.response?.data?.error) return err.response.data.error;
-  if (err.response) return `The server returned an error (${err.response.status}). Please try again.`;
-  if (err.request) return 'Could not reach the server. Check your connection and try again.';
-  return err.message || 'Something went wrong. Please try again.';
+  if (err.response) return `error.status|${err.response.status}`;
+  if (err.request) return 'error.unreachable';
+  return err.message || 'error.generic';
 };
 
-const Alert = ({ children, onDismiss }) => (
+const Alert = ({ children, onDismiss }) => {
+  const { t } = useI18n();
+  return (
   <div role="alert" className="mb-5 flex items-start justify-between gap-3 rounded-md border-l-4 border-alert-600 bg-surface-1 px-4 py-3 text-sm text-ink-900">
     <div className="flex gap-2">
       <CircleAlert size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-alert-600" />
       <div>{children}</div>
     </div>
     {onDismiss && (
-      <button type="button" onClick={onDismiss} aria-label="Dismiss" className="shrink-0 text-ink-600 hover:text-ink-900">
+      <button type="button" onClick={onDismiss} aria-label={t('common.dismiss')} className="shrink-0 text-ink-600 hover:text-ink-900">
         <X size={16} strokeWidth={1.75} />
       </button>
     )}
   </div>
-);
+  );
+};
 
 const NearestStations = () => {
   const { theme } = useTheme();
+  const { t, lang, station: localName } = useI18n();
+  // Error keys ("error.status|503") and place names that have translations ("Sabarmati Ashram", "near.centre").
+  const showError = (e) => {
+    const [key, status] = e.split('|');
+    return t(key, { status });
+  };
+  const placeLabel = (name) => {
+    if (!name) return name;
+    if (name.startsWith('near.')) return t(name);
+    const label = t(`place.${name}`);
+    return label === `place.${name}` ? name : label;
+  };
   const palette = mapPalette(theme);
   const userIcon = useMemo(() => youIcon(palette.ink), [palette]);
   const rankColors = RANK_COLORS[theme] || RANK_COLORS.light;
@@ -232,7 +276,7 @@ const NearestStations = () => {
       setSuggestionsLoading(true);
       try {
         const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-          params: { q: `${query}, Ahmedabad, Gujarat`, format: 'json', limit: 5 },
+          params: { q: `${query}, Ahmedabad, Gujarat`, format: 'json', limit: 5, 'accept-language': `${lang},en` },
           signal: controller.signal,
         });
         setSuggestions(response.data);
@@ -247,7 +291,7 @@ const NearestStations = () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [searchQuery]);
+  }, [searchQuery, lang]);
 
   const fetchStations = useCallback(async (latitude, longitude, locationAccuracy = null, name = null) => {
     const requestId = ++latestRequest.current;
@@ -261,7 +305,7 @@ const NearestStations = () => {
       const { data } = await axios.get(`${API_URL}/api/stations/nearby`, { params: { lat: latitude, lng: longitude } });
       if (requestId !== latestRequest.current) return;
       setNearestStations(Array.isArray(data) ? data : []);
-      if (!Array.isArray(data)) setError('The server sent an unexpected response.');
+      if (!Array.isArray(data)) setError('error.unexpected');
     } catch (err) {
       if (requestId !== latestRequest.current) return;
       setNearestStations([]);
@@ -278,8 +322,8 @@ const NearestStations = () => {
       const { coords } = await getBestPosition();
       await fetchStations(coords.latitude, coords.longitude, Math.round(coords.accuracy), null);
     } catch {
-      await fetchStations(23.0225, 72.5714, null, 'Ahmedabad centre');
-      setError("We couldn't get your location, so results are for central Ahmedabad. Allow location access, or search for a place.");
+      await fetchStations(23.0225, 72.5714, null, 'near.centre');
+      setError('near.locationFailed');
     }
   }, [fetchStations]);
 
@@ -305,9 +349,9 @@ const NearestStations = () => {
       const { data } = await axios.post(`${API_URL}/api/location/resolve-google-maps`, { url: link });
       const latitude = parseFloat(data.latitude);
       const longitude = parseFloat(data.longitude);
-      if (Number.isNaN(latitude) || Number.isNaN(longitude)) throw new Error('The link did not contain valid coordinates.');
+      if (Number.isNaN(latitude) || Number.isNaN(longitude)) throw new Error('near.badLink');
       setMapsLink('');
-      await fetchStations(latitude, longitude, null, data.place_name || 'Google Maps location');
+      await fetchStations(latitude, longitude, null, data.place_name === 'Google Maps location' || !data.place_name ? 'near.mapsPlace' : data.place_name);
     } catch (err) {
       setError(describeRequestError(err));
     } finally {
@@ -329,13 +373,13 @@ const NearestStations = () => {
 
   return (
     <div className="min-h-screen bg-surface-0 pb-10">
-      <PageHeader title="Nearest Stations" subtitle="Find the closest metro stations to you or to any place in Ahmedabad" />
+      <PageHeader title={t('near.title')} subtitle={t('near.subtitle')} />
 
       <div className="mx-auto mt-6 max-w-7xl px-5">
         <div className="rounded-lg border border-line-200 bg-surface-1 p-5">
           <div className="flex flex-col gap-3 md:flex-row">
             <div className="relative flex-1" onClick={(e) => e.stopPropagation()}>
-              <label htmlFor="place-search" className="sr-only">Search a landmark or place</label>
+              <label htmlFor="place-search" className="sr-only">{t('near.searchLabel')}</label>
               <Search size={18} strokeWidth={1.75} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-600" />
               <input
                 id="place-search"
@@ -347,13 +391,13 @@ const NearestStations = () => {
                   setShowDropdown(true);
                 }}
                 onFocus={() => setShowDropdown(true)}
-                placeholder="Search a landmark or place, e.g. Sabarmati Ashram"
+                placeholder={t('near.searchPlaceholder')}
                 className={`${inputClass} pl-10 pr-10`}
               />
               {searchQuery && (
                 <button
                   type="button"
-                  aria-label="Clear search"
+                  aria-label={t('near.clear')}
                   onClick={() => {
                     setSearchQuery('');
                     setSuggestions([]);
@@ -369,7 +413,7 @@ const NearestStations = () => {
                   {suggestionsLoading && <NearestStationsDropdownSkeleton />}
 
                   {!suggestionsLoading && searchQuery.trim().length >= 3 && suggestions.length === 0 && (
-                    <p className="px-4 py-3 text-sm text-ink-600">No places found. Try a different name, or paste a Google Maps link below.</p>
+                    <p className="px-4 py-3 text-sm text-ink-600">{t('near.noPlaces')}</p>
                   )}
 
                   {suggestions.length > 0 && (
@@ -391,7 +435,7 @@ const NearestStations = () => {
 
                   {!searchQuery.trim() && recentSearches.length > 0 && (
                     <ul className="py-2">
-                      <li className="px-4 py-1 text-xs font-semibold text-ink-600">Recent searches</li>
+                      <li className="px-4 py-1 text-xs font-semibold text-ink-600">{t('near.recentSearches')}</li>
                       {recentSearches.map((place) => (
                         <li key={place.name} className="flex items-center hover:bg-surface-0">
                           <button
@@ -400,12 +444,12 @@ const NearestStations = () => {
                             className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2 text-left text-sm text-ink-900"
                           >
                             <History size={14} strokeWidth={1.75} className="shrink-0 text-ink-600" />
-                            <span className="truncate">{place.name}</span>
+                            <span className="truncate">{placeLabel(place.name)}</span>
                           </button>
                           <button
                             type="button"
                             onClick={(e) => removeFromHistory(e, place.name)}
-                            aria-label={`Remove ${place.name} from recent searches`}
+                            aria-label={t('near.remove', { place: placeLabel(place.name) })}
                             className="px-3 py-2 text-ink-600 hover:text-alert-600"
                           >
                             <X size={14} strokeWidth={1.75} />
@@ -420,12 +464,12 @@ const NearestStations = () => {
 
             <button type="button" onClick={locateMe} disabled={loading} className={`${secondaryButton} disabled:cursor-not-allowed disabled:opacity-60`}>
               <LocateFixed size={16} strokeWidth={1.75} />
-              Use my location
+              {t('near.useLocation')}
             </button>
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="mr-1 text-xs font-medium text-ink-600">Popular places</span>
+            <span className="mr-1 text-xs font-medium text-ink-600">{t('near.popular')}</span>
             {FAMOUS_LANDMARKS.map((landmark) => (
               <button
                 key={landmark.name}
@@ -433,13 +477,13 @@ const NearestStations = () => {
                 onClick={() => selectPlace(landmark)}
                 className="rounded-full border border-line-200 px-3 py-1.5 text-xs font-medium text-ink-900 transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
-                {landmark.name}
+                {placeLabel(landmark.name)}
               </button>
             ))}
           </div>
 
           <form onSubmit={submitMapsLink} className="mt-5 border-t border-line-200 pt-4">
-            <label htmlFor="maps-link" className="mb-2 block text-sm font-semibold text-ink-900">Paste a Google Maps link</label>
+            <label htmlFor="maps-link" className="mb-2 block text-sm font-semibold text-ink-900">{t('near.linkLabel')}</label>
             <div className="flex flex-col gap-3 md:flex-row">
               <div className="relative flex-1">
                 <LinkIcon size={16} strokeWidth={1.75} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-600" />
@@ -457,43 +501,44 @@ const NearestStations = () => {
                 disabled={resolvingLink || !mapsLink.trim()}
                 className="shrink-0 rounded-md bg-navy-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-ink-300"
               >
-                {resolvingLink ? 'Finding place…' : 'Use link'}
+                {resolvingLink ? t('near.finding') : t('near.useLink')}
               </button>
             </div>
-            <p className="mt-2 text-xs text-ink-600">Use this if search can't find the place. We read the coordinates from the link.</p>
+            <p className="mt-2 text-xs text-ink-600">{t('near.linkHelp')}</p>
           </form>
         </div>
 
         <div className="mt-6">
-          {error && <Alert onDismiss={() => setError('')}>{error}</Alert>}
+          {error && <Alert onDismiss={() => setError('')}>{showError(error)}</Alert>}
 
           {loading ? (
             <NearestStationsSectionSkeleton />
           ) : !userLocation ? (
             <div className="rounded-lg border border-dashed border-line-200 bg-surface-1 p-10 text-center">
               <Navigation size={28} strokeWidth={1.5} className="mx-auto text-ink-300" />
-              <p className="mt-3 font-sans text-base font-semibold text-ink-900">Where are you starting from?</p>
-              <p className="mx-auto mt-1 max-w-md text-sm text-ink-600">Use your location, search for a place, or pick a popular one to see the three closest stations by road.</p>
+              <p className="mt-3 font-sans text-base font-semibold text-ink-900">{t('near.emptyTitle')}</p>
+              <p className="mx-auto mt-1 max-w-md text-sm text-ink-600">{t('near.emptyText')}</p>
             </div>
           ) : (
             <>
               {accuracy != null && (
                 <p className="mb-5 text-sm text-ink-600">
-                  Location accuracy: <span className={`font-mono font-semibold tabular-nums ${accuracyTone}`}>{accuracy} m</span>
-                  {accuracy > 100 && <span className="ml-2">Low accuracy. Turn on GPS or move outdoors, then use your location again.</span>}
+                  {t('near.accuracy')} <span className={`font-mono font-semibold tabular-nums ${accuracyTone}`}>{accuracy} m</span>
+                  {accuracy > 100 && <span className="ml-2">{t('near.lowAccuracy')}</span>}
                 </p>
               )}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <section>
                   <h2 className="mb-4 font-sans text-lg font-semibold text-ink-900">
-                    Nearest stations{placeName ? <span className="font-normal text-ink-600"> to {placeName}</span> : null}
+                    {t('near.heading')}
+                    {placeName ? <span className="font-normal text-ink-600"> {t('near.toPlace', { place: placeLabel(placeName) })}</span> : null}
                   </h2>
 
                   {nearestStations.length === 0 ? (
                     <div className="rounded-lg border border-line-200 bg-surface-1 p-8 text-center">
-                      <p className="font-sans text-base font-semibold text-ink-900">No stations found</p>
-                      <p className="mx-auto mt-1 max-w-md text-sm text-ink-600">Try searching for a different place.</p>
+                      <p className="font-sans text-base font-semibold text-ink-900">{t('near.none')}</p>
+                      <p className="mx-auto mt-1 max-w-md text-sm text-ink-600">{t('near.tryOther')}</p>
                     </div>
                   ) : (
                     <ol className="grid gap-4">
@@ -503,26 +548,32 @@ const NearestStations = () => {
                             <span
                               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold text-white"
                               style={{ backgroundColor: rankColors[index] }}
-                              aria-label={`Rank ${index + 1}`}
+                              aria-label={t('near.rank', { n: index + 1 })}
                             >
                               {index + 1}
                             </span>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <h3 className="truncate font-sans text-base font-semibold text-ink-900">{station.name}</h3>
+                                <h3 className="truncate font-sans text-base font-semibold text-ink-900">{localName(station.name)}</h3>
                                 <span className="flex shrink-0 gap-1">
                                   {(STATION_LINES[station.name] || []).map((id) => <LineBadge key={id} line={id} size="sm" />)}
                                 </span>
                               </div>
                               <p className="mt-2 text-sm text-ink-600">
-                                <span className="font-mono tabular-nums text-ink-900">{station.distance != null ? `${station.distance} km` : '—'}</span>{' '}
-                                {station.distance_type === 'straight' ? 'in a straight line (road distance unavailable)' : 'by road'}
+                                <span className="font-mono tabular-nums text-ink-900">{station.distance != null ? `${station.distance} ${t('unit.km')}` : '—'}</span>{' '}
+                                {t(DISTANCE_KIND[station.distance_type] || 'near.road')}
+                                {station.walk_minutes != null && (
+                                  <>
+                                    {` · ${t('near.about')} `}
+                                    <span className="font-mono tabular-nums text-ink-900">{station.walk_minutes} {t('unit.min')}</span>
+                                  </>
+                                )}
                               </p>
                               <Link
                                 to={`/stations?station=${encodeURIComponent(station.name)}`}
                                 className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
                               >
-                                Next trains, gates and fares <ChevronRight size={14} />
+                                {t('near.nextLink')} <ChevronRight size={14} />
                               </Link>
                             </div>
                           </div>
@@ -533,7 +584,7 @@ const NearestStations = () => {
                 </section>
 
                 <section className="rounded-lg border border-line-200 bg-surface-1 p-5">
-                  <h2 className="mb-4 font-sans text-lg font-semibold text-ink-900">Map</h2>
+                  <h2 className="mb-4 font-sans text-lg font-semibold text-ink-900">{t('near.map')}</h2>
                   <div className="overflow-hidden rounded-md border border-line-200">
                     <MapContainer center={userLocation} zoom={15} className="h-[420px] w-full">
                       <BaseTiles />
@@ -541,8 +592,8 @@ const NearestStations = () => {
 
                       <Marker position={userLocation} icon={userIcon}>
                         <Popup>
-                          <strong>{placeName || 'Your location'}</strong>
-                          {accuracy != null && <div>Accuracy: {accuracy} m</div>}
+                          <strong>{placeLabel(placeName) || t('near.yourLocation')}</strong>
+                          {accuracy != null && <div>{t('near.accuracyPopup', { m: accuracy })}</div>}
                         </Popup>
                       </Marker>
 
@@ -564,13 +615,12 @@ const NearestStations = () => {
                           zIndexOffset={1000 - index}
                         >
                           <Tooltip permanent direction="right" offset={[14, 0]} className="station-tooltip" opacity={1}>
-                            <span className="font-sans font-semibold">{station.name}</span>
+                            <span className="font-sans font-semibold">{localName(station.name)}</span>
                           </Tooltip>
                           <Popup>
-                            <strong>{station.name}</strong>
+                            <strong>{localName(station.name)}</strong>
                             <div>
-                              #{index + 1}, {distanceText(station)}
-                              {station.distance_type === 'road' ? ' by road' : ''}
+                              #{index + 1}, {distanceText(station, t)} {t(DISTANCE_KIND[station.distance_type] || 'near.road')}
                             </div>
                           </Popup>
                         </Marker>
@@ -579,19 +629,19 @@ const NearestStations = () => {
                   </div>
                   <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-600">
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="h-3 w-3 rounded-full border-2 border-white bg-ink-900 shadow" /> {placeName || 'You'}
+                      <span className="h-3 w-3 rounded-full border-2 border-white bg-ink-900 shadow" /> {placeLabel(placeName) || t('near.you')}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       {rankColors.map((c) => (
                         <span key={c} className="h-3 w-3 rounded-full" style={{ backgroundColor: c }} />
                       ))}{' '}
-                      Nearest stations
+                      {t('near.legendStations')}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <svg width="22" height="4" aria-hidden="true">
                         <line x1="2" y1="2" x2="20" y2="2" stroke="rgb(var(--ink-600))" strokeWidth="3" strokeLinecap="round" strokeDasharray="0.5 5" />
                       </svg>
-                      Way there
+                      {t('near.legendRoute')}
                     </span>
                   </p>
                 </section>

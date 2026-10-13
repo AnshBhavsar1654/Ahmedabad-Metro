@@ -233,7 +233,7 @@
   },
   {
     "id": 30,
-    "name": "Sabarmati Railway Station",
+    "name": "Sabarmati",
     "type": "Elevated",
     "corridor": "North-South",
     "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4", "Gate No. 5"],
@@ -241,6 +241,14 @@
   },
   {
     "id": 31,
+    "name": "Sabarmati Railway Station",
+    "type": "Elevated",
+    "corridor": "North-South",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3", "Gate No. 4", "Gate No. 5"],
+    "facilities": ["Lift No. 01 near Gate No. 02", "Lift No. 02 near Gate No. 03", "Lift No. 03 near Gate No. 05"]
+  },
+  {
+    "id": 32,
     "name": "Motera Stadium",
     "type": "Elevated",
     "corridor": "North-South",
@@ -248,7 +256,7 @@
     "facilities": ["Lift No. 01 near Gate No. 02", "Lift No. 02 near Gate No. 03"]
   },
   {
-    "id": 32,
+    "id": 33,
     "name": "Koteshwar Road (Interchange)",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -256,7 +264,7 @@
     "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
   },
   {
-    "id": 33,
+    "id": 34,
     "name": "Vishwakarma College",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -264,7 +272,7 @@
     "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
   },
   {
-    "id": 34,
+    "id": 35,
     "name": "Tapovan Circle",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -272,7 +280,7 @@
     "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
   },
   {
-    "id": 35,
+    "id": 36,
     "name": "Narmada Canal",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -280,7 +288,7 @@
     "facilities": ["Lift No. 03 near Gate No. 01", "Lift No. 04 near Gate No. 02"]
   },
   {
-    "id": 36,
+    "id": 37,
     "name": "Koba Circle",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -288,16 +296,8 @@
     "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
   },
   {
-    "id": 37,
-    "name": "GNLU (Interchange)",
-    "type": "Elevated",
-    "corridor": "Corridor-2",
-    "gates": ["Gate No. 1", "Gate No. 2"],
-    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
-  },
-  {
     "id": 38,
-    "name": "Raysan",
+    "name": "Juna Koba",
     "type": "Elevated",
     "corridor": "Corridor-1",
     "gates": ["Gate No. 1", "Gate No. 2"],
@@ -305,7 +305,7 @@
   },
   {
     "id": 39,
-    "name": "Randesan",
+    "name": "Koba Gam",
     "type": "Elevated",
     "corridor": "Corridor-1",
     "gates": ["Gate No. 1", "Gate No. 2"],
@@ -313,15 +313,15 @@
   },
   {
     "id": 40,
-    "name": "Dholakuva Circle",
+    "name": "GNLU (Interchange)",
     "type": "Elevated",
-    "corridor": "Corridor-1",
+    "corridor": "Corridor-2",
     "gates": ["Gate No. 1", "Gate No. 2"],
     "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
   },
   {
     "id": 41,
-    "name": "Infocity",
+    "name": "Raysan",
     "type": "Elevated",
     "corridor": "Corridor-1",
     "gates": ["Gate No. 1", "Gate No. 2"],
@@ -329,7 +329,7 @@
   },
   {
     "id": 42,
-    "name": "Sector-1",
+    "name": "Randesan",
     "type": "Elevated",
     "corridor": "Corridor-1",
     "gates": ["Gate No. 1", "Gate No. 2"],
@@ -337,7 +337,7 @@
   },
   {
     "id": 43,
-    "name": "Sector-10A",
+    "name": "Dholakuva Circle",
     "type": "Elevated",
     "corridor": "Corridor-1",
     "gates": ["Gate No. 1", "Gate No. 2"],
@@ -345,7 +345,7 @@
   },
   {
     "id": 44,
-    "name": "Sachivalaya",
+    "name": "Infocity",
     "type": "Elevated",
     "corridor": "Corridor-1",
     "gates": ["Gate No. 1", "Gate No. 2"],
@@ -353,6 +353,30 @@
   },
   {
     "id": 45,
+    "name": "Sector-1",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 46,
+    "name": "Sector-10A",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 47,
+    "name": "Sachivalaya",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 48,
     "name": "Akshardham",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -360,7 +384,7 @@
     "facilities": ["Lift No. 03 near Gate No. 01", "Lift No. 04 near Gate No. 02"]
   },
   {
-    "id": 46,
+    "id": 49,
     "name": "Juna Sachivalaya",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -368,7 +392,7 @@
     "facilities": ["Lift No. 03 near Gate No. 01", "Lift No. 04 near Gate No. 02"]
   },
   {
-    "id": 47,
+    "id": 50,
     "name": "Sector-16",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -376,7 +400,7 @@
     "facilities": ["Lift No. 04 near Gate No. 01 & 02", "Lift No. 03 near Gate No. 03"]
   },
   {
-    "id": 48,
+    "id": 51,
     "name": "Sector-24",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -384,7 +408,7 @@
     "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
   },
   {
-    "id": 49,
+    "id": 52,
     "name": "Mahatma Mandir",
     "type": "Elevated",
     "corridor": "Corridor-1",
@@ -392,7 +416,7 @@
     "facilities": ["Lift No. 04 near Gate No. 01 & 02", "Lift No. 03 near Gate No. 03"]
   },
   {
-    "id": 50,
+    "id": 53,
     "name": "PDEU",
     "type": "Elevated",
     "corridor": "Corridor-2",
@@ -400,7 +424,7 @@
     "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
   },
   {
-    "id": 51,
+    "id": 54,
     "name": "GIFT City",
     "type": "Elevated",
     "corridor": "Corridor-2",

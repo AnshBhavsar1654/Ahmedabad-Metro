@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '../i18n';
 
 const Skeleton = ({ className = '' }) => <div className={`shimmer rounded-md ${className}`} aria-hidden="true" />;
 
@@ -13,8 +14,10 @@ export const NearestStationsDropdownSkeleton = () => (
   </div>
 );
 
-export const NearestStationsSectionSkeleton = () => (
-  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2" role="status" aria-label="Finding nearest stations">
+export const NearestStationsSectionSkeleton = () => {
+  const { t } = useI18n();
+  return (
+  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2" role="status" aria-label={t('loading.nearest')}>
     <div>
       <Skeleton className="mb-4 h-6 w-40" />
       <div className="grid gap-4">
@@ -38,10 +41,13 @@ export const NearestStationsSectionSkeleton = () => (
       <Skeleton className="h-[420px] w-full" />
     </div>
   </div>
-);
+  );
+};
 
-export const RouteDetailsSkeleton = () => (
-  <div className="space-y-6" role="status" aria-label="Calculating route">
+export const RouteDetailsSkeleton = () => {
+  const { t } = useI18n();
+  return (
+  <div className="space-y-6" role="status" aria-label={t('loading.route')}>
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="rounded-lg border border-line-200 bg-surface-1 p-5">
@@ -62,6 +68,7 @@ export const RouteDetailsSkeleton = () => (
       ))}
     </div>
   </div>
-);
+  );
+};
 
 export default Skeleton;

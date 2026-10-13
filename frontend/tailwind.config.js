@@ -21,8 +21,9 @@ module.exports = {
         go: { 600: token('go-600') },
       },
       fontFamily: {
-        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        // Plex for Latin and Devanagari (Hindi); Noto Sans Gujarati for Gujarati, which Plex doesn't cover.
+        sans: ['"IBM Plex Sans"', '"IBM Plex Sans Devanagari"', '"Noto Sans Gujarati"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', '"IBM Plex Sans Devanagari"', '"Noto Sans Gujarati"', 'ui-monospace', 'monospace'],
       },
     },
   },

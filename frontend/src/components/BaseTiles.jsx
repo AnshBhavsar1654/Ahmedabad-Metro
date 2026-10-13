@@ -15,7 +15,7 @@ const BaseTiles = () => {
       <TileLayer
         key={`base-${variant}`}
         url={`${ESRI}/World_${variant}_Gray_Base/MapServer/tile/{z}/{y}/{x}`}
-        attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
+        attribution="Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ | Track and routes &copy; OpenStreetMap contributors"
         maxNativeZoom={16}
         maxZoom={18}
       />

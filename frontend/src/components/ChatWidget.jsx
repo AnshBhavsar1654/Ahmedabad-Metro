@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Send, TrainFront, X, RefreshCw, User } from 'lucide-react';
 import { API_URL } from '../lib/api';
+import { useI18n } from '../i18n';
 
 const ENDPOINT = `${API_URL}/api/chat/stream`;
 const FIRST_BYTE_TIMEOUT_MS = 60000; // free hosting can take ~50s to wake up
@@ -9,28 +10,29 @@ const IDLE_TIMEOUT_MS = 20000; // once the answer is streaming, a long silence m
 const MAX_LENGTH = 1000;
 const HISTORY_TURNS = 8;
 
-const GREETING = 'Hi! Ask me about Ahmedabad Metro routes, fares, stations, facilities and tickets.';
-const SUGGESTIONS = ['Fare from Paldi to Thaltej', 'How do I get an NCMC card?', 'Which station is nearest to me?'];
+// Suggestions are translation keys: tapping one asks the question in the rider's language.
+const SUGGESTIONS = ['chat.suggest1', 'chat.suggest2', 'chat.suggest3'];
 
+// Site paths the assistant may mention, and the page name (translation key) shown as the link.
 const PAGE_LABELS = {
-  '/nearest-stations': 'Nearest Stations',
-  '/routes': 'Plan Journey',
-  '/stations': 'Metro Map',
-  '/stations-info': 'Stations Info',
-  '/schedule': 'Schedule',
-  '/facilities': 'Facilities',
-  '/contact': 'Contact',
+  '/nearest-stations': 'nav.nearest',
+  '/routes': 'nav.routes',
+  '/stations': 'nav.stations',
+  '/stations-info': 'nav.stationsInfo',
+  '/schedule': 'nav.schedule',
+  '/facilities': 'nav.facilities',
+  '/contact': 'nav.contact',
 };
 
 // Turns site paths, URLs and **bold** in a bot reply into real links; everything else stays plain text.
 const TOKEN = /(\/(?:nearest-stations|stations-info|stations|routes|schedule|facilities|contact)(?![\w-])|https?:\/\/[^\s)]+|\*\*[^*]+\*\*)/g;
 
-const renderMessage = (text) =>
+const renderMessage = (text, t) =>
   text.split(TOKEN).map((part, i) => {
     if (Object.prototype.hasOwnProperty.call(PAGE_LABELS, part)) {
       return (
         <Link key={i} to={part} className="font-semibold text-accent underline underline-offset-2">
-          {PAGE_LABELS[part]}
+          {t(PAGE_LABELS[part])}
         </Link>
       );
     }
@@ -74,11 +76,12 @@ const Avatar = ({ icon: Icon }) => (
 );
 
 function ChatWidget() {
+  const { t, lang } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState('');
   const [unread, setUnread] = useState(0);
-  const [messages, setMessages] = useState(() => [makeMessage('bot', GREETING, { greeting: true })]);
+  const [messages, setMessages] = useState(() => [makeMessage('bot', '', { greeting: true })]);
 
   const listRef = useRef(null);
   const inputRef = useRef(null);
@@ -152,7 +155,8 @@ function ChatWidget() {
         });
         if (!resp.ok || !resp.body) {
           const data = await resp.json().catch(() => ({}));
-          fail(data.error || 'The assistant ran into a problem. Please try again.');
+          // The server's messages are English; other languages get the translated general one.
+          fail(lang === 'en' && data.error ? data.error : t('chat.problem'));
         } else {
           resetTimer();
           for await (const event of readEvents(resp)) {
@@ -163,14 +167,14 @@ function ChatWidget() {
               showBot(streamed);
             }
           }
-          if (!streamed.trim()) showBot('I could not come up with an answer. Try rephrasing your question.');
+          if (!streamed.trim()) showBot(t('chat.noAnswer'));
         }
       } catch (err) {
         if (controller.signal.aborted && abortRef.current !== controller) return; // chat was cleared
         fail(
           controller.signal.aborted
-            ? 'The assistant took too long to respond. Please try again.'
-            : 'Could not reach the assistant. Check your connection and try again.'
+            ? t('chat.slow')
+            : t('chat.offline')
         );
       } finally {
         clearTimeout(timer);
@@ -182,13 +186,13 @@ function ChatWidget() {
       if (!isOpenRef.current) setUnread((n) => n + 1);
       inputRef.current?.focus();
     },
-    [messages, isLoading]
+    [messages, isLoading, t, lang]
   );
 
   const clearChat = () => {
     abortRef.current?.abort();
     abortRef.current = null;
-    setMessages([makeMessage('bot', GREETING, { greeting: true })]);
+    setMessages([makeMessage('bot', '', { greeting: true })]);
     setInput('');
     setIsLoading(false);
   };
@@ -207,7 +211,7 @@ function ChatWidget() {
       {isOpen && (
         <button
           type="button"
-          aria-label="Close chat"
+          aria-label={t('chat.close')}
           tabIndex={-1}
           onClick={() => setIsOpen(false)}
           className="fixed inset-0 z-[59] bg-black/25 md:hidden"
@@ -218,7 +222,7 @@ function ChatWidget() {
         {isOpen && (
           <div
             role="dialog"
-            aria-label="Metro Assistant"
+            aria-label={t('chat.title')}
             className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] top-[calc(5rem+env(safe-area-inset-top))] flex min-h-0 w-[calc(100vw-2rem)] max-w-[420px] flex-col overflow-hidden rounded-xl border border-line-200 bg-surface-1 shadow-lg"
           >
             <div className="flex items-center justify-between gap-3 bg-navy-900 px-5 py-4 text-white">
@@ -227,8 +231,8 @@ function ChatWidget() {
                   <TrainFront strokeWidth={1.75} size={20} />
                 </div>
                 <div className="min-w-0">
-                  <div className="truncate font-sans text-base font-semibold leading-tight">Metro Assistant</div>
-                  <div className="mt-0.5 text-xs text-white/70">Routes, fares, stations and tickets</div>
+                  <div className="truncate font-sans text-base font-semibold leading-tight">{t('chat.title')}</div>
+                  <div className="mt-0.5 text-xs text-white/70">{t('chat.subtitle')}</div>
                 </div>
               </div>
 
@@ -237,8 +241,8 @@ function ChatWidget() {
                   type="button"
                   onClick={clearChat}
                   className="flex h-9 w-9 items-center justify-center rounded-md bg-white/10 transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                  aria-label="Start a new chat"
-                  title="Start a new chat"
+                  aria-label={t('chat.newChat')}
+                  title={t('chat.newChat')}
                 >
                   <RefreshCw strokeWidth={1.75} size={16} />
                 </button>
@@ -246,7 +250,7 @@ function ChatWidget() {
                   type="button"
                   onClick={() => setIsOpen(false)}
                   className="flex h-9 w-9 items-center justify-center rounded-md bg-white/10 transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                  aria-label="Close chat"
+                  aria-label={t('chat.close')}
                 >
                   <X strokeWidth={1.75} size={20} />
                 </button>
@@ -267,14 +271,14 @@ function ChatWidget() {
                           : 'border border-line-200 bg-surface-1 text-ink-900')
                     }
                   >
-                    {m.role === 'bot' ? renderMessage(m.text) : m.text}
+                    {m.greeting ? t('chat.greeting') : m.role === 'bot' ? renderMessage(m.text, t) : m.text}
                     {m.error && m.retry && !isLoading && (
                       <button
                         type="button"
                         onClick={() => send(m.retry, m)}
                         className="mt-2 block rounded-md border border-line-200 px-3 py-1 text-xs font-semibold text-accent transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
-                        Try again
+                        {t('chat.tryAgain')}
                       </button>
                     )}
                   </div>
@@ -288,17 +292,17 @@ function ChatWidget() {
                     <button
                       key={s}
                       type="button"
-                      onClick={() => send(s)}
+                      onClick={() => send(t(s))}
                       className="rounded-full border border-line-200 bg-surface-1 px-3 py-1.5 text-xs font-medium text-ink-900 transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
-                      {s}
+                      {t(s)}
                     </button>
                   ))}
                 </div>
               )}
 
               {showTyping && (
-                <div className="flex justify-start gap-3" role="status" aria-label="Assistant is typing">
+                <div className="flex justify-start gap-3" role="status" aria-label={t('chat.typing')}>
                   <Avatar icon={TrainFront} />
                   <div className="flex items-center gap-1 rounded-lg border border-line-200 bg-surface-1 px-4 py-4">
                     {[0, 150, 300].map((delay) => (
@@ -311,7 +315,7 @@ function ChatWidget() {
 
             <form onSubmit={onSubmit} className="border-t border-line-200 bg-surface-1 px-4 py-4">
               <div className="flex items-center gap-3">
-                <label htmlFor="chat-input" className="sr-only">Ask a question</label>
+                <label htmlFor="chat-input" className="sr-only">{t('chat.ask')}</label>
                 <input
                   id="chat-input"
                   ref={inputRef}
@@ -319,7 +323,7 @@ function ChatWidget() {
                   value={input}
                   maxLength={MAX_LENGTH}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask a question"
+                  placeholder={t('chat.ask')}
                   autoComplete="off"
                   className="flex-1 rounded-md border border-line-200 bg-surface-0 px-4 py-3 text-sm text-ink-900 transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
                 />
@@ -327,7 +331,7 @@ function ChatWidget() {
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-navy-900 text-white transition hover:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-ink-300"
-                  aria-label="Send message"
+                  aria-label={t('chat.send')}
                 >
                   <Send strokeWidth={1.75} size={18} />
                 </button>
@@ -340,7 +344,7 @@ function ChatWidget() {
           type="button"
           onClick={() => setIsOpen((open) => !open)}
           className="relative flex h-14 w-14 items-center justify-center rounded-full bg-navy-900 shadow-lg transition hover:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-          aria-label={isOpen ? 'Close chat' : unread ? `Open chat, ${unread} new message${unread > 1 ? 's' : ''}` : 'Open chat'}
+          aria-label={isOpen ? t('chat.close') : unread ? t('chat.openUnread', { n: unread }) : t('chat.open')}
           aria-expanded={isOpen}
         >
           {isOpen ? <X strokeWidth={1.75} size={26} className="text-white" /> : <TrainFront strokeWidth={1.75} size={28} className="text-white" />}

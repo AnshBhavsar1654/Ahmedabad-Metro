@@ -27,7 +27,7 @@ from google.genai import errors, types
 from chatbot import rules
 from chatbot.rules import detect_intent, detect_language, find_stations, normalise, only_station
 from metro import DATA_DIR, timetable
-from metro.network import LINE_NAMES, LINES, calculate_route_details, get_all_stations, get_fare
+from metro.network import LINE_NAMES, LINES, calculate_route_details, get_all_stations, get_fare, station_status
 
 
 # ==================================================================================================
@@ -49,10 +49,12 @@ def get_journey(from_station: str, to_station: str) -> Dict[str, Any]:
     if result["error"]:
         return {"error": result["error"]}
     fare = get_fare(a, b)
+    closed = result["not_operational"]
     return {
         "from": a,
         "to": b,
-        "fare_rupees": fare if fare is not None else "not listed",
+        "fare_rupees": fare if fare is not None else ("not published yet (work in progress)" if closed else "not listed"),
+        "stations_not_open": closed or None,  # under construction: trains pass; work in progress: not running yet
         "distance_km": result["distance"],
         "stations_count": len(result["route"]),
         "interchanges": result["interchanges"],
@@ -64,8 +66,9 @@ def get_journey(from_station: str, to_station: str) -> Dict[str, Any]:
 
 def get_line_stations(line: str) -> Dict[str, Any]:
     wanted = str(line or "").lower().replace("purple", "violet")
-    for name, stops in zip(LINE_NAMES, LINES):
-        if name.lower().split()[0] in wanted:
+    # Longest names first, so "light blue" isn't taken for "blue".
+    for name, stops in sorted(zip(LINE_NAMES, LINES), key=lambda pair: -len(pair[0])):
+        if name.lower().removesuffix(" line") in wanted:
             return {"line": name, "stations_in_order": stops}
     return {"error": f"Unknown line '{line}'. Lines are: {', '.join(LINE_NAMES)}."}
 
@@ -84,6 +87,9 @@ def get_next_trains(station: str) -> Dict[str, Any]:
     if not found:
         return {"error": f"No station matches '{station}'."}
     result = timetable.departures(found[0])
+    if station_status(found[0]) != "operational":
+        return {"station": found[0], "status": station_status(found[0]),
+                "note": "No trains stop here yet (under construction: trains pass without stopping; work in progress: line not running)."}
     if result is None:
         return {"station": found[0], "note": "This station is not in the published timetable (it covers the APMC to "
                 "Mahatma Mandir / GIFT City trains). Use the train frequency in the knowledge base."}
@@ -452,6 +458,13 @@ def answer_with_rules(message: str, history: List[dict]) -> Optional[str]:
         return rules.ASK_OTHER_STATION[lang].format(a=rules.station_label(stations[0], lang))
 
     src, dst = stations[0], stations[1]
+    for s in (src, dst):
+        if station_status(s) == "under construction":
+            return rules.UNDER_CONSTRUCTION[lang].format(a=rules.station_label(s, lang))
+    if intent == "fare":
+        for s in (src, dst):
+            if station_status(s) == "work in progress":
+                return rules.WORK_IN_PROGRESS[lang].format(a=rules.station_label(s, lang))
     result = journey(src, dst)
     if not result:
         return rules.SAME_STATION[lang].format(a=rules.station_label(src, lang))

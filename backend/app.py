@@ -16,7 +16,9 @@ load_dotenv()
 from chatbot.assistant import ChatServiceError, answer, answer_stream  # noqa: E402  (needs env loaded first)
 from metro.keepalive import start_keepalive  # noqa: E402
 from metro.locations import get_nearby_stations_data, get_stations_with_coordinates, resolve_google_maps_location_data  # noqa: E402
-from metro.network import calculate_route_details, get_all_stations, get_fare, resolve_station  # noqa: E402
+from metro.network import (  # noqa: E402
+    calculate_route_details, get_all_stations, get_fare, get_line_geometries, is_operational, resolve_station, station_status,
+)
 from metro.visits import counter as visit_counter  # noqa: E402
 from metro.timetable import departures, journey_minutes, journey_trains, stay_on_train, through_service  # noqa: E402
 
@@ -78,6 +80,12 @@ def list_stations():
     return get_all_stations()
 
 
+@app.get("/api/lines")
+def list_lines():
+    """Each line with its stations and track geometry ([lat, lng] points, first station to last)."""
+    return get_line_geometries()
+
+
 @app.get("/api/stations/coordinates")
 def list_station_coordinates():
     return get_stations_with_coordinates()
@@ -97,12 +105,15 @@ def get_route(data: RouteRequest):
         "interchanges": result["interchanges"],
         "distance": result["distance"],
         "instructions": result["instructions"],
+        "geometry": result["geometry"],  # along the track, for drawing the journey
         "legs": [
             {**leg, "stay_on_train": stay} for leg, stay in zip(result["legs"], [*stay_on_train(result["legs"]), False])
         ],
         "duration_minutes": journey_minutes(result["legs"]),
         "through_service": through_service(result["legs"]),
         "next_trains": journey_trains(result["legs"]),
+        # Stations on the route that aren't open yet, with their status (the planner flags them; no fare then).
+        "not_operational": result["not_operational"],
         # Other reasonable routes when the network offers more than one (quickest first). Same fare: GMRC
         # charges by origin and destination.
         "alternatives": [
@@ -123,7 +134,10 @@ def calculate_fare(data: RouteRequest):
     source, destination = resolve_station(data.source), resolve_station(data.destination)
     if not source or not destination:
         return error_response("Unknown source or destination station")
-    return {"fare": get_fare(source, destination)}
+    for name in (source, destination):
+        if station_status(name) == "under construction":
+            return error_response(f"{name} station is under construction and not open yet")
+    return {"fare": get_fare(source, destination)}  # None when a station is work in progress
 
 
 @app.get("/api/fares/from")
@@ -132,6 +146,8 @@ def fares_from(station: str = ""):
     source = resolve_station(station)
     if not source:
         return error_response("Unknown station")
+    if not is_operational(source):
+        return []
     return [{"station": s, "fare": get_fare(source, s)} for s in get_all_stations() if s != source]
 
 
@@ -141,7 +157,9 @@ def station_departures(station: str = ""):
     name = resolve_station(station)
     if not name:
         return error_response("Unknown station")
-    return departures(name) or {"station": name, "directions": [], "source": None}
+    if not is_operational(name):  # trains pass Sabarmati without stopping; new lines aren't running yet
+        return {"station": name, "status": station_status(name), "directions": [], "source": None}
+    return departures(name) or {"station": name, "status": "operational", "directions": [], "source": None}
 
 
 @app.get("/api/visits")

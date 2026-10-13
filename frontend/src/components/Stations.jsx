@@ -7,6 +7,7 @@ import StationPanel from './StationPanel';
 import LineBadge from './LineBadge';
 import { LINES } from '../lib/lines';
 import { ALL_STATIONS, LINE_STATIONS } from '../lib/network';
+import { useI18n } from '../i18n';
 
 const downloadClass =
   'inline-flex items-center justify-center gap-2 rounded-md border border-line-200 bg-surface-1 px-4 py-2 text-sm font-semibold text-ink-900 transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent';
@@ -17,6 +18,7 @@ const tabClass = (active) =>
 
 const Stations = () => {
   const navigate = useNavigate();
+  const { t, station: localName, stationOption, line: lineName } = useI18n();
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState('diagram');
   const [planFrom, setPlanFrom] = useState(null);
@@ -44,24 +46,24 @@ const Stations = () => {
 
   return (
     <div className="min-h-screen bg-surface-0 pb-10">
-      <PageHeader title="Metro Map" subtitle="Select any station for next trains, gates, fares and journey planning" />
+      <PageHeader title={t('map.title')} subtitle={t('map.subtitle')} />
 
       <div className="mx-auto mt-6 max-w-7xl px-5">
         <div className="flex flex-col gap-3 border-b border-line-200 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex" role="tablist" aria-label="Map view">
+          <div className="flex" role="tablist" aria-label={t('map.view')}>
             <button type="button" role="tab" aria-selected={view === 'diagram'} className={tabClass(view === 'diagram')} onClick={() => setView('diagram')}>
-              <GitBranch size={16} strokeWidth={1.75} /> Network diagram
+              <GitBranch size={16} strokeWidth={1.75} /> {t('map.diagram')}
             </button>
             <button type="button" role="tab" aria-selected={view === 'street'} className={tabClass(view === 'street')} onClick={() => setView('street')}>
-              <MapIcon size={16} strokeWidth={1.75} /> Street map
+              <MapIcon size={16} strokeWidth={1.75} /> {t('map.street')}
             </button>
           </div>
           <div className="flex flex-wrap gap-2 pb-2">
             <a href="/Map.pdf" download="Ahmedabad_Metro_Map.pdf" className={downloadClass}>
-              <Download strokeWidth={1.75} size={16} /> Map PDF
+              <Download strokeWidth={1.75} size={16} /> {t('map.mapPdf')}
             </a>
             <a href="/Route.pdf" download="Ahmedabad_Metro_Route_Guide.pdf" className={downloadClass}>
-              <Download strokeWidth={1.75} size={16} /> Route guide PDF
+              <Download strokeWidth={1.75} size={16} /> {t('map.routePdf')}
             </a>
           </div>
         </div>
@@ -73,13 +75,13 @@ const Stations = () => {
               className="block h-[70vh] min-h-[420px] w-full border-0"
               allowFullScreen
               loading="lazy"
-              title="Ahmedabad Metro street map"
+              title={t('map.streetTitle')}
             />
           </div>
         ) : (
           <>
             <div className="mt-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Show one line">
+              <div className="flex flex-wrap gap-2" role="group" aria-label={t('map.oneLine')}>
                 <button
                   type="button"
                   aria-pressed={!line}
@@ -89,7 +91,7 @@ const Stations = () => {
                     (!line ? 'border-accent bg-navy-900 text-white' : 'border-line-200 bg-surface-1 text-ink-900 hover:border-accent')
                   }
                 >
-                  All lines
+                  {t('map.allLines')}
                 </button>
                 {LINES.map((l) => (
                   <button
@@ -103,23 +105,23 @@ const Stations = () => {
                     }
                   >
                     <LineBadge line={l.id} size="sm" />
-                    {l.name}
+                    {lineName(l.name)}
                     <span className="font-mono text-xs tabular-nums text-ink-600">{LINE_STATIONS[l.id].length}</span>
                   </button>
                 ))}
               </div>
 
               <div>
-                <label htmlFor="map-station" className="sr-only">Go to station</label>
+                <label htmlFor="map-station" className="sr-only">{t('map.goTo')}</label>
                 <select
                   id="map-station"
                   value={station || ''}
                   onChange={(e) => update({ station: e.target.value || null })}
                   className="w-full rounded-md border border-line-200 bg-surface-1 px-3 py-2 text-sm text-ink-900 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent lg:w-64"
                 >
-                  <option value="">Find a station…</option>
+                  <option value="">{t('map.find')}</option>
                   {ALL_STATIONS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s}>{stationOption(s)}</option>
                   ))}
                 </select>
               </div>
@@ -129,9 +131,9 @@ const Stations = () => {
               <div role="status" className="mt-4 flex items-center justify-between gap-3 rounded-md border border-accent bg-navy-100 px-4 py-2.5 text-sm text-ink-900">
                 <span className="flex items-center gap-2">
                   <CircleDot size={16} strokeWidth={1.75} className="text-accent" />
-                  Journey from <strong>{planFrom}</strong>. Now pick a destination and choose “To here”.
+                  {t('map.planning', { station: localName(planFrom) })}
                 </span>
-                <button type="button" onClick={() => setPlanFrom(null)} aria-label="Cancel journey" className="rounded p-1 text-ink-600 hover:text-ink-900">
+                <button type="button" onClick={() => setPlanFrom(null)} aria-label={t('map.cancel')} className="rounded p-1 text-ink-600 hover:text-ink-900">
                   <X size={16} />
                 </button>
               </div>
@@ -143,9 +145,17 @@ const Stations = () => {
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-line-200 px-4 py-2 text-xs text-ink-600">
                   <span className="inline-flex items-center gap-1.5">
                     <svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="rgb(var(--surface-1))" stroke="rgb(var(--ink-900))" strokeWidth="2.5" /></svg>
-                    Interchange
+                    {t('map.interchange')}
                   </span>
-                  <span>Diagram, not to scale. Use the street map for real locations.</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <svg width="26" height="8" aria-hidden="true"><line x1="2" y1="4" x2="24" y2="4" stroke="rgb(var(--ink-600))" strokeWidth="4" strokeDasharray="6 4" /></svg>
+                    {t('status.wip')}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="rgb(var(--surface-1))" stroke="rgb(var(--ink-600))" strokeWidth="2.5" strokeDasharray="2.5 2" /></svg>
+                    {t('status.construction')} / {t('status.wip')}
+                  </span>
+                  <span>{t('map.notToScale')}</span>
                 </div>
               </div>
 
@@ -162,7 +172,7 @@ const Stations = () => {
                   <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-line-200 bg-surface-1 p-8 text-center">
                     <MousePointerClick size={28} strokeWidth={1.5} className="text-ink-600" />
                     <p className="text-sm text-ink-600">
-                      Select a station on the diagram to see its next trains, gates and lifts, and fares, or to start planning a journey.
+                      {t('map.empty')}
                     </p>
                   </div>
                 )}

@@ -6,9 +6,10 @@ import {
 } from 'lucide-react';
 import { API_URL } from '../lib/api';
 import { LINES } from '../lib/lines';
-import { ALL_STATIONS, LINE_FREQUENCY, LINE_STATIONS, isInterchange, serviceStatus } from '../lib/network';
+import { ALL_STATIONS, LINE_FREQUENCY, LINE_STATIONS, isOperational, serviceStatus, stationStatus } from '../lib/network';
 import { loadRecent } from '../lib/recent';
 import LineBadge from './LineBadge';
+import { useI18n } from '../i18n';
 
 const WEATHER_ICONS = {
   Clear: Sun,
@@ -25,26 +26,31 @@ const WEATHER_ICONS = {
 };
 
 const QUICK_LINKS = [
-  { to: '/routes', icon: Route, title: 'Plan Journey', subtitle: 'Route and fare' },
-  { to: '/stations', icon: Map, title: 'Metro Map', subtitle: 'Network' },
-  { to: '/nearest-stations', icon: MapPin, title: 'Nearest Stations', subtitle: 'Near you' },
-  { to: '/schedule', icon: CalendarClock, title: 'Schedule', subtitle: 'Timetable' },
+  { to: '/routes', icon: Route, title: 'nav.routes', subtitle: 'home.quick.routes' },
+  { to: '/stations', icon: Map, title: 'nav.stations', subtitle: 'home.quick.stations' },
+  { to: '/nearest-stations', icon: MapPin, title: 'nav.nearest', subtitle: 'home.quick.nearest' },
+  { to: '/schedule', icon: CalendarClock, title: 'nav.schedule', subtitle: 'home.quick.schedule' },
 ];
 
-const INTERCHANGES = ALL_STATIONS.filter(isInterchange);
+const INTERCHANGES = ALL_STATIONS.filter((s) => (LINES.filter((l) => LINE_STATIONS[l.id].includes(s))).length > 1);
+const OPEN_STATIONS = ALL_STATIONS.filter(isOperational).length;
+const RUNNING_LINES = LINES.filter((l) => !l.wip).length;
 
 // Station and line counts come from the network data, so they stay right when the network grows.
 const NETWORK_FACTS = [
-  { icon: TrainFront, value: String(ALL_STATIONS.length), label: 'Stations', note: `${INTERCHANGES.length} interchanges` },
-  { icon: GitBranch, value: String(LINES.length), label: 'Lines', badges: true },
-  { icon: Ruler, value: '68.28', unit: 'km', label: 'Network', note: 'Ahmedabad to Gandhinagar' },
-  { icon: Users, value: '118K+', label: 'Daily riders', note: 'Across the network' },
+  { icon: TrainFront, value: String(ALL_STATIONS.length), label: 'home.fact.stations', note: 'home.fact.operational', vars: { n: OPEN_STATIONS } },
+  {
+    icon: GitBranch, value: String(LINES.length), label: 'home.fact.lines', badges: true,
+    note: 'home.fact.linesNote', vars: { n: RUNNING_LINES, m: LINES.length - RUNNING_LINES },
+  },
+  { icon: Ruler, value: '76.64', unit: 'unit.km', label: 'home.fact.network', note: 'home.fact.networkNote' },
+  { icon: Users, value: '118K+', label: 'home.fact.riders', note: 'home.fact.ridersNote' },
 ];
 
 const TICKET_METHODS = [
-  { icon: TicketCheck, title: 'Ticket vending machine', text: 'Self-service machines at all stations' },
-  { icon: CreditCard, title: 'NCMC smart card', text: 'Tap in and out with a contactless card' },
-  { icon: Users, title: 'Kiosk counter', text: 'Staff-assisted ticketing at the station' },
+  { icon: TicketCheck, title: 'home.tickets.tvm', text: 'home.tickets.tvmText' },
+  { icon: CreditCard, title: 'home.tickets.ncmc', text: 'home.tickets.ncmcText' },
+  { icon: Users, title: 'home.tickets.kiosk', text: 'home.tickets.kioskText' },
 ];
 
 // Cover photo follows the time of day.
@@ -52,6 +58,7 @@ const coverFor = (hour) => (hour >= 5 && hour < 17 ? '/afternoon.png' : hour >= 
 
 // Ticks on its own so the rest of the page doesn't re-render every second.
 const Clock = () => {
+  const { locale } = useI18n();
   const [now, setNow] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -61,10 +68,10 @@ const Clock = () => {
   return (
     <div>
       <div className="text-sm text-white/90">
-        {now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+        {now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
       </div>
       <div className="mt-1 font-mono text-2xl font-semibold tabular-nums">
-        {now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+        {now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
       </div>
     </div>
   );
@@ -72,6 +79,7 @@ const Clock = () => {
 
 // Open or closed right now, from the published operating hours (no live data).
 const ServiceStatus = () => {
+  const { t } = useI18n();
   const [running, setRunning] = useState(() => serviceStatus().running);
   useEffect(() => {
     const timer = setInterval(() => setRunning(serviceStatus().running), 60000);
@@ -80,12 +88,13 @@ const ServiceStatus = () => {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm backdrop-blur-sm">
       <span className={`h-2 w-2 rounded-full ${running ? 'bg-go-600' : 'bg-white/50'}`} aria-hidden="true" />
-      {running ? 'Trains running now, until 11:00 PM' : 'Closed now, first trains from 6:30 AM'}
+      {running ? t('home.running') : t('home.closed')}
     </div>
   );
 };
 
 const Weather = () => {
+  const { t } = useI18n();
   const [weather, setWeather] = useState(null);
 
   useEffect(() => {
@@ -123,7 +132,9 @@ const Weather = () => {
       <Icon strokeWidth={1.5} size={30} aria-hidden="true" />
       <div className="text-left">
         <div className="font-mono text-xl font-semibold tabular-nums">{weather.temp}°C</div>
-        <div className="text-sm text-white/80">Ahmedabad, {weather.condition.toLowerCase()}</div>
+        <div className="text-sm text-white/80">
+          {t('home.weatherPlace', { condition: t(`weather.${weather.condition}`) === `weather.${weather.condition}` ? weather.condition.toLowerCase() : t(`weather.${weather.condition}`) })}
+        </div>
       </div>
     </div>
   );
@@ -134,6 +145,7 @@ const selectClass =
 
 // The primary task, right on the hero: pick two stations and jump to the planner with the result.
 const JourneyPlanner = () => {
+  const { t, stationOption } = useI18n();
   const navigate = useNavigate();
   const [stations, setStations] = useState(null);
   const [source, setSource] = useState('');
@@ -158,23 +170,27 @@ const JourneyPlanner = () => {
   const canGo = unavailable || (source && destination && source !== destination);
 
   return (
-    <form onSubmit={onSubmit} className="rounded-lg border border-line-200 bg-surface-1 p-4 text-left shadow-lg" aria-label="Plan a journey">
-      <div className="mb-3 font-sans text-base font-semibold text-ink-900">Where are you headed?</div>
+    <form onSubmit={onSubmit} className="rounded-lg border border-line-200 bg-surface-1 p-4 text-left shadow-lg" aria-label={t('home.planAria')}>
+      <div className="mb-3 font-sans text-base font-semibold text-ink-900">{t('home.where')}</div>
       <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
         {!unavailable && (
           <>
             <div>
-              <label htmlFor="home-from" className="mb-1 block text-xs font-medium text-ink-600">From</label>
+              <label htmlFor="home-from" className="mb-1 block text-xs font-medium text-ink-600">{t('common.from')}</label>
               <select id="home-from" value={source} onChange={(e) => setSource(e.target.value)} disabled={loading} className={selectClass}>
-                <option value="">{loading ? 'Loading stations…' : 'Choose station'}</option>
-                {(stations || []).map((s) => <option key={s} value={s}>{s}</option>)}
+                <option value="">{loading ? t('home.loadingStations') : t('home.chooseStation')}</option>
+                {(stations || []).map((s) => (
+                  <option key={s} value={s} disabled={stationStatus(s) === 'construction'}>{stationOption(s)}</option>
+                ))}
               </select>
             </div>
             <div>
-              <label htmlFor="home-to" className="mb-1 block text-xs font-medium text-ink-600">To</label>
+              <label htmlFor="home-to" className="mb-1 block text-xs font-medium text-ink-600">{t('common.to')}</label>
               <select id="home-to" value={destination} onChange={(e) => setDestination(e.target.value)} disabled={loading} className={selectClass}>
-                <option value="">{loading ? 'Loading stations…' : 'Choose station'}</option>
-                {(stations || []).map((s) => <option key={s} value={s}>{s}</option>)}
+                <option value="">{loading ? t('home.loadingStations') : t('home.chooseStation')}</option>
+                {(stations || []).map((s) => (
+                  <option key={s} value={s} disabled={stationStatus(s) === 'construction'}>{stationOption(s)}</option>
+                ))}
               </select>
             </div>
           </>
@@ -184,7 +200,7 @@ const JourneyPlanner = () => {
           disabled={!canGo}
           className={`inline-flex items-center justify-center gap-2 rounded-md bg-navy-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-ink-300 ${unavailable ? 'md:col-span-3' : ''}`}
         >
-          Find route <ArrowRight strokeWidth={1.75} size={16} />
+          {t('home.findRoute')} <ArrowRight strokeWidth={1.75} size={16} />
         </button>
       </div>
     </form>
@@ -192,12 +208,13 @@ const JourneyPlanner = () => {
 };
 
 const RecentJourneys = () => {
+  const { t, station } = useI18n();
   const [recent] = useState(loadRecent);
   if (!recent.length) return null;
   return (
     <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-sm">
       <span className="inline-flex items-center gap-1.5 text-white/80">
-        <History size={14} strokeWidth={1.75} /> Recent
+        <History size={14} strokeWidth={1.75} /> {t('common.recent')}
       </span>
       {recent.slice(0, 3).map((j) => (
         <Link
@@ -205,7 +222,7 @@ const RecentJourneys = () => {
           to={`/routes?${new URLSearchParams({ from: j.from, to: j.to })}`}
           className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-white backdrop-blur-sm transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
-          {j.from} → {j.to}
+          {station(j.from)} → {station(j.to)}
         </Link>
       ))}
     </div>
@@ -213,6 +230,7 @@ const RecentJourneys = () => {
 };
 
 const Home = () => {
+  const { t, station, line: lineName } = useI18n();
   const [cover, setCover] = useState(() => coverFor(new Date().getHours()));
 
   useEffect(() => {
@@ -228,7 +246,7 @@ const Home = () => {
 
         <div className="relative z-10 flex flex-1 items-center justify-center px-5 pb-24 pt-12">
           <div className="w-full max-w-3xl text-center text-white">
-            <h1 className="font-sans text-4xl font-light tracking-tight drop-shadow-lg sm:text-5xl">Welcome to Ahmedabad Metro</h1>
+            <h1 className="font-sans text-4xl font-light tracking-tight drop-shadow-lg sm:text-5xl">{t('home.welcome')}</h1>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
               <Clock />
@@ -251,8 +269,8 @@ const Home = () => {
                     className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 py-4 text-center backdrop-blur-sm transition hover:-translate-y-0.5 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
                     <Icon strokeWidth={1.75} size={24} />
-                    <span className="text-sm font-semibold">{title}</span>
-                    <span className="text-xs text-white/70">{subtitle}</span>
+                    <span className="text-sm font-semibold">{t(title)}</span>
+                    <span className="text-xs text-white/70">{t(subtitle)}</span>
                   </Link>
                 </li>
               ))}
@@ -263,9 +281,9 @@ const Home = () => {
       </section>
 
       {/* Network at a glance: cards that overlap the bottom of the hero. */}
-      <section className="relative z-10 -mt-14 px-5" aria-label="Network at a glance">
+      <section className="relative z-10 -mt-14 px-5" aria-label={t('home.glance')}>
         <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {NETWORK_FACTS.map(({ icon: Icon, value, unit, label, note, badges }) => (
+          {NETWORK_FACTS.map(({ icon: Icon, value, unit, label, note, badges, vars }) => (
             <li key={label} className="flex items-start gap-3 rounded-lg border border-line-200 bg-surface-1 p-4 shadow-lg sm:gap-4 sm:p-5">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-navy-100 text-accent sm:h-11 sm:w-11">
                 <Icon strokeWidth={1.75} size={20} />
@@ -273,16 +291,15 @@ const Home = () => {
               <div className="min-w-0">
                 <div className="font-mono text-2xl font-semibold leading-none tabular-nums text-ink-900 sm:text-3xl">
                   {value}
-                  {unit && <span className="ml-1 text-base font-medium text-ink-600">{unit}</span>}
+                  {unit && <span className="ml-1 text-base font-medium text-ink-600">{t(unit)}</span>}
                 </div>
-                <div className="mt-1.5 text-sm font-medium text-ink-900">{label}</div>
-                {badges ? (
+                <div className="mt-1.5 text-sm font-medium text-ink-900">{t(label)}</div>
+                {badges && (
                   <div className="mt-1.5 flex gap-1">
                     {LINES.map((l) => <LineBadge key={l.id} line={l.id} size="sm" />)}
                   </div>
-                ) : (
-                  <div className="mt-0.5 text-xs text-ink-600">{note}</div>
                 )}
+                {note && <div className="mt-0.5 text-xs text-ink-600">{t(note, vars)}</div>}
               </div>
             </li>
           ))}
@@ -293,11 +310,11 @@ const Home = () => {
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="font-sans text-xl font-semibold text-ink-900">The network</h2>
-              <p className="mt-1 text-sm text-ink-600">Four lines across Ahmedabad and Gandhinagar. Interchanges at Old High Court, Koteshwar Road and GNLU.</p>
+              <h2 className="font-sans text-xl font-semibold text-ink-900">{t('home.network.title')}</h2>
+              <p className="mt-1 text-sm text-ink-600">{t('home.network.text', { interchanges: INTERCHANGES.map(station).join(', ') })}</p>
             </div>
             <Link to="/stations" className="inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline">
-              Open the network map <ChevronRight size={16} />
+              {t('home.network.open')} <ChevronRight size={16} />
             </Link>
           </div>
           <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -310,17 +327,24 @@ const Home = () => {
                   <div className="flex items-center gap-3">
                     <LineBadge line={line.id} size="lg" />
                     <div>
-                      <div className="font-sans text-base font-semibold text-ink-900">{line.name}</div>
-                      <div className="text-xs text-ink-600">{line.label}</div>
+                      <div className="font-sans text-base font-semibold text-ink-900">
+                        {lineName(line.name)}
+                        {line.wip && (
+                          <span className="ml-2 inline-block whitespace-nowrap rounded-full border border-alert-600/40 bg-alert-600/10 px-2 py-0.5 align-middle text-[11px] font-semibold text-alert-600">
+                            {t('status.wip')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-ink-600">{t(`corridor.${line.id}`)}</div>
                     </div>
                   </div>
                   <div className="mt-4 text-sm text-ink-900">
-                    {line.from} <span className="text-ink-600">to</span> {line.to}
+                    {station(line.from)} <span className="text-ink-600">{t('common.toBetween')}</span> {station(line.to)}
                   </div>
-                  <div className="mt-1 font-mono text-xs tabular-nums text-ink-600">{LINE_STATIONS[line.id].length} stations</div>
-                  <div className="mt-3 border-t border-line-100 pt-3 text-xs text-ink-600">{LINE_FREQUENCY[line.id]}</div>
+                  <div className="mt-1 font-mono text-xs tabular-nums text-ink-600">{t('common.stations', { n: LINE_STATIONS[line.id].length })}</div>
+                  <div className="mt-3 border-t border-line-100 pt-3 text-xs text-ink-600">{t(LINE_FREQUENCY[line.id])}</div>
                   <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent">
-                    View on map <ChevronRight size={14} className="transition group-hover:translate-x-0.5" />
+                    {t('home.viewOnMap')} <ChevronRight size={14} className="transition group-hover:translate-x-0.5" />
                   </span>
                 </Link>
               </li>
@@ -331,20 +355,20 @@ const Home = () => {
 
       <section className="px-5 py-14">
         <div className="mx-auto max-w-6xl">
-          <h2 className="font-sans text-xl font-semibold text-ink-900">Ways to buy a ticket</h2>
+          <h2 className="font-sans text-xl font-semibold text-ink-900">{t('home.tickets.title')}</h2>
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {TICKET_METHODS.map(({ icon: Icon, title, text }) => (
               <div key={title} className="rounded-lg border border-line-200 bg-surface-1 p-6">
                 <Icon strokeWidth={1.5} size={32} className="text-accent" />
-                <h3 className="mt-4 font-sans text-base font-semibold text-ink-900">{title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-ink-600">{text}</p>
+                <h3 className="mt-4 font-sans text-base font-semibold text-ink-900">{t(title)}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-ink-600">{t(text)}</p>
               </div>
             ))}
 
             <div className="rounded-lg border border-line-200 bg-surface-1 p-6">
               <Smartphone strokeWidth={1.5} size={32} className="text-accent" />
-              <h3 className="mt-4 font-sans text-base font-semibold text-ink-900">E-ticket (mobile app)</h3>
-              <p className="mt-1 text-sm leading-relaxed text-ink-600">Book tickets on your phone</p>
+              <h3 className="mt-4 font-sans text-base font-semibold text-ink-900">{t('home.tickets.app')}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-ink-600">{t('home.tickets.appText')}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {[
                   { href: 'https://play.google.com/store/apps/details?id=com.gujaratmetrorail.gmrcamddigitalticketing&hl=en_IN&pli=1', label: 'Google Play' },

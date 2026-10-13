@@ -113,6 +113,13 @@ pip install pandas openpyxl
 python scripts/build_network.py
 ```
 
+Metro lines are drawn along the real track, saved in `backend/data/tracks.json` from OpenStreetMap. After a new line or extension opens, refresh it before rebuilding:
+
+```bash
+python scripts/fetch_tracks.py
+python scripts/build_network.py
+```
+
 ### Testing
 
 ```bash

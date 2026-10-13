@@ -1,9 +1,10 @@
 import React from 'react';
 import { lineById } from '../lib/network';
+import { useI18n } from '../i18n';
 
 // Line pictogram, as on the Paris and Barcelona maps: a square in the line's official colour with its initial.
 // Colour is never the only cue: the initial is always there, and `showName` adds the full name.
-const TEXT_ON = { yellow: '#12151B' };
+const TEXT_ON = { yellow: '#12151B', lightblue: '#12151B' };
 
 const SIZES = {
   sm: 'h-4 w-4 text-[10px] rounded-[3px]',
@@ -12,16 +13,18 @@ const SIZES = {
 };
 
 const LineBadge = ({ line: id, size = 'md', showName = false, className = '' }) => {
+  const { line: lineName } = useI18n();
   const line = lineById[id];
   if (!line) return null;
+  const name = lineName(line.name);
   const badge = (
     <span
       className={`inline-flex shrink-0 items-center justify-center font-sans font-bold leading-none ${SIZES[size]}`}
       style={{ backgroundColor: line.swatch, color: TEXT_ON[id] || '#FFFFFF' }}
       aria-hidden={showName ? 'true' : undefined}
       role={showName ? undefined : 'img'}
-      aria-label={showName ? undefined : line.name}
-      title={line.name}
+      aria-label={showName ? undefined : name}
+      title={name}
     >
       {line.name[0]}
     </span>
@@ -30,7 +33,7 @@ const LineBadge = ({ line: id, size = 'md', showName = false, className = '' }) 
   return (
     <span className={`inline-flex items-center gap-1.5 ${className}`}>
       {badge}
-      <span className="text-sm font-medium">{line.name}</span>
+      <span className="text-sm font-medium">{name}</span>
     </span>
   );
 };
