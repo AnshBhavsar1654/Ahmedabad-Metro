@@ -8,9 +8,9 @@ from fastapi.testclient import TestClient
 from google.genai import errors, types
 
 import app as app_module
-import chat
-import chat_rules
-from chat_rules import detect_intent, detect_language, find_stations
+from chatbot import assistant as chat
+from chatbot import rules as chat_rules
+from chatbot.rules import detect_intent, detect_language, find_stations
 
 
 def ask(message, history=None):

@@ -14,6 +14,8 @@ module.exports = {
         surface: { 0: token('surface-0'), 1: token('surface-1') },
         // navy = filled chrome (navbar, headers, primary buttons). accent = navy-as-ink: links, icons, outlines.
         navy: { 900: token('navy-900'), 700: token('navy-700'), 100: token('navy-100') },
+        // chrome = the navbar only.
+        chrome: { 900: token('chrome-900'), 700: token('chrome-700') },
         accent: token('accent'),
         alert: { 600: token('alert-600') },
         go: { 600: token('go-600') },

@@ -1,9 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { Mountain, ArrowDownToLine, Search, DoorOpen, Accessibility } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mountain, ArrowDownToLine, Search, DoorOpen, Accessibility, MapPin } from 'lucide-react';
+import LineBadge from './LineBadge';
 import stationData from '../data/stationData.json';
 import PageHeader from './PageHeader';
 import { LINES, lineByCorridor, lineColor } from '../lib/lines';
 import { useTheme } from '../lib/theme';
+import { STATION_LINES, networkName as toNetworkName } from '../lib/network';
 
 const filters = [{ key: 'all', label: 'All stations' }, ...LINES.map((l) => ({ key: l.corridor, label: l.corridor, line: l }))];
 
@@ -18,9 +21,13 @@ const StationInfo = () => {
 
   const filteredStations = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    return stationData.filter(
-      (s) => (filter === 'all' || s.corridor === filter) && (!term || s.name.toLowerCase().includes(term))
-    );
+    // An interchange belongs to every line it serves, not just the one corridor its gate data is filed under.
+    const servesFilter = (s) => {
+      if (filter === 'all') return true;
+      const name = toNetworkName(s.name);
+      return name ? STATION_LINES[name].includes(lineByCorridor[filter].id) : s.corridor === filter;
+    };
+    return stationData.filter((s) => servesFilter(s) && (!term || s.name.toLowerCase().includes(term)));
   }, [filter, searchTerm]);
 
   return (
@@ -75,15 +82,27 @@ const StationInfo = () => {
           {filteredStations.map((station) => {
             const line = lineByCorridor[station.corridor];
             const TypeIcon = station.type === 'Underground' ? ArrowDownToLine : Mountain;
+            const networkName = toNetworkName(station.name);
             return (
               <article key={station.id} className="flex flex-col overflow-hidden rounded-lg border border-line-200 bg-surface-1">
                 <div
                   className="flex items-start justify-between gap-4 border-b border-line-200 border-l-4 p-5"
                   style={{ borderLeftColor: line ? lineColor(line, theme) : undefined }}
                 >
-                  <h3 className="font-sans text-base font-semibold text-ink-900">{station.name}</h3>
+                  <div className="min-w-0">
+                    <h3 className="font-sans text-base font-semibold text-ink-900">{station.name}</h3>
+                    {networkName && (
+                      <Link to={`/stations?station=${encodeURIComponent(networkName)}`} className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline">
+                        <MapPin size={12} strokeWidth={2} /> Next trains and fares
+                      </Link>
+                    )}
+                  </div>
                   <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-ink-600">
-                    <span className="font-medium">{line ? line.name : station.corridor}</span>
+                    <span className="flex items-center gap-1">
+                      {(networkName ? STATION_LINES[networkName] : line ? [line.id] : []).map((id) => (
+                        <LineBadge key={id} line={id} size="sm" />
+                      ))}
+                    </span>
                     <span className="inline-flex items-center gap-1">
                       <TypeIcon size={12} strokeWidth={1.75} /> {station.type}
                     </span>

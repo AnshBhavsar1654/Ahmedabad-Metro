@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   TicketCheck, CreditCard, Users, Smartphone, Map, MapPin, CalendarClock, Route, ArrowRight,
-  Sun, Cloud, CloudRain, CloudLightning, Snowflake, CloudFog, ExternalLink,
+  Sun, Cloud, CloudRain, CloudLightning, Snowflake, CloudFog, ExternalLink, History, ChevronRight, TrainFront, GitBranch, Ruler,
 } from 'lucide-react';
 import { API_URL } from '../lib/api';
+import { LINES } from '../lib/lines';
+import { ALL_STATIONS, LINE_FREQUENCY, LINE_STATIONS, isInterchange, serviceStatus } from '../lib/network';
+import { loadRecent } from '../lib/recent';
+import LineBadge from './LineBadge';
 
 const WEATHER_ICONS = {
   Clear: Sun,
@@ -27,11 +31,14 @@ const QUICK_LINKS = [
   { to: '/schedule', icon: CalendarClock, title: 'Schedule', subtitle: 'Timetable' },
 ];
 
+const INTERCHANGES = ALL_STATIONS.filter(isInterchange);
+
+// Station and line counts come from the network data, so they stay right when the network grows.
 const NETWORK_FACTS = [
-  { value: '54', label: 'stations' },
-  { value: '4', label: 'lines' },
-  { value: '68.28 km', label: 'network' },
-  { value: '118K+', label: 'daily riders' },
+  { icon: TrainFront, value: String(ALL_STATIONS.length), label: 'Stations', note: `${INTERCHANGES.length} interchanges` },
+  { icon: GitBranch, value: String(LINES.length), label: 'Lines', badges: true },
+  { icon: Ruler, value: '68.28', unit: 'km', label: 'Network', note: 'Ahmedabad to Gandhinagar' },
+  { icon: Users, value: '118K+', label: 'Daily riders', note: 'Across the network' },
 ];
 
 const TICKET_METHODS = [
@@ -59,6 +66,21 @@ const Clock = () => {
       <div className="mt-1 font-mono text-2xl font-semibold tabular-nums">
         {now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
       </div>
+    </div>
+  );
+};
+
+// Open or closed right now, from the published operating hours (no live data).
+const ServiceStatus = () => {
+  const [running, setRunning] = useState(() => serviceStatus().running);
+  useEffect(() => {
+    const timer = setInterval(() => setRunning(serviceStatus().running), 60000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm backdrop-blur-sm">
+      <span className={`h-2 w-2 rounded-full ${running ? 'bg-go-600' : 'bg-white/50'}`} aria-hidden="true" />
+      {running ? 'Trains running now, until 11:00 PM' : 'Closed now, first trains from 6:30 AM'}
     </div>
   );
 };
@@ -169,6 +191,27 @@ const JourneyPlanner = () => {
   );
 };
 
+const RecentJourneys = () => {
+  const [recent] = useState(loadRecent);
+  if (!recent.length) return null;
+  return (
+    <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-sm">
+      <span className="inline-flex items-center gap-1.5 text-white/80">
+        <History size={14} strokeWidth={1.75} /> Recent
+      </span>
+      {recent.slice(0, 3).map((j) => (
+        <Link
+          key={`${j.from}>${j.to}`}
+          to={`/routes?${new URLSearchParams({ from: j.from, to: j.to })}`}
+          className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-white backdrop-blur-sm transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          {j.from} → {j.to}
+        </Link>
+      ))}
+    </div>
+  );
+};
+
 const Home = () => {
   const [cover, setCover] = useState(() => coverFor(new Date().getHours()));
 
@@ -183,7 +226,7 @@ const Home = () => {
         <img className="absolute inset-0 h-full w-full object-cover" src={cover} alt="" />
         <div className="absolute inset-0 bg-navy-900/60" aria-hidden="true" />
 
-        <div className="relative z-10 flex flex-1 items-center justify-center px-5 py-12">
+        <div className="relative z-10 flex flex-1 items-center justify-center px-5 pb-24 pt-12">
           <div className="w-full max-w-3xl text-center text-white">
             <h1 className="font-sans text-4xl font-light tracking-tight drop-shadow-lg sm:text-5xl">Welcome to Ahmedabad Metro</h1>
 
@@ -191,9 +234,13 @@ const Home = () => {
               <Clock />
               <Weather />
             </div>
+            <div className="mt-4">
+              <ServiceStatus />
+            </div>
 
-            <div className="mt-10">
+            <div className="mt-8">
               <JourneyPlanner />
+              <RecentJourneys />
             </div>
 
             <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -213,14 +260,73 @@ const Home = () => {
           </div>
         </div>
 
-        <ul className="relative z-10 flex gap-8 overflow-x-auto border-t border-white/15 bg-navy-900 px-5 py-3 text-white sm:justify-center">
-          {NETWORK_FACTS.map(({ value, label }) => (
-            <li key={label} className="flex shrink-0 items-baseline gap-2">
-              <span className="font-mono text-base font-semibold tabular-nums">{value}</span>
-              <span className="text-sm text-white/70">{label}</span>
+      </section>
+
+      {/* Network at a glance: cards that overlap the bottom of the hero. */}
+      <section className="relative z-10 -mt-14 px-5" aria-label="Network at a glance">
+        <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {NETWORK_FACTS.map(({ icon: Icon, value, unit, label, note, badges }) => (
+            <li key={label} className="flex items-start gap-3 rounded-lg border border-line-200 bg-surface-1 p-4 shadow-lg sm:gap-4 sm:p-5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-navy-100 text-accent sm:h-11 sm:w-11">
+                <Icon strokeWidth={1.75} size={20} />
+              </span>
+              <div className="min-w-0">
+                <div className="font-mono text-2xl font-semibold leading-none tabular-nums text-ink-900 sm:text-3xl">
+                  {value}
+                  {unit && <span className="ml-1 text-base font-medium text-ink-600">{unit}</span>}
+                </div>
+                <div className="mt-1.5 text-sm font-medium text-ink-900">{label}</div>
+                {badges ? (
+                  <div className="mt-1.5 flex gap-1">
+                    {LINES.map((l) => <LineBadge key={l.id} line={l.id} size="sm" />)}
+                  </div>
+                ) : (
+                  <div className="mt-0.5 text-xs text-ink-600">{note}</div>
+                )}
+              </div>
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="px-5 pt-14">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="font-sans text-xl font-semibold text-ink-900">The network</h2>
+              <p className="mt-1 text-sm text-ink-600">Four lines across Ahmedabad and Gandhinagar. Interchanges at Old High Court, Koteshwar Road and GNLU.</p>
+            </div>
+            <Link to="/stations" className="inline-flex items-center gap-1 text-sm font-semibold text-accent hover:underline">
+              Open the network map <ChevronRight size={16} />
+            </Link>
+          </div>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {LINES.map((line) => (
+              <li key={line.id}>
+                <Link
+                  to={`/stations?line=${line.id}`}
+                  className="group flex h-full flex-col rounded-lg border border-line-200 bg-surface-1 p-5 transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  <div className="flex items-center gap-3">
+                    <LineBadge line={line.id} size="lg" />
+                    <div>
+                      <div className="font-sans text-base font-semibold text-ink-900">{line.name}</div>
+                      <div className="text-xs text-ink-600">{line.label}</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 text-sm text-ink-900">
+                    {line.from} <span className="text-ink-600">to</span> {line.to}
+                  </div>
+                  <div className="mt-1 font-mono text-xs tabular-nums text-ink-600">{LINE_STATIONS[line.id].length} stations</div>
+                  <div className="mt-3 border-t border-line-100 pt-3 text-xs text-ink-600">{LINE_FREQUENCY[line.id]}</div>
+                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent">
+                    View on map <ChevronRight size={14} className="transition group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section className="px-5 py-14">

@@ -13,10 +13,12 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
-from chat import ChatServiceError, answer, answer_stream  # noqa: E402  (needs env loaded first)
-from keepalive import start_keepalive  # noqa: E402
-from location_service import get_nearby_stations_data, get_stations_with_coordinates, resolve_google_maps_location_data  # noqa: E402
-from route import calculate_route_details, get_all_stations, get_fare, resolve_station  # noqa: E402
+from chatbot.assistant import ChatServiceError, answer, answer_stream  # noqa: E402  (needs env loaded first)
+from metro.keepalive import start_keepalive  # noqa: E402
+from metro.locations import get_nearby_stations_data, get_stations_with_coordinates, resolve_google_maps_location_data  # noqa: E402
+from metro.network import calculate_route_details, get_all_stations, get_fare, resolve_station  # noqa: E402
+from metro.visits import counter as visit_counter  # noqa: E402
+from metro.timetable import departures, journey_minutes, journey_trains, stay_on_train, through_service  # noqa: E402
 
 MAX_CHAT_MESSAGE_CHARS = 1000
 
@@ -95,6 +97,24 @@ def get_route(data: RouteRequest):
         "interchanges": result["interchanges"],
         "distance": result["distance"],
         "instructions": result["instructions"],
+        "legs": [
+            {**leg, "stay_on_train": stay} for leg, stay in zip(result["legs"], [*stay_on_train(result["legs"]), False])
+        ],
+        "duration_minutes": journey_minutes(result["legs"]),
+        "through_service": through_service(result["legs"]),
+        "next_trains": journey_trains(result["legs"]),
+        # Other reasonable routes when the network offers more than one (quickest first). Same fare: GMRC
+        # charges by origin and destination.
+        "alternatives": [
+            {
+                "route": alt["route"],
+                "legs": alt["legs"],
+                "interchanges": alt["interchanges"],
+                "distance": alt["distance"],
+                "duration_minutes": journey_minutes(alt["legs"]),
+            }
+            for alt in result.get("alternatives", [])
+        ],
     }
 
 
@@ -104,6 +124,46 @@ def calculate_fare(data: RouteRequest):
     if not source or not destination:
         return error_response("Unknown source or destination station")
     return {"fare": get_fare(source, destination)}
+
+
+@app.get("/api/fares/from")
+def fares_from(station: str = ""):
+    """Fare from one station to every other station, for the station panel's fare table."""
+    source = resolve_station(station)
+    if not source:
+        return error_response("Unknown station")
+    return [{"station": s, "fare": get_fare(source, s)} for s in get_all_stations() if s != source]
+
+
+@app.get("/api/departures")
+def station_departures(station: str = ""):
+    """Next timetabled trains from a station. `directions` is empty for stations the timetable doesn't cover."""
+    name = resolve_station(station)
+    if not name:
+        return error_response("Unknown station")
+    return departures(name) or {"station": name, "directions": [], "source": None}
+
+
+@app.get("/api/visits")
+def visits_now():
+    return visit_counter.snapshot()
+
+
+@app.post("/api/visits")
+async def record_visit(request: Request):
+    """The browser calls this once per day; the footer then follows /api/visits/stream."""
+    return await visit_counter.record(_client_ip(request))
+
+
+@app.get("/api/visits/stream")
+async def visits_stream():
+    """Server-sent events: {"total", "online"} now and after every change, with a heartbeat comment between."""
+
+    async def body():
+        async for event in visit_counter.stream():
+            yield _sse(event) if event else ": ping\n\n"
+
+    return StreamingResponse(body(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @app.get("/api/stations/nearby")

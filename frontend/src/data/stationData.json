@@ -353,6 +353,46 @@
   },
   {
     "id": 45,
+    "name": "Akshardham",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 03 near Gate No. 01", "Lift No. 04 near Gate No. 02"]
+  },
+  {
+    "id": 46,
+    "name": "Juna Sachivalaya",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 03 near Gate No. 01", "Lift No. 04 near Gate No. 02"]
+  },
+  {
+    "id": 47,
+    "name": "Sector-16",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 04 near Gate No. 01 & 02", "Lift No. 03 near Gate No. 03"]
+  },
+  {
+    "id": 48,
+    "name": "Sector-24",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2"],
+    "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
+  },
+  {
+    "id": 49,
+    "name": "Mahatma Mandir",
+    "type": "Elevated",
+    "corridor": "Corridor-1",
+    "gates": ["Gate No. 1", "Gate No. 2", "Gate No. 3"],
+    "facilities": ["Lift No. 04 near Gate No. 01 & 02", "Lift No. 03 near Gate No. 03"]
+  },
+  {
+    "id": 50,
     "name": "PDEU",
     "type": "Elevated",
     "corridor": "Corridor-2",
@@ -360,7 +400,7 @@
     "facilities": ["Lift No. 04 near Gate No. 01", "Lift No. 03 near Gate No. 02"]
   },
   {
-    "id": 46,
+    "id": 51,
     "name": "GIFT City",
     "type": "Elevated",
     "corridor": "Corridor-2",

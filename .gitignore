@@ -12,7 +12,7 @@ __pycache__/
 venv/
 backend/__pycache__/
 backend/instance/
-backend/.pytest_cache/
+.pytest_cache/
 backend/.env
 
 # === General ===
@@ -27,3 +27,4 @@ Ahmedabad_Metro_Kb.docx
 
 ENV_VARIABLES.md
 design.md
+backend/data/visits.json

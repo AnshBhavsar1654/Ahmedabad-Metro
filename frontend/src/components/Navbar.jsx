@@ -30,10 +30,10 @@ function Navbar() {
 
   const mobileClass = (to) =>
     'flex items-center gap-3 border-b border-white/10 px-4 py-3 text-base font-medium transition-colors ' +
-    (pathname === to ? 'bg-navy-700 text-white' : 'text-white/70 hover:bg-navy-700/50 hover:text-white');
+    (pathname === to ? 'bg-chrome-700 text-white' : 'text-white/70 hover:bg-chrome-700/50 hover:text-white');
 
   return (
-    <nav className="fixed top-0 z-[2000] w-full bg-navy-900" aria-label="Main">
+    <nav className="fixed top-0 z-[2000] w-full border-b border-white/10 bg-chrome-900" aria-label="Main">
       <div className="mx-auto flex min-h-[64px] max-w-7xl items-center justify-between px-5 py-3">
         <Link to="/" className="flex shrink-0 items-center gap-2 text-white no-underline">
           <img src="/logo.png" alt="" className="h-10 w-10" />
@@ -53,7 +53,7 @@ function Navbar() {
           <ThemeToggle />
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-md p-2 text-white transition hover:bg-navy-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="inline-flex items-center justify-center rounded-md p-2 text-white transition hover:bg-chrome-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             onClick={() => setIsMenuOpen((open) => !open)}
             aria-label="Toggle menu"
             aria-expanded={isMenuOpen}
@@ -66,7 +66,7 @@ function Navbar() {
 
       <div
         id="mobile-menu"
-        className={`overflow-hidden bg-navy-900 shadow-lg transition-[max-height] duration-300 ease-in-out xl:hidden ${isMenuOpen ? 'max-h-[560px]' : 'max-h-0'}`}
+        className={`overflow-hidden bg-chrome-900 shadow-lg transition-[max-height] duration-300 ease-in-out xl:hidden ${isMenuOpen ? 'max-h-[560px]' : 'max-h-0'}`}
       >
         <div className="flex flex-col pb-4">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (

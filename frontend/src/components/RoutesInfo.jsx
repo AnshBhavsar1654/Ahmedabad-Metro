@@ -2,23 +2,20 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { MapContainer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useLocation } from 'react-router-dom';
-import { Route, TrainFront, Banknote, Map, ArrowRightLeft } from 'lucide-react';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { Route, TrainFront, Banknote, Map, ArrowRightLeft, Clock, Share2, Check, History } from 'lucide-react';
 import PageHeader from './PageHeader';
 import BaseTiles from './BaseTiles';
 import { RouteDetailsSkeleton } from './Skeleton';
 import { API_URL } from '../lib/api';
 import { LINES, lineColor } from '../lib/lines';
+import { LINE_STATIONS } from '../lib/network';
+import { JourneyLegs, NextTrainsCard, OtherRoutes } from './JourneySummary';
+import { loadRecent, saveRecent } from '../lib/recent';
 import { useTheme, mapPalette } from '../lib/theme';
 
-const metroLines = {
-  "Red Line": ["APMC", "Jivraj Park", "Rajivnagar", "Shreyas", "Paldi", "Gandhigram", "Old High Court", "Usmanpura", "Vijaynagar", "Vadaj", "Ranip", "Sabarmati Railway Station", "AEC", "Sabarmati", "Motera Stadium", "Koteshwar Road"],
-  "Blue Line": ["Thaltej Gam", "Thaltej", "Doordarshan Kendra", "Gurukul Road", "Gujarat University", "Commerce Six Road", "SP Stadium", "Old High Court", "Shahpur", "Ghee Kanta", "Kalupur Railway Station", "Kankaria East", "Apparel Park", "Amraivadi", "Rabari Colony", "Vastral", "Nirant Cross Road", "Vastral Gam"],
-  "Yellow Line": ["Koteshwar Road", "Vishvakarma College", "Tapovan Circle", "Narmada Canal", "Koba Circle", "Juna Koba", "Koba Gam", "GNLU", "Raysan", "Randesan", "Dholakuva Circle", "Infocity", "Sector-1", "Sector-10A", "Sachivalaya", "Akshardham", "Juna Sachivalaya", "Sector-16", "Sector-24", "Mahatma Mandir"],
-  "Violet Line": ["GNLU", "PDEU", "Gift City"]
-};
-
 const lineByName = Object.fromEntries(LINES.map((l) => [l.name, l]));
+const metroLines = Object.fromEntries(LINES.map((l) => [l.name, LINE_STATIONS[l.id]]));
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -65,7 +62,15 @@ const FitRouteBounds = ({ bounds }) => {
 const RoutesInfo = () => {
   const [stations, setStations] = useState([]);
   const [stationCoords, setStationCoords] = useState({});
-  const prefill = useLocation().state;
+  const [params, setParams] = useSearchParams();
+  // A journey can arrive from the home planner (router state) or a shared link / the metro map (?from=&to=).
+  const state = useLocation().state;
+  // Read once on arrival; later URL updates (after a search) must not re-trigger the auto-run.
+  const [prefill] = useState(
+    () => state || (params.get('from') || params.get('to') ? { source: params.get('from') || '', destination: params.get('to') || '' } : null)
+  );
+  const [recent, setRecent] = useState(loadRecent);
+  const [copied, setCopied] = useState(false);
   const { theme } = useTheme();
   const palette = mapPalette(theme);
   const [selectedSource, setSelectedSource] = useState(prefill?.source || '');
@@ -104,6 +109,27 @@ const RoutesInfo = () => {
       })
       .catch((err) => console.error('Failed to load station coordinates:', err));
   }, []);
+
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${selectedSource} to ${selectedDest}`, text: 'Ahmedabad Metro journey', url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* the rider closed the share sheet, or the clipboard is unavailable */
+    }
+  };
+
+  const runRecent = (from, to) => {
+    setSelectedSource(from);
+    setSelectedDest(to);
+    setPendingRun({ from, to });
+  };
 
   const swapStations = () => {
     const temp = selectedSource;
@@ -150,18 +176,32 @@ const RoutesInfo = () => {
         instructions: routeData.instructions || [],
         fare: fareData.fare ?? null,
         distance: routeData.distance || 0,
+        legs: routeData.legs || [],
+        minutes: routeData.duration_minutes ?? null,
+        through: Boolean(routeData.through_service),
+        nextTrains: routeData.next_trains || null,
+        alternatives: routeData.alternatives || [],
       });
+      setRecent(saveRecent(selectedSource, selectedDest));
+      setParams({ from: selectedSource, to: selectedDest }, { replace: true });
     } catch (err) {
       setError(err instanceof TypeError ? 'Could not reach the server. Check your connection and try again.' : err.message);
     } finally {
       setLoading(false);
     }
-  }, [selectedSource, selectedDest]);
+  }, [selectedSource, selectedDest, setParams]);
 
-  // Arriving from the home planner: run the search straight away.
+  // Arriving from the home planner, a shared link or a recent journey: run the search straight away.
   const autoRan = useRef(false);
+  const [pendingRun, setPendingRun] = useState(null);
   useEffect(() => {
-    if (!autoRan.current && prefill?.source && prefill?.destination) {
+    if (pendingRun && selectedSource === pendingRun.from && selectedDest === pendingRun.to) {
+      setPendingRun(null);
+      handleProceed();
+    }
+  }, [pendingRun, selectedSource, selectedDest, handleProceed]);
+  useEffect(() => {
+    if (!autoRan.current && prefill?.source && prefill?.destination && prefill.source !== prefill.destination) {
       autoRan.current = true;
       handleProceed();
     }
@@ -280,6 +320,24 @@ const RoutesInfo = () => {
       <div className="mx-auto max-w-7xl px-5 mt-6">
         {/* Form Card */}
         <div className="rounded-lg bg-surface-1 border border-line-200 p-6">
+          {recent.length > 0 && (
+            <div className="mb-5 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-600">
+                <History size={14} strokeWidth={1.75} /> Recent
+              </span>
+              {recent.map((j) => (
+                <button
+                  key={`${j.from}>${j.to}`}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => runRecent(j.from, j.to)}
+                  className="rounded-full border border-line-200 bg-surface-0 px-3 py-1 text-xs font-medium text-ink-900 transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-60"
+                >
+                  {j.from} → {j.to}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-end">
             <div>
               <div className="mb-2 flex items-center justify-between">
@@ -368,46 +426,72 @@ const RoutesInfo = () => {
         {routeDetails && !loading && (
           <div className="mt-6 space-y-6">
             {/* Route Summary Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
-                <div>
-                  <div className="font-sans text-xs font-medium text-ink-600 mb-1">Fare</div>
-                  <div className="font-mono text-2xl text-accent tabular-nums">{routeDetails.fare != null ? `₹${routeDetails.fare}` : '—'}</div>
-                </div>
-                <Banknote className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
-              </div>
-
-              <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
-                <div>
-                  <div className="font-sans text-xs font-medium text-ink-600 mb-1">Distance</div>
-                  <div className="font-mono text-2xl text-accent tabular-nums">
-                    {typeof routeDetails.distance === 'number'
-                      ? `${routeDetails.distance.toFixed(2)} km`
-                      : routeDetails.distance}
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+              {[
+                { label: 'Fare', icon: Banknote, value: routeDetails.fare != null ? `₹${routeDetails.fare}` : '—', note: 'Single journey token' },
+                { label: 'Journey time', icon: Clock, value: routeDetails.minutes != null ? `≈ ${routeDetails.minutes} min` : '—', note: 'Estimate from the GMRC timetable' },
+                {
+                  label: 'Stations',
+                  icon: TrainFront,
+                  value: routeDetails.route.length,
+                  note: typeof routeDetails.distance === 'number' ? `${routeDetails.distance.toFixed(1)} km` : routeDetails.distance,
+                },
+                {
+                  label: 'Changes',
+                  icon: ArrowRightLeft,
+                  value: routeDetails.legs.filter((l, i) => i < routeDetails.legs.length - 1 && !l.stay_on_train).length,
+                  note: (() => {
+                    const changeTrains = routeDetails.legs.filter((l, i) => i < routeDetails.legs.length - 1 && !l.stay_on_train).map((l) => l.to);
+                    if (changeTrains.length) return `Change trains at ${changeTrains.join(', ')}`;
+                    return routeDetails.legs.length > 1 ? 'Through train, no change needed' : 'Same line all the way';
+                  })(),
+                },
+              ].map(({ label, icon: Icon, value, note }) => (
+                <div key={label} className="rounded-lg border border-line-200 bg-surface-1 p-4 sm:p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="font-sans text-xs font-medium text-ink-600">{label}</div>
+                    <Icon className="text-ink-600" strokeWidth={1.5} size={18} />
                   </div>
+                  <div className="mt-1 font-mono text-2xl text-accent tabular-nums">{value}</div>
+                  <div className="mt-1 text-xs text-ink-600">{note}</div>
                 </div>
-                <Route className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
-              </div>
+              ))}
+            </div>
 
-              <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
-                <div>
-                  <div className="font-sans text-xs font-medium text-ink-600 mb-1">Stations</div>
-                  <div className="font-mono text-2xl text-accent tabular-nums">{routeDetails.route.length}</div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="rounded-lg border border-line-200 bg-surface-1">
+                <div className="flex items-center justify-between gap-2 border-b border-line-200 bg-surface-0 px-4 py-3">
+                  <h3 className="flex items-center gap-2 font-sans text-sm font-semibold text-ink-900">
+                    <Route size={16} /> How to get there
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={share}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-line-200 bg-surface-1 px-2.5 py-1 text-xs font-semibold text-ink-900 transition hover:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  >
+                    {copied ? <Check size={14} className="text-go-600" /> : <Share2 size={14} strokeWidth={1.75} />}
+                    {copied ? 'Link copied' : 'Share'}
+                  </button>
                 </div>
-                <TrainFront className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
-              </div>
-
-              <div className="rounded-lg border border-line-200 bg-surface-1 p-5 flex items-center justify-between">
-                <div>
-                  <div className="font-sans text-xs font-medium text-ink-600 mb-1">Interchanges</div>
-                  <div className="font-mono text-2xl text-accent tabular-nums">{routeDetails.interchanges.length}</div>
+                <div className="p-4">
+                  <JourneyLegs legs={routeDetails.legs} />
+                  {routeDetails.alternatives.length > 0 && <OtherRoutes routes={routeDetails.alternatives} />}
                 </div>
-                <ArrowRightLeft className="text-ink-600 opacity-50" strokeWidth={1.5} size={28} />
               </div>
+              {routeDetails.nextTrains ? (
+                <NextTrainsCard data={routeDetails.nextTrains} />
+              ) : (
+                <div className="rounded-lg border border-line-200 bg-surface-1 p-5 text-sm text-ink-600">
+                  <div className="mb-2 flex items-center gap-2 font-semibold text-ink-900">
+                    <Clock size={16} /> Train frequency
+                  </div>
+                  Trains on this route run frequently: about every 9 to 12 minutes, from 6:30 AM to 11:00 PM. No need to check a timetable.
+                </div>
+              )}
             </div>
 
             {/* Map and Route Display */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               {/* Map */}
               <div className="rounded-lg border border-line-200 bg-surface-1 overflow-hidden flex flex-col h-[500px]">
                 <div className="border-b border-line-200 px-4 py-3 bg-surface-0 flex items-center gap-2">
@@ -522,7 +606,7 @@ const RoutesInfo = () => {
               <div className="rounded-lg border border-line-200 bg-surface-1 overflow-hidden flex flex-col h-[500px]">
                 <div className="border-b border-line-200 px-4 py-3 bg-surface-0 flex items-center gap-2">
                   <TrainFront size={16} className="text-ink-900" />
-                  <h3 className="font-sans font-semibold text-sm text-ink-900">Your Journey</h3>
+                  <h3 className="font-sans font-semibold text-sm text-ink-900">All stops</h3>
                 </div>
                 <ol className="flex-1 overflow-y-auto p-5 hide-scrollbar">
                   {routeDetails.route.map((station, index) => {

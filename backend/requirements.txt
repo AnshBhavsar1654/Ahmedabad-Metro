@@ -3,7 +3,4 @@ uvicorn[standard]>=0.35.0
 pydantic>=2.11.0
 python-dotenv>=1.1.0
 requests>=2.32.0
-pandas>=2.2.0
-openpyxl>=3.1.0
-geopy>=2.4.0
 google-genai>=2.29.0

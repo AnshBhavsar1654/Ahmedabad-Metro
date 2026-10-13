@@ -15,6 +15,9 @@
     --navy-900: 14 35 64;
     --navy-700: 22 51 90;
     --navy-100: 232 237 244;
+    /* Navbar: neutral charcoal, so the logo and line colours carry the colour. */
+    --chrome-900: 22 25 32;
+    --chrome-700: 44 49 60;
     --accent: 14 35 64;
     --alert-600: 200 30 30;
     --go-600: 27 122 75;
@@ -32,6 +35,8 @@
     --navy-900: 23 50 90;
     --navy-700: 33 66 120;
     --navy-100: 26 42 68;
+    --chrome-900: 10 12 17;
+    --chrome-700: 32 37 48;
     --accent: 141 180 240;
     --alert-600: 239 68 68;
     --go-600: 74 200 130;
@@ -124,4 +129,17 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Distance written on a path in the Nearest Stations map (centred on its point). */
+.distance-pill {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  background: rgb(var(--surface-1));
+  border: 1.5px solid;
+  font: 600 11px/1.1 'IBM Plex Mono', ui-monospace, monospace;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }

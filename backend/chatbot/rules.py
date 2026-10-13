@@ -7,7 +7,8 @@ import difflib
 import re
 from typing import Dict, List, Optional, Tuple
 
-from route import get_all_stations
+from metro import timetable
+from metro.network import get_all_stations
 
 
 # ==================================================================================================
@@ -384,15 +385,15 @@ INTERRUPTED = {
 # ---------------------------------------------------------------- journey replies
 
 def _facts(result: Dict, lang: str) -> str:
-    km, stops = _km(result["distance"]), len(result["route"])
+    km, stops, mins = _km(result["distance"]), len(result["route"]), timetable.journey_minutes(result["legs"])
     changes = ", ".join(station_label(s, lang) for s in result["interchanges"])
     if lang == "gu":
-        text = f"અંતર લગભગ {km} કિમી, {stops} સ્ટેશન."
+        text = f"અંતર લગભગ {km} કિમી, {stops} સ્ટેશન, આશરે {mins} મિનિટ."
         return text + (f" {changes} પર લાઇન બદલવી પડશે." if changes else " લાઇન બદલવાની જરૂર નથી.")
     if lang == "hi":
-        text = f"दूरी लगभग {km} किमी, {stops} स्टेशन।"
+        text = f"दूरी लगभग {km} किमी, {stops} स्टेशन, लगभग {mins} मिनट।"
         return text + (f" {changes} पर लाइन बदलनी होगी।" if changes else " लाइन बदलने की जरूरत नहीं।")
-    text = f"About {km} km, {stops} stations."
+    text = f"About {km} km, {stops} stations, roughly {mins} min."
     return text + (f" Change lines at {changes}." if changes else " No line change needed.")
 
 
@@ -426,10 +427,16 @@ def route_reply(src: str, dst: str, fare: Optional[int], result: Dict, lang: str
         else:
             steps.append(f"{i}. {line}: {start} to {end} ({stops} stop{'s' if stops != 1 else ''})")
 
-    km, count = _km(result["distance"]), len(result["route"])
+    km, count, mins = _km(result["distance"]), len(result["route"]), timetable.journey_minutes(result["legs"])
     tail = {
-        "en": f"About {km} km, {count} stations.",
-        "gu": f"અંતર લગભગ {km} કિમી, {count} સ્ટેશન.",
-        "hi": f"दूरी लगभग {km} किमी, {count} स्टेशन।",
+        "en": f"About {km} km, {count} stations, roughly {mins} min.",
+        "gu": f"અંતર લગભગ {km} કિમી, {count} સ્ટેશન, આશરે {mins} મિનિટ.",
+        "hi": f"दूरी लगभग {km} किमी, {count} स्टेशन, लगभग {mins} मिनट।",
     }[lang]
+    if timetable.through_service(result["legs"]):
+        steps.append({
+            "en": "Through trains run all the way, so you can stay on board (times on /schedule).",
+            "gu": "સીધી ટ્રેન આખા રૂટ પર જાય છે, ટ્રેન બદલવાની જરૂર નથી (સમય /schedule પર).",
+            "hi": "सीधी ट्रेन पूरे रूट पर जाती है, ट्रेन बदलने की जरूरत नहीं (समय /schedule पर)।",
+        }[lang])
     return "\n".join([head, *steps, tail])

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, TrainFront } from 'lucide-react';
+import { Phone, Mail, TrainFront, Eye } from 'lucide-react';
 import { FaFacebookF, FaInstagram, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
+import { API_URL } from '../lib/api';
 
 const QUICK_LINKS = [
   { to: '/', label: 'Home' },
@@ -26,6 +27,64 @@ const SOCIALS = [
   { href: 'https://www.youtube.com/@MetroGMRC', label: 'YouTube', icon: FaYoutube },
   { href: 'https://www.linkedin.com/company/metrogmrc', label: 'LinkedIn', icon: FaLinkedinIn },
 ];
+
+const VISIT_KEY = 'metro_visit_day';
+const today = () => new Date().toISOString().slice(0, 10);
+
+// Counts this browser once a day, then follows the live total and how many people have the site open.
+const VisitCounter = () => {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    let counted = false;
+    try {
+      counted = localStorage.getItem(VISIT_KEY) === today();
+    } catch {
+      /* storage unavailable: count this load */
+    }
+    if (!counted) {
+      fetch(`${API_URL}/api/visits`, { method: 'POST' })
+        .then((res) => {
+          if (!res.ok) return;
+          try {
+            localStorage.setItem(VISIT_KEY, today());
+          } catch {
+            /* fine: worst case this browser is counted again */
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (typeof EventSource === 'undefined') return undefined;
+    const source = new EventSource(`${API_URL}/api/visits/stream`); // reconnects by itself if dropped
+    source.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (typeof data.total === 'number') setStats(data);
+      } catch {
+        /* ignore a malformed event */
+      }
+    };
+    return () => source.close();
+  }, []);
+
+  if (!stats) return null;
+  return (
+    <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-ink-600" aria-live="polite">
+      <span className="inline-flex items-center gap-1.5">
+        <Eye size={15} strokeWidth={1.75} className="text-accent" />
+        <span className="font-mono tabular-nums text-ink-900">{stats.total.toLocaleString('en-IN')}</span> visits
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="relative flex h-2 w-2" aria-hidden="true">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-go-600 opacity-60" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-go-600" />
+        </span>
+        <span className="font-mono tabular-nums text-ink-900">{stats.online.toLocaleString('en-IN')}</span> online now
+      </span>
+    </p>
+  );
+};
 
 const FooterHeading = ({ children }) => <h3 className="font-sans text-base font-semibold text-ink-900">{children}</h3>;
 
@@ -95,8 +154,20 @@ const Footer = () => (
         </div>
       </div>
 
-      <div className="border-t border-line-200 py-6">
-        <p className="text-center text-sm text-ink-600">© {new Date().getFullYear()} Ahmedabad Metro. All rights reserved.</p>
+      <div className="space-y-3 border-t border-line-200 py-6">
+        <VisitCounter />
+        <p className="text-center text-sm text-ink-600">
+          © {new Date().getFullYear()} Ahmedabad Metro. All rights reserved. Created by{' '}
+          <a
+            href="https://github.com/AnshBhavsar1654"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-accent underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Ansh
+          </a>
+          .
+        </p>
       </div>
     </div>
   </footer>

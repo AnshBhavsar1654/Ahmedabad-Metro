@@ -6,7 +6,7 @@ import schedulePdf from '../data/Tentative-TT-18.05.26.pdf';
 const Schedule = () => (
   <div className="min-h-screen bg-surface-0 pb-10">
     <PageHeader title="Schedule" subtitle="Train timetable for all lines">
-      <span className="inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-1 text-sm text-white/90">
+      <span className="inline-flex items-center gap-2 rounded-md border border-line-200 bg-surface-1 px-3 py-1 text-sm text-ink-900">
         <CalendarClock strokeWidth={1.75} size={16} />
         Effective from <span className="font-mono">18 May 2026</span>
       </span>

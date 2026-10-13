@@ -1,0 +1,2986 @@
+{
+ "source": "GMRC timetable, Ahmedabad-Gandhinagar Metro Rail Services, w.e.f. 18 May 2026",
+ "note": "Through trains only (APMC to Mahatma Mandir / GIFT City). Times at timing-point stations.",
+ "trains": [
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "06:20"
+    ],
+    [
+     "Old High Court",
+     "06:34"
+    ],
+    [
+     "Motera Stadium",
+     "06:52"
+    ],
+    [
+     "Koteshwar Road",
+     "06:55"
+    ],
+    [
+     "GNLU",
+     "07:10"
+    ],
+    [
+     "Infocity",
+     "07:19"
+    ],
+    [
+     "Sachivalaya",
+     "07:27"
+    ],
+    [
+     "Mahatma Mandir",
+     "07:38"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "06:40"
+    ],
+    [
+     "Sachivalaya",
+     "06:51"
+    ],
+    [
+     "Infocity",
+     "06:59"
+    ],
+    [
+     "GNLU",
+     "07:09"
+    ],
+    [
+     "Koteshwar Road",
+     "07:25"
+    ],
+    [
+     "Motera Stadium",
+     "07:28"
+    ],
+    [
+     "Old High Court",
+     "07:46"
+    ],
+    [
+     "APMC",
+     "07:59"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "06:45"
+    ],
+    [
+     "Old High Court",
+     "07:00"
+    ],
+    [
+     "Motera Stadium",
+     "07:18"
+    ],
+    [
+     "Koteshwar Road",
+     "07:21"
+    ],
+    [
+     "GNLU",
+     "07:36"
+    ],
+    [
+     "Gift City",
+     "07:42"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "07:33"
+    ],
+    [
+     "Sachivalaya",
+     "07:45"
+    ],
+    [
+     "Infocity",
+     "07:53"
+    ],
+    [
+     "GNLU",
+     "08:05"
+    ],
+    [
+     "Koteshwar Road",
+     "08:21"
+    ],
+    [
+     "Motera Stadium",
+     "08:24"
+    ],
+    [
+     "Old High Court",
+     "08:42"
+    ],
+    [
+     "APMC",
+     "08:56"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "06:58"
+    ],
+    [
+     "Old High Court",
+     "07:12"
+    ],
+    [
+     "Motera Stadium",
+     "07:30"
+    ],
+    [
+     "Koteshwar Road",
+     "07:33"
+    ],
+    [
+     "GNLU",
+     "07:48"
+    ],
+    [
+     "Infocity",
+     "07:57"
+    ],
+    [
+     "Sachivalaya",
+     "08:05"
+    ],
+    [
+     "Mahatma Mandir",
+     "08:16"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Gift City",
+     "07:48"
+    ],
+    [
+     "GNLU",
+     "07:55"
+    ],
+    [
+     "Koteshwar Road",
+     "08:09"
+    ],
+    [
+     "Motera Stadium",
+     "08:12"
+    ],
+    [
+     "Old High Court",
+     "08:30"
+    ],
+    [
+     "APMC",
+     "08:44"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "07:23"
+    ],
+    [
+     "Old High Court",
+     "07:37"
+    ],
+    [
+     "Motera Stadium",
+     "07:55"
+    ],
+    [
+     "Koteshwar Road",
+     "07:58"
+    ],
+    [
+     "GNLU",
+     "08:13"
+    ],
+    [
+     "Infocity",
+     "08:22"
+    ],
+    [
+     "Sachivalaya",
+     "08:30"
+    ],
+    [
+     "Mahatma Mandir",
+     "08:41"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "08:00"
+    ],
+    [
+     "Sachivalaya",
+     "08:12"
+    ],
+    [
+     "Infocity",
+     "08:19"
+    ],
+    [
+     "GNLU",
+     "08:30"
+    ],
+    [
+     "Koteshwar Road",
+     "08:46"
+    ],
+    [
+     "Motera Stadium",
+     "08:49"
+    ],
+    [
+     "Old High Court",
+     "09:07"
+    ],
+    [
+     "APMC",
+     "09:21"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "07:34"
+    ],
+    [
+     "Old High Court",
+     "07:47"
+    ],
+    [
+     "Motera Stadium",
+     "08:06"
+    ],
+    [
+     "Koteshwar Road",
+     "08:09"
+    ],
+    [
+     "GNLU",
+     "08:24"
+    ],
+    [
+     "Gift City",
+     "08:30"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Gift City",
+     "08:37"
+    ],
+    [
+     "GNLU",
+     "08:44"
+    ],
+    [
+     "Koteshwar Road",
+     "08:58"
+    ],
+    [
+     "Motera Stadium",
+     "09:01"
+    ],
+    [
+     "Old High Court",
+     "09:19"
+    ],
+    [
+     "APMC",
+     "09:33"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "07:47"
+    ],
+    [
+     "Old High Court",
+     "08:01"
+    ],
+    [
+     "Motera Stadium",
+     "08:19"
+    ],
+    [
+     "Koteshwar Road",
+     "08:22"
+    ],
+    [
+     "GNLU",
+     "08:37"
+    ],
+    [
+     "Infocity",
+     "08:46"
+    ],
+    [
+     "Sachivalaya",
+     "08:54"
+    ],
+    [
+     "Mahatma Mandir",
+     "09:05"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "08:25"
+    ],
+    [
+     "Sachivalaya",
+     "08:36"
+    ],
+    [
+     "Infocity",
+     "08:44"
+    ],
+    [
+     "GNLU",
+     "08:54"
+    ],
+    [
+     "Koteshwar Road",
+     "09:10"
+    ],
+    [
+     "Motera Stadium",
+     "09:13"
+    ],
+    [
+     "Old High Court",
+     "09:32"
+    ],
+    [
+     "APMC",
+     "09:45"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "08:03"
+    ],
+    [
+     "Old High Court",
+     "08:17"
+    ],
+    [
+     "Motera Stadium",
+     "08:35"
+    ],
+    [
+     "Koteshwar Road",
+     "08:38"
+    ],
+    [
+     "GNLU",
+     "08:54"
+    ],
+    [
+     "Gift City",
+     "09:01"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Gift City",
+     "09:01"
+    ],
+    [
+     "GNLU",
+     "09:08"
+    ],
+    [
+     "Koteshwar Road",
+     "09:23"
+    ],
+    [
+     "Motera Stadium",
+     "09:26"
+    ],
+    [
+     "Old High Court",
+     "09:44"
+    ],
+    [
+     "APMC",
+     "09:58"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "08:17"
+    ],
+    [
+     "Old High Court",
+     "08:31"
+    ],
+    [
+     "Motera Stadium",
+     "08:49"
+    ],
+    [
+     "Koteshwar Road",
+     "08:52"
+    ],
+    [
+     "GNLU",
+     "09:07"
+    ],
+    [
+     "Infocity",
+     "09:16"
+    ],
+    [
+     "Sachivalaya",
+     "09:24"
+    ],
+    [
+     "Mahatma Mandir",
+     "09:35"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "08:49"
+    ],
+    [
+     "Sachivalaya",
+     "09:00"
+    ],
+    [
+     "Infocity",
+     "09:08"
+    ],
+    [
+     "GNLU",
+     "09:18"
+    ],
+    [
+     "Koteshwar Road",
+     "09:34"
+    ],
+    [
+     "Motera Stadium",
+     "09:37"
+    ],
+    [
+     "Old High Court",
+     "09:55"
+    ],
+    [
+     "APMC",
+     "10:09"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "08:33"
+    ],
+    [
+     "Old High Court",
+     "08:47"
+    ],
+    [
+     "Motera Stadium",
+     "09:05"
+    ],
+    [
+     "Koteshwar Road",
+     "09:08"
+    ],
+    [
+     "GNLU",
+     "09:23"
+    ],
+    [
+     "Infocity",
+     "09:32"
+    ],
+    [
+     "Sachivalaya",
+     "09:40"
+    ],
+    [
+     "Mahatma Mandir",
+     "09:51"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "09:13"
+    ],
+    [
+     "Sachivalaya",
+     "09:25"
+    ],
+    [
+     "Infocity",
+     "09:32"
+    ],
+    [
+     "GNLU",
+     "09:43"
+    ],
+    [
+     "Koteshwar Road",
+     "09:58"
+    ],
+    [
+     "Motera Stadium",
+     "10:01"
+    ],
+    [
+     "Old High Court",
+     "10:19"
+    ],
+    [
+     "APMC",
+     "10:33"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "08:59"
+    ],
+    [
+     "Old High Court",
+     "09:13"
+    ],
+    [
+     "Motera Stadium",
+     "09:31"
+    ],
+    [
+     "Koteshwar Road",
+     "09:34"
+    ],
+    [
+     "GNLU",
+     "09:49"
+    ],
+    [
+     "Infocity",
+     "09:58"
+    ],
+    [
+     "Sachivalaya",
+     "10:06"
+    ],
+    [
+     "Mahatma Mandir",
+     "10:17"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "09:37"
+    ],
+    [
+     "Sachivalaya",
+     "09:49"
+    ],
+    [
+     "Infocity",
+     "09:56"
+    ],
+    [
+     "GNLU",
+     "10:07"
+    ],
+    [
+     "Koteshwar Road",
+     "10:23"
+    ],
+    [
+     "Motera Stadium",
+     "10:26"
+    ],
+    [
+     "Old High Court",
+     "10:44"
+    ],
+    [
+     "APMC",
+     "10:58"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "09:11"
+    ],
+    [
+     "Old High Court",
+     "09:25"
+    ],
+    [
+     "Motera Stadium",
+     "09:43"
+    ],
+    [
+     "Koteshwar Road",
+     "09:46"
+    ],
+    [
+     "GNLU",
+     "10:01"
+    ],
+    [
+     "Gift City",
+     "10:07"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Gift City",
+     "10:18"
+    ],
+    [
+     "GNLU",
+     "10:25"
+    ],
+    [
+     "Koteshwar Road",
+     "10:39"
+    ],
+    [
+     "Motera Stadium",
+     "10:42"
+    ],
+    [
+     "Old High Court",
+     "11:00"
+    ],
+    [
+     "APMC",
+     "11:14"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "09:19"
+    ],
+    [
+     "Old High Court",
+     "09:33"
+    ],
+    [
+     "Motera Stadium",
+     "09:51"
+    ],
+    [
+     "Koteshwar Road",
+     "09:54"
+    ],
+    [
+     "GNLU",
+     "10:09"
+    ],
+    [
+     "Infocity",
+     "10:18"
+    ],
+    [
+     "Sachivalaya",
+     "10:26"
+    ],
+    [
+     "Mahatma Mandir",
+     "10:37"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "10:01"
+    ],
+    [
+     "Sachivalaya",
+     "10:13"
+    ],
+    [
+     "Infocity",
+     "10:20"
+    ],
+    [
+     "GNLU",
+     "10:31"
+    ],
+    [
+     "Koteshwar Road",
+     "10:47"
+    ],
+    [
+     "Motera Stadium",
+     "10:50"
+    ],
+    [
+     "Old High Court",
+     "11:08"
+    ],
+    [
+     "APMC",
+     "11:22"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "09:48"
+    ],
+    [
+     "Old High Court",
+     "10:02"
+    ],
+    [
+     "Motera Stadium",
+     "10:20"
+    ],
+    [
+     "Koteshwar Road",
+     "10:23"
+    ],
+    [
+     "GNLU",
+     "10:38"
+    ],
+    [
+     "Infocity",
+     "10:47"
+    ],
+    [
+     "Sachivalaya",
+     "10:55"
+    ],
+    [
+     "Mahatma Mandir",
+     "11:06"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "10:26"
+    ],
+    [
+     "Sachivalaya",
+     "10:38"
+    ],
+    [
+     "Infocity",
+     "10:45"
+    ],
+    [
+     "GNLU",
+     "10:56"
+    ],
+    [
+     "Koteshwar Road",
+     "11:12"
+    ],
+    [
+     "Motera Stadium",
+     "11:15"
+    ],
+    [
+     "Old High Court",
+     "11:33"
+    ],
+    [
+     "APMC",
+     "11:47"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "10:12"
+    ],
+    [
+     "Old High Court",
+     "10:26"
+    ],
+    [
+     "Motera Stadium",
+     "10:44"
+    ],
+    [
+     "Koteshwar Road",
+     "10:47"
+    ],
+    [
+     "GNLU",
+     "11:02"
+    ],
+    [
+     "Infocity",
+     "11:11"
+    ],
+    [
+     "Sachivalaya",
+     "11:19"
+    ],
+    [
+     "Mahatma Mandir",
+     "11:30"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "10:50"
+    ],
+    [
+     "Sachivalaya",
+     "11:02"
+    ],
+    [
+     "Infocity",
+     "11:09"
+    ],
+    [
+     "GNLU",
+     "11:20"
+    ],
+    [
+     "Koteshwar Road",
+     "11:36"
+    ],
+    [
+     "Motera Stadium",
+     "11:39"
+    ],
+    [
+     "Old High Court",
+     "11:57"
+    ],
+    [
+     "APMC",
+     "12:11"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "10:36"
+    ],
+    [
+     "Old High Court",
+     "10:50"
+    ],
+    [
+     "Motera Stadium",
+     "11:08"
+    ],
+    [
+     "Koteshwar Road",
+     "11:11"
+    ],
+    [
+     "GNLU",
+     "11:26"
+    ],
+    [
+     "Infocity",
+     "11:35"
+    ],
+    [
+     "Sachivalaya",
+     "11:43"
+    ],
+    [
+     "Mahatma Mandir",
+     "11:54"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "11:14"
+    ],
+    [
+     "Sachivalaya",
+     "11:26"
+    ],
+    [
+     "Infocity",
+     "11:33"
+    ],
+    [
+     "GNLU",
+     "11:44"
+    ],
+    [
+     "Koteshwar Road",
+     "12:00"
+    ],
+    [
+     "Motera Stadium",
+     "12:03"
+    ],
+    [
+     "Old High Court",
+     "12:21"
+    ],
+    [
+     "APMC",
+     "12:35"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "10:59"
+    ],
+    [
+     "Old High Court",
+     "11:13"
+    ],
+    [
+     "Motera Stadium",
+     "11:32"
+    ],
+    [
+     "Koteshwar Road",
+     "11:35"
+    ],
+    [
+     "GNLU",
+     "11:50"
+    ],
+    [
+     "Infocity",
+     "11:59"
+    ],
+    [
+     "Sachivalaya",
+     "12:07"
+    ],
+    [
+     "Mahatma Mandir",
+     "12:18"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "11:38"
+    ],
+    [
+     "Sachivalaya",
+     "11:50"
+    ],
+    [
+     "Infocity",
+     "11:57"
+    ],
+    [
+     "GNLU",
+     "12:08"
+    ],
+    [
+     "Koteshwar Road",
+     "12:24"
+    ],
+    [
+     "Motera Stadium",
+     "12:27"
+    ],
+    [
+     "Old High Court",
+     "12:45"
+    ],
+    [
+     "APMC",
+     "12:59"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "11:25"
+    ],
+    [
+     "Old High Court",
+     "11:39"
+    ],
+    [
+     "Motera Stadium",
+     "11:57"
+    ],
+    [
+     "Koteshwar Road",
+     "12:00"
+    ],
+    [
+     "GNLU",
+     "12:15"
+    ],
+    [
+     "Infocity",
+     "12:24"
+    ],
+    [
+     "Sachivalaya",
+     "12:32"
+    ],
+    [
+     "Mahatma Mandir",
+     "12:43"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "12:03"
+    ],
+    [
+     "Sachivalaya",
+     "12:15"
+    ],
+    [
+     "Infocity",
+     "12:22"
+    ],
+    [
+     "GNLU",
+     "12:33"
+    ],
+    [
+     "Koteshwar Road",
+     "12:49"
+    ],
+    [
+     "Motera Stadium",
+     "12:52"
+    ],
+    [
+     "Old High Court",
+     "13:10"
+    ],
+    [
+     "APMC",
+     "13:24"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "11:49"
+    ],
+    [
+     "Old High Court",
+     "12:03"
+    ],
+    [
+     "Motera Stadium",
+     "12:21"
+    ],
+    [
+     "Koteshwar Road",
+     "12:24"
+    ],
+    [
+     "GNLU",
+     "12:39"
+    ],
+    [
+     "Infocity",
+     "12:48"
+    ],
+    [
+     "Sachivalaya",
+     "12:56"
+    ],
+    [
+     "Mahatma Mandir",
+     "13:07"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "12:26"
+    ],
+    [
+     "Sachivalaya",
+     "12:38"
+    ],
+    [
+     "Infocity",
+     "12:45"
+    ],
+    [
+     "GNLU",
+     "12:56"
+    ],
+    [
+     "Koteshwar Road",
+     "13:12"
+    ],
+    [
+     "Motera Stadium",
+     "13:15"
+    ],
+    [
+     "Old High Court",
+     "13:33"
+    ],
+    [
+     "APMC",
+     "13:47"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "12:13"
+    ],
+    [
+     "Old High Court",
+     "12:27"
+    ],
+    [
+     "Motera Stadium",
+     "12:45"
+    ],
+    [
+     "Koteshwar Road",
+     "12:48"
+    ],
+    [
+     "GNLU",
+     "13:03"
+    ],
+    [
+     "Infocity",
+     "13:12"
+    ],
+    [
+     "Sachivalaya",
+     "13:20"
+    ],
+    [
+     "Mahatma Mandir",
+     "13:31"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "12:51"
+    ],
+    [
+     "Sachivalaya",
+     "13:03"
+    ],
+    [
+     "Infocity",
+     "13:10"
+    ],
+    [
+     "GNLU",
+     "13:21"
+    ],
+    [
+     "Koteshwar Road",
+     "13:38"
+    ],
+    [
+     "Motera Stadium",
+     "13:41"
+    ],
+    [
+     "Old High Court",
+     "13:59"
+    ],
+    [
+     "APMC",
+     "14:13"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "12:37"
+    ],
+    [
+     "Old High Court",
+     "12:51"
+    ],
+    [
+     "Motera Stadium",
+     "13:09"
+    ],
+    [
+     "Koteshwar Road",
+     "13:12"
+    ],
+    [
+     "GNLU",
+     "13:27"
+    ],
+    [
+     "Infocity",
+     "13:36"
+    ],
+    [
+     "Sachivalaya",
+     "13:44"
+    ],
+    [
+     "Mahatma Mandir",
+     "13:55"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "13:15"
+    ],
+    [
+     "Sachivalaya",
+     "13:27"
+    ],
+    [
+     "Infocity",
+     "13:34"
+    ],
+    [
+     "GNLU",
+     "13:45"
+    ],
+    [
+     "Koteshwar Road",
+     "14:02"
+    ],
+    [
+     "Motera Stadium",
+     "14:05"
+    ],
+    [
+     "Old High Court",
+     "14:23"
+    ],
+    [
+     "APMC",
+     "14:37"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "13:02"
+    ],
+    [
+     "Old High Court",
+     "13:16"
+    ],
+    [
+     "Motera Stadium",
+     "13:34"
+    ],
+    [
+     "Koteshwar Road",
+     "13:37"
+    ],
+    [
+     "GNLU",
+     "13:52"
+    ],
+    [
+     "Infocity",
+     "14:01"
+    ],
+    [
+     "Sachivalaya",
+     "14:09"
+    ],
+    [
+     "Mahatma Mandir",
+     "14:20"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "13:40"
+    ],
+    [
+     "Sachivalaya",
+     "13:52"
+    ],
+    [
+     "Infocity",
+     "13:59"
+    ],
+    [
+     "GNLU",
+     "14:10"
+    ],
+    [
+     "Koteshwar Road",
+     "14:27"
+    ],
+    [
+     "Motera Stadium",
+     "14:30"
+    ],
+    [
+     "Old High Court",
+     "14:48"
+    ],
+    [
+     "APMC",
+     "15:02"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "13:27"
+    ],
+    [
+     "Old High Court",
+     "13:41"
+    ],
+    [
+     "Motera Stadium",
+     "13:59"
+    ],
+    [
+     "Koteshwar Road",
+     "14:02"
+    ],
+    [
+     "GNLU",
+     "14:17"
+    ],
+    [
+     "Infocity",
+     "14:26"
+    ],
+    [
+     "Sachivalaya",
+     "14:34"
+    ],
+    [
+     "Mahatma Mandir",
+     "14:45"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "14:04"
+    ],
+    [
+     "Sachivalaya",
+     "14:16"
+    ],
+    [
+     "Infocity",
+     "14:23"
+    ],
+    [
+     "GNLU",
+     "14:34"
+    ],
+    [
+     "Koteshwar Road",
+     "14:51"
+    ],
+    [
+     "Motera Stadium",
+     "14:54"
+    ],
+    [
+     "Old High Court",
+     "15:12"
+    ],
+    [
+     "APMC",
+     "15:26"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "13:50"
+    ],
+    [
+     "Old High Court",
+     "14:04"
+    ],
+    [
+     "Motera Stadium",
+     "14:22"
+    ],
+    [
+     "Koteshwar Road",
+     "14:25"
+    ],
+    [
+     "GNLU",
+     "14:40"
+    ],
+    [
+     "Infocity",
+     "14:49"
+    ],
+    [
+     "Sachivalaya",
+     "14:57"
+    ],
+    [
+     "Mahatma Mandir",
+     "15:08"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "14:28"
+    ],
+    [
+     "Sachivalaya",
+     "14:40"
+    ],
+    [
+     "Infocity",
+     "14:47"
+    ],
+    [
+     "GNLU",
+     "14:58"
+    ],
+    [
+     "Koteshwar Road",
+     "15:15"
+    ],
+    [
+     "Motera Stadium",
+     "15:18"
+    ],
+    [
+     "Old High Court",
+     "15:36"
+    ],
+    [
+     "APMC",
+     "15:50"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "14:15"
+    ],
+    [
+     "Old High Court",
+     "14:29"
+    ],
+    [
+     "Motera Stadium",
+     "14:47"
+    ],
+    [
+     "Koteshwar Road",
+     "14:50"
+    ],
+    [
+     "GNLU",
+     "15:05"
+    ],
+    [
+     "Infocity",
+     "15:14"
+    ],
+    [
+     "Sachivalaya",
+     "15:22"
+    ],
+    [
+     "Mahatma Mandir",
+     "15:33"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "14:52"
+    ],
+    [
+     "Sachivalaya",
+     "15:04"
+    ],
+    [
+     "Infocity",
+     "15:11"
+    ],
+    [
+     "GNLU",
+     "15:22"
+    ],
+    [
+     "Koteshwar Road",
+     "15:39"
+    ],
+    [
+     "Motera Stadium",
+     "15:42"
+    ],
+    [
+     "Old High Court",
+     "16:00"
+    ],
+    [
+     "APMC",
+     "16:14"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "14:40"
+    ],
+    [
+     "Old High Court",
+     "14:54"
+    ],
+    [
+     "Motera Stadium",
+     "15:12"
+    ],
+    [
+     "Koteshwar Road",
+     "15:15"
+    ],
+    [
+     "GNLU",
+     "15:30"
+    ],
+    [
+     "Infocity",
+     "15:39"
+    ],
+    [
+     "Sachivalaya",
+     "15:47"
+    ],
+    [
+     "Mahatma Mandir",
+     "15:58"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "15:16"
+    ],
+    [
+     "Sachivalaya",
+     "15:28"
+    ],
+    [
+     "Infocity",
+     "15:35"
+    ],
+    [
+     "GNLU",
+     "15:46"
+    ],
+    [
+     "Koteshwar Road",
+     "16:02"
+    ],
+    [
+     "Motera Stadium",
+     "16:05"
+    ],
+    [
+     "Old High Court",
+     "16:23"
+    ],
+    [
+     "APMC",
+     "16:37"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "15:04"
+    ],
+    [
+     "Old High Court",
+     "15:18"
+    ],
+    [
+     "Motera Stadium",
+     "15:36"
+    ],
+    [
+     "Koteshwar Road",
+     "15:39"
+    ],
+    [
+     "GNLU",
+     "15:54"
+    ],
+    [
+     "Infocity",
+     "16:03"
+    ],
+    [
+     "Sachivalaya",
+     "16:11"
+    ],
+    [
+     "Mahatma Mandir",
+     "16:22"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "15:41"
+    ],
+    [
+     "Sachivalaya",
+     "15:53"
+    ],
+    [
+     "Infocity",
+     "16:00"
+    ],
+    [
+     "GNLU",
+     "16:11"
+    ],
+    [
+     "Koteshwar Road",
+     "16:27"
+    ],
+    [
+     "Motera Stadium",
+     "16:30"
+    ],
+    [
+     "Old High Court",
+     "16:48"
+    ],
+    [
+     "APMC",
+     "17:02"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "15:16"
+    ],
+    [
+     "Old High Court",
+     "15:30"
+    ],
+    [
+     "Motera Stadium",
+     "15:48"
+    ],
+    [
+     "Koteshwar Road",
+     "15:51"
+    ],
+    [
+     "GNLU",
+     "16:06"
+    ],
+    [
+     "Gift City",
+     "16:12"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Gift City",
+     "16:17"
+    ],
+    [
+     "GNLU",
+     "16:24"
+    ],
+    [
+     "Koteshwar Road",
+     "16:39"
+    ],
+    [
+     "Motera Stadium",
+     "16:42"
+    ],
+    [
+     "Old High Court",
+     "17:00"
+    ],
+    [
+     "APMC",
+     "17:14"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "15:28"
+    ],
+    [
+     "Old High Court",
+     "15:42"
+    ],
+    [
+     "Motera Stadium",
+     "16:00"
+    ],
+    [
+     "Koteshwar Road",
+     "16:03"
+    ],
+    [
+     "GNLU",
+     "16:18"
+    ],
+    [
+     "Infocity",
+     "16:27"
+    ],
+    [
+     "Sachivalaya",
+     "16:35"
+    ],
+    [
+     "Mahatma Mandir",
+     "16:46"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "16:06"
+    ],
+    [
+     "Sachivalaya",
+     "16:18"
+    ],
+    [
+     "Infocity",
+     "16:25"
+    ],
+    [
+     "GNLU",
+     "16:36"
+    ],
+    [
+     "Koteshwar Road",
+     "16:52"
+    ],
+    [
+     "Motera Stadium",
+     "16:55"
+    ],
+    [
+     "Old High Court",
+     "17:13"
+    ],
+    [
+     "APMC",
+     "17:27"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "15:53"
+    ],
+    [
+     "Old High Court",
+     "16:07"
+    ],
+    [
+     "Motera Stadium",
+     "16:25"
+    ],
+    [
+     "Koteshwar Road",
+     "16:28"
+    ],
+    [
+     "GNLU",
+     "16:43"
+    ],
+    [
+     "Infocity",
+     "16:52"
+    ],
+    [
+     "Sachivalaya",
+     "17:00"
+    ],
+    [
+     "Mahatma Mandir",
+     "17:11"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "16:30"
+    ],
+    [
+     "Sachivalaya",
+     "16:42"
+    ],
+    [
+     "Infocity",
+     "16:49"
+    ],
+    [
+     "GNLU",
+     "17:00"
+    ],
+    [
+     "Koteshwar Road",
+     "17:17"
+    ],
+    [
+     "Motera Stadium",
+     "17:20"
+    ],
+    [
+     "Old High Court",
+     "17:38"
+    ],
+    [
+     "APMC",
+     "17:52"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "16:03"
+    ],
+    [
+     "Old High Court",
+     "16:17"
+    ],
+    [
+     "Motera Stadium",
+     "16:35"
+    ],
+    [
+     "Koteshwar Road",
+     "16:38"
+    ],
+    [
+     "GNLU",
+     "16:53"
+    ],
+    [
+     "Gift City",
+     "16:59"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Gift City",
+     "17:08"
+    ],
+    [
+     "GNLU",
+     "17:15"
+    ],
+    [
+     "Koteshwar Road",
+     "17:30"
+    ],
+    [
+     "Motera Stadium",
+     "17:33"
+    ],
+    [
+     "Old High Court",
+     "17:51"
+    ],
+    [
+     "APMC",
+     "18:05"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "16:17"
+    ],
+    [
+     "Old High Court",
+     "16:31"
+    ],
+    [
+     "Motera Stadium",
+     "16:49"
+    ],
+    [
+     "Koteshwar Road",
+     "16:52"
+    ],
+    [
+     "GNLU",
+     "17:07"
+    ],
+    [
+     "Infocity",
+     "17:16"
+    ],
+    [
+     "Sachivalaya",
+     "17:24"
+    ],
+    [
+     "Mahatma Mandir",
+     "17:35"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "16:54"
+    ],
+    [
+     "Sachivalaya",
+     "17:06"
+    ],
+    [
+     "Infocity",
+     "17:13"
+    ],
+    [
+     "GNLU",
+     "17:24"
+    ],
+    [
+     "Koteshwar Road",
+     "17:41"
+    ],
+    [
+     "Motera Stadium",
+     "17:44"
+    ],
+    [
+     "Old High Court",
+     "18:02"
+    ],
+    [
+     "APMC",
+     "18:16"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "16:40"
+    ],
+    [
+     "Old High Court",
+     "16:54"
+    ],
+    [
+     "Motera Stadium",
+     "17:13"
+    ],
+    [
+     "Koteshwar Road",
+     "17:16"
+    ],
+    [
+     "GNLU",
+     "17:31"
+    ],
+    [
+     "Infocity",
+     "17:40"
+    ],
+    [
+     "Sachivalaya",
+     "17:48"
+    ],
+    [
+     "Mahatma Mandir",
+     "17:59"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "17:19"
+    ],
+    [
+     "Sachivalaya",
+     "17:31"
+    ],
+    [
+     "Infocity",
+     "17:38"
+    ],
+    [
+     "GNLU",
+     "17:49"
+    ],
+    [
+     "Koteshwar Road",
+     "18:06"
+    ],
+    [
+     "Motera Stadium",
+     "18:09"
+    ],
+    [
+     "Old High Court",
+     "18:27"
+    ],
+    [
+     "APMC",
+     "18:41"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "17:06"
+    ],
+    [
+     "Old High Court",
+     "17:20"
+    ],
+    [
+     "Motera Stadium",
+     "17:38"
+    ],
+    [
+     "Koteshwar Road",
+     "17:41"
+    ],
+    [
+     "GNLU",
+     "17:56"
+    ],
+    [
+     "Infocity",
+     "18:05"
+    ],
+    [
+     "Sachivalaya",
+     "18:13"
+    ],
+    [
+     "Mahatma Mandir",
+     "18:24"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "17:44"
+    ],
+    [
+     "Sachivalaya",
+     "17:56"
+    ],
+    [
+     "Infocity",
+     "18:03"
+    ],
+    [
+     "GNLU",
+     "18:14"
+    ],
+    [
+     "Koteshwar Road",
+     "18:31"
+    ],
+    [
+     "Motera Stadium",
+     "18:34"
+    ],
+    [
+     "Old High Court",
+     "18:52"
+    ],
+    [
+     "APMC",
+     "19:06"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "17:16"
+    ],
+    [
+     "Old High Court",
+     "17:30"
+    ],
+    [
+     "Motera Stadium",
+     "17:48"
+    ],
+    [
+     "Koteshwar Road",
+     "17:51"
+    ],
+    [
+     "GNLU",
+     "18:06"
+    ],
+    [
+     "Gift City",
+     "18:12"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Gift City",
+     "18:21"
+    ],
+    [
+     "GNLU",
+     "18:28"
+    ],
+    [
+     "Koteshwar Road",
+     "18:42"
+    ],
+    [
+     "Motera Stadium",
+     "18:45"
+    ],
+    [
+     "Old High Court",
+     "19:03"
+    ],
+    [
+     "APMC",
+     "19:17"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "17:30"
+    ],
+    [
+     "Old High Court",
+     "17:44"
+    ],
+    [
+     "Motera Stadium",
+     "18:02"
+    ],
+    [
+     "Koteshwar Road",
+     "18:05"
+    ],
+    [
+     "GNLU",
+     "18:20"
+    ],
+    [
+     "Infocity",
+     "18:29"
+    ],
+    [
+     "Sachivalaya",
+     "18:37"
+    ],
+    [
+     "Mahatma Mandir",
+     "18:48"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "18:08"
+    ],
+    [
+     "Sachivalaya",
+     "18:20"
+    ],
+    [
+     "Infocity",
+     "18:27"
+    ],
+    [
+     "GNLU",
+     "18:38"
+    ],
+    [
+     "Koteshwar Road",
+     "18:54"
+    ],
+    [
+     "Motera Stadium",
+     "18:57"
+    ],
+    [
+     "Old High Court",
+     "19:15"
+    ],
+    [
+     "APMC",
+     "19:29"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "17:54"
+    ],
+    [
+     "Old High Court",
+     "18:08"
+    ],
+    [
+     "Motera Stadium",
+     "18:26"
+    ],
+    [
+     "Koteshwar Road",
+     "18:29"
+    ],
+    [
+     "GNLU",
+     "18:44"
+    ],
+    [
+     "Infocity",
+     "18:53"
+    ],
+    [
+     "Sachivalaya",
+     "19:01"
+    ],
+    [
+     "Mahatma Mandir",
+     "19:12"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "18:32"
+    ],
+    [
+     "Sachivalaya",
+     "18:44"
+    ],
+    [
+     "Infocity",
+     "18:51"
+    ],
+    [
+     "GNLU",
+     "19:02"
+    ],
+    [
+     "Koteshwar Road",
+     "19:19"
+    ],
+    [
+     "Motera Stadium",
+     "19:22"
+    ],
+    [
+     "Old High Court",
+     "19:40"
+    ],
+    [
+     "APMC",
+     "19:54"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "18:06"
+    ],
+    [
+     "Old High Court",
+     "18:20"
+    ],
+    [
+     "Motera Stadium",
+     "18:39"
+    ],
+    [
+     "Koteshwar Road",
+     "18:42"
+    ],
+    [
+     "GNLU",
+     "18:57"
+    ],
+    [
+     "Gift City",
+     "19:03"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Gift City",
+     "19:13"
+    ],
+    [
+     "GNLU",
+     "19:20"
+    ],
+    [
+     "Koteshwar Road",
+     "19:35"
+    ],
+    [
+     "Motera Stadium",
+     "19:38"
+    ],
+    [
+     "Old High Court",
+     "19:56"
+    ],
+    [
+     "APMC",
+     "20:10"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "18:18"
+    ],
+    [
+     "Old High Court",
+     "18:32"
+    ],
+    [
+     "Motera Stadium",
+     "18:50"
+    ],
+    [
+     "Koteshwar Road",
+     "18:53"
+    ],
+    [
+     "GNLU",
+     "19:08"
+    ],
+    [
+     "Infocity",
+     "19:17"
+    ],
+    [
+     "Sachivalaya",
+     "19:25"
+    ],
+    [
+     "Mahatma Mandir",
+     "19:36"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "18:56"
+    ],
+    [
+     "Sachivalaya",
+     "19:09"
+    ],
+    [
+     "Infocity",
+     "19:16"
+    ],
+    [
+     "GNLU",
+     "19:27"
+    ],
+    [
+     "Koteshwar Road",
+     "19:43"
+    ],
+    [
+     "Motera Stadium",
+     "19:46"
+    ],
+    [
+     "Old High Court",
+     "20:04"
+    ],
+    [
+     "APMC",
+     "20:18"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "18:43"
+    ],
+    [
+     "Old High Court",
+     "18:57"
+    ],
+    [
+     "Motera Stadium",
+     "19:15"
+    ],
+    [
+     "Koteshwar Road",
+     "19:18"
+    ],
+    [
+     "GNLU",
+     "19:33"
+    ],
+    [
+     "Infocity",
+     "19:42"
+    ],
+    [
+     "Sachivalaya",
+     "19:50"
+    ],
+    [
+     "Mahatma Mandir",
+     "20:01"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "19:20"
+    ],
+    [
+     "Sachivalaya",
+     "19:32"
+    ],
+    [
+     "Infocity",
+     "19:39"
+    ],
+    [
+     "GNLU",
+     "19:50"
+    ],
+    [
+     "Koteshwar Road",
+     "20:07"
+    ],
+    [
+     "Motera Stadium",
+     "20:10"
+    ],
+    [
+     "Old High Court",
+     "20:28"
+    ],
+    [
+     "APMC",
+     "20:42"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "19:08"
+    ],
+    [
+     "Old High Court",
+     "19:22"
+    ],
+    [
+     "Motera Stadium",
+     "19:40"
+    ],
+    [
+     "Koteshwar Road",
+     "19:43"
+    ],
+    [
+     "GNLU",
+     "19:58"
+    ],
+    [
+     "Infocity",
+     "20:07"
+    ],
+    [
+     "Sachivalaya",
+     "20:15"
+    ],
+    [
+     "Mahatma Mandir",
+     "20:26"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "19:44"
+    ],
+    [
+     "Sachivalaya",
+     "19:56"
+    ],
+    [
+     "Infocity",
+     "20:03"
+    ],
+    [
+     "GNLU",
+     "20:14"
+    ],
+    [
+     "Koteshwar Road",
+     "20:31"
+    ],
+    [
+     "Motera Stadium",
+     "20:34"
+    ],
+    [
+     "Old High Court",
+     "20:52"
+    ],
+    [
+     "APMC",
+     "21:06"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "19:42"
+    ],
+    [
+     "Old High Court",
+     "19:56"
+    ],
+    [
+     "Motera Stadium",
+     "20:14"
+    ],
+    [
+     "Koteshwar Road",
+     "20:17"
+    ],
+    [
+     "GNLU",
+     "20:32"
+    ],
+    [
+     "Infocity",
+     "20:41"
+    ],
+    [
+     "Sachivalaya",
+     "20:49"
+    ],
+    [
+     "Mahatma Mandir",
+     "21:00"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "20:09"
+    ],
+    [
+     "Sachivalaya",
+     "20:21"
+    ],
+    [
+     "Infocity",
+     "20:28"
+    ],
+    [
+     "GNLU",
+     "20:39"
+    ],
+    [
+     "Koteshwar Road",
+     "20:56"
+    ],
+    [
+     "Motera Stadium",
+     "20:59"
+    ],
+    [
+     "Old High Court",
+     "21:17"
+    ],
+    [
+     "APMC",
+     "21:31"
+    ]
+   ]
+  },
+  {
+   "direction": "up",
+   "stops": [
+    [
+     "APMC",
+     "20:45"
+    ],
+    [
+     "Old High Court",
+     "20:59"
+    ],
+    [
+     "Motera Stadium",
+     "21:17"
+    ],
+    [
+     "Koteshwar Road",
+     "21:20"
+    ],
+    [
+     "GNLU",
+     "21:35"
+    ],
+    [
+     "Infocity",
+     "21:44"
+    ],
+    [
+     "Sachivalaya",
+     "21:52"
+    ],
+    [
+     "Mahatma Mandir",
+     "22:03"
+    ]
+   ]
+  },
+  {
+   "direction": "down",
+   "stops": [
+    [
+     "Mahatma Mandir",
+     "21:00"
+    ],
+    [
+     "Sachivalaya",
+     "21:12"
+    ],
+    [
+     "Infocity",
+     "21:20"
+    ],
+    [
+     "GNLU",
+     "21:31"
+    ],
+    [
+     "Koteshwar Road",
+     "21:47"
+    ],
+    [
+     "Motera Stadium",
+     "21:50"
+    ],
+    [
+     "Old High Court",
+     "22:09"
+    ],
+    [
+     "APMC",
+     "22:22"
+    ]
+   ]
+  }
+ ]
+}

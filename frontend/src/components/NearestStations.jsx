@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { MapContainer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Polyline, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
-import { Search, X, LocateFixed, Link as LinkIcon, MapPin, History, CircleAlert, Navigation } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, X, LocateFixed, Link as LinkIcon, MapPin, History, CircleAlert, Navigation, ChevronRight } from 'lucide-react';
+import LineBadge from './LineBadge';
+import { STATION_LINES } from '../lib/network';
 import PageHeader from './PageHeader';
 import BaseTiles from './BaseTiles';
 import { useTheme, mapPalette } from '../lib/theme';
@@ -22,13 +25,92 @@ const FAMOUS_LANDMARKS = [
   { name: 'Ahmedabad One Mall', lat: 23.0406, lng: 72.5318 },
 ];
 
-const ringIcon = (color, fill, size) =>
+// One colour per result (1st, 2nd, 3rd), shared by its map pin, its path and its card. Chosen to stay clear of
+// the four line colours, which mean "this line" everywhere else in the app.
+const RANK_COLORS = {
+  light: ['#0D9488', '#EA580C', '#DB2777'],
+  dark: ['#2DD4BF', '#FB923C', '#F472B6'],
+};
+
+// "You are here": a solid dot with a soft halo.
+const youIcon = (color) =>
   L.divIcon({
     className: 'custom-marker',
-    html: `<div style="width:${size}px;height:${size}px;background:${fill};border:3px solid ${color};border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.35)"></div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    html: `<div style="width:30px;height:30px;border-radius:50%;background:${color}33;display:flex;align-items:center;justify-content:center"><div style="width:14px;height:14px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div></div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
   });
+
+// Numbered station pin in the result's colour.
+const rankIcon = (color, rank) =>
+  L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);color:#fff;font:700 13px/22px 'IBM Plex Mono',monospace;text-align:center">${rank}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  });
+
+// Distance label, as a pill in the result's colour.
+const distanceLabelIcon = (text, color) =>
+  L.divIcon({
+    className: 'custom-marker',
+    html: `<span class="distance-pill" style="color:${color};border-color:${color}">${text}</span>`,
+    iconSize: [0, 0],
+  });
+
+// The point `fraction` of the way along a path.
+const pointAlong = (path, fraction) => {
+  const pts = path.map((p) => L.latLng(p));
+  const lengths = pts.slice(1).map((p, i) => pts[i].distanceTo(p));
+  let remaining = lengths.reduce((a, b) => a + b, 0) * fraction;
+  for (let i = 0; i < lengths.length; i++) {
+    if (remaining <= lengths[i]) {
+      const t = lengths[i] ? remaining / lengths[i] : 0;
+      return [pts[i].lat + (pts[i + 1].lat - pts[i].lat) * t, pts[i].lng + (pts[i + 1].lng - pts[i].lng) * t];
+    }
+    remaining -= lengths[i];
+  }
+  return path[path.length - 1];
+};
+
+const LABEL_CLEARANCE_PX = 44; // a pill is about 50 x 18 px
+const LABEL_SPOTS = [0.5, 0.62, 0.38, 0.72, 0.3, 0.8, 0.22, 0.88];
+
+// Distance written on each path. Paths to nearby stations often share a stretch, and short ones end right at
+// a pin, so each label tries spots along its path (in screen pixels, at the current zoom) and takes the first
+// one clear of the start, the pins and the labels already placed.
+const DistanceLabels = ({ stations, start, colors }) => {
+  const map = useMap();
+  const [, setZoom] = useState(map.getZoom());
+  useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
+
+  const avoid = [start, ...stations.map((st) => [st.latitude, st.longitude])].map((p) => map.latLngToContainerPoint(p));
+  const placed = [];
+  return stations.map((station, index) => {
+    const path = station.path || [start, [station.latitude, station.longitude]];
+    let best = null;
+    for (const fraction of LABEL_SPOTS) {
+      const latlng = pointAlong(path, fraction);
+      const px = map.latLngToContainerPoint(latlng);
+      const clearance = Math.min(...[...avoid, ...placed].map((q) => px.distanceTo(q)));
+      if (!best || clearance > best.clearance) best = { latlng, px, clearance };
+      if (clearance >= LABEL_CLEARANCE_PX) break;
+    }
+    placed.push(best.px);
+    return (
+      <Marker
+        key={`distance-${station.name}`}
+        position={best.latlng}
+        icon={distanceLabelIcon(distanceText(station), colors[index])}
+        interactive={false}
+        zIndexOffset={500}
+      />
+    );
+  });
+};
+
+const distanceText = (station) =>
+  station.distance == null ? 'distance unavailable' : `${station.distance_type === 'straight' ? '≈ ' : ''}${station.distance} km`;
 
 // Frame the searched point together with the stations found for it.
 const FitToPoints = ({ points }) => {
@@ -99,8 +181,8 @@ const Alert = ({ children, onDismiss }) => (
 const NearestStations = () => {
   const { theme } = useTheme();
   const palette = mapPalette(theme);
-  const userIcon = useMemo(() => ringIcon(palette.ink, palette.fill, 18), [palette]);
-  const stationIcon = useMemo(() => ringIcon(palette.route, palette.fill, 14), [palette]);
+  const userIcon = useMemo(() => youIcon(palette.ink), [palette]);
+  const rankColors = RANK_COLORS[theme] || RANK_COLORS.light;
   const [userLocation, setUserLocation] = useState(null);
   const [nearestStations, setNearestStations] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -233,8 +315,9 @@ const NearestStations = () => {
     }
   };
 
+  // Frame the start, the stations and the whole of every path.
   const mapPoints = useMemo(
-    () => (userLocation ? [userLocation, ...nearestStations.map((st) => [st.latitude, st.longitude])] : []),
+    () => (userLocation ? [userLocation, ...nearestStations.flatMap((st) => st.path || [[st.latitude, st.longitude]])] : []),
     [userLocation, nearestStations]
   );
   const accuracyTone = accuracy < 50 ? 'text-go-600' : accuracy < 100 ? 'text-ink-900' : 'text-alert-600';
@@ -418,19 +501,29 @@ const NearestStations = () => {
                         <li key={station.name} className="rounded-lg border border-line-200 bg-surface-1 p-5">
                           <div className="flex gap-4">
                             <span
-                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold text-white ${index === 0 ? 'bg-navy-900' : 'bg-ink-300'}`}
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold text-white"
+                              style={{ backgroundColor: rankColors[index] }}
                               aria-label={`Rank ${index + 1}`}
                             >
                               {index + 1}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <h3 className="truncate font-sans text-base font-semibold text-ink-900">{station.name}</h3>
+                              <div className="flex items-center gap-2">
+                                <h3 className="truncate font-sans text-base font-semibold text-ink-900">{station.name}</h3>
+                                <span className="flex shrink-0 gap-1">
+                                  {(STATION_LINES[station.name] || []).map((id) => <LineBadge key={id} line={id} size="sm" />)}
+                                </span>
+                              </div>
                               <p className="mt-2 text-sm text-ink-600">
-                                <span className="font-mono tabular-nums text-ink-900">{station.distance != null ? `${station.distance} km` : '—'}</span> by road
+                                <span className="font-mono tabular-nums text-ink-900">{station.distance != null ? `${station.distance} km` : '—'}</span>{' '}
+                                {station.distance_type === 'straight' ? 'in a straight line (road distance unavailable)' : 'by road'}
                               </p>
-                              <p className="mt-1 font-mono text-xs tabular-nums text-ink-600">
-                                {station.latitude.toFixed(5)}, {station.longitude.toFixed(5)}
-                              </p>
+                              <Link
+                                to={`/stations?station=${encodeURIComponent(station.name)}`}
+                                className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+                              >
+                                Next trains, gates and fares <ChevronRight size={14} />
+                              </Link>
                             </div>
                           </div>
                         </li>
@@ -453,19 +546,53 @@ const NearestStations = () => {
                         </Popup>
                       </Marker>
 
+                      {/* Dotted path to each station (by road when available), its distance written halfway along. */}
                       {nearestStations.map((station, index) => (
-                        <Marker key={station.name} position={[station.latitude, station.longitude]} icon={stationIcon}>
+                        <Polyline
+                          key={`path-${station.name}`}
+                          positions={station.path || [userLocation, [station.latitude, station.longitude]]}
+                          pathOptions={{ color: rankColors[index], weight: 4, opacity: 0.9, dashArray: '1 9', lineCap: 'round' }}
+                        />
+                      ))}
+                      <DistanceLabels stations={nearestStations} start={userLocation} colors={rankColors} />
+
+                      {nearestStations.map((station, index) => (
+                        <Marker
+                          key={station.name}
+                          position={[station.latitude, station.longitude]}
+                          icon={rankIcon(rankColors[index], index + 1)}
+                          zIndexOffset={1000 - index}
+                        >
+                          <Tooltip permanent direction="right" offset={[14, 0]} className="station-tooltip" opacity={1}>
+                            <span className="font-sans font-semibold">{station.name}</span>
+                          </Tooltip>
                           <Popup>
                             <strong>{station.name}</strong>
-                            <div>#{index + 1}, {station.distance != null ? `${station.distance} km by road` : 'distance unavailable'}</div>
+                            <div>
+                              #{index + 1}, {distanceText(station)}
+                              {station.distance_type === 'road' ? ' by road' : ''}
+                            </div>
                           </Popup>
                         </Marker>
                       ))}
                     </MapContainer>
                   </div>
-                  <p className="mt-3 flex items-center gap-4 text-xs text-ink-600">
-                    <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full border-2 border-ink-900 bg-surface-1" /> You</span>
-                    <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full border-2 border-accent bg-surface-1" /> Metro station</span>
+                  <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-600">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-3 w-3 rounded-full border-2 border-white bg-ink-900 shadow" /> {placeName || 'You'}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      {rankColors.map((c) => (
+                        <span key={c} className="h-3 w-3 rounded-full" style={{ backgroundColor: c }} />
+                      ))}{' '}
+                      Nearest stations
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <svg width="22" height="4" aria-hidden="true">
+                        <line x1="2" y1="2" x2="20" y2="2" stroke="rgb(var(--ink-600))" strokeWidth="3" strokeLinecap="round" strokeDasharray="0.5 5" />
+                      </svg>
+                      Way there
+                    </span>
                   </p>
                 </section>
               </div>

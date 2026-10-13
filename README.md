@@ -91,7 +91,35 @@ npm start
 
 Environment variables are listed in [ENV_VARIABLES.md](ENV_VARIABLES.md). The design system is in [design.md](design.md).
 
+### Backend layout
+
+```
+backend/
+  app.py        API routes (start with: uvicorn app:app)
+  metro/        network and fares, timetable, nearby stations, visit counter, keep-alive
+  chatbot/      rider assistant: instant rule-based answers and the Gemini assistant
+  data/         Excel sources, the network built from them, timetable, chatbot knowledge base
+  scripts/      build_network.py (rebuilds data/network.json from the Excel files)
+  tests/        pytest suite (run `pytest` from backend/)
+```
+
+### Updating stations, lines or fares
+
+The backend reads `backend/data/network.json`, which is built from `backend/data/Location.xlsx` and `backend/data/Fare Matrix.xlsx`. After editing either sheet, rebuild it (the build checks the data and lists any corrections it made):
+
+```bash
+cd backend
+pip install pandas openpyxl
+python scripts/build_network.py
+```
+
 ### Testing
+
+```bash
+cd backend
+pip install pytest httpx pandas openpyxl
+pytest
+```
 
 ```bash
 cd frontend
