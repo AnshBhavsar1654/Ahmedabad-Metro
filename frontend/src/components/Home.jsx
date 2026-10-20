@@ -44,7 +44,7 @@ const NETWORK_FACTS = [
     note: 'home.fact.linesNote', vars: { n: RUNNING_LINES, m: LINES.length - RUNNING_LINES },
   },
   { icon: Ruler, value: '76.64', unit: 'unit.km', label: 'home.fact.network', note: 'home.fact.networkNote' },
-  { icon: Users, value: '118K+', label: 'home.fact.riders', note: 'home.fact.ridersNote' },
+  { icon: Users, value: '150K+', label: 'home.fact.riders', note: 'home.fact.ridersNote' },
 ];
 
 const TICKET_METHODS = [
@@ -295,7 +295,7 @@ const Home = () => {
                 </div>
                 <div className="mt-1.5 text-sm font-medium text-ink-900">{t(label)}</div>
                 {badges && (
-                  <div className="mt-1.5 flex gap-1">
+                  <div className="-ml-[52px] mt-1.5 flex justify-center gap-1 sm:ml-0 sm:justify-start">
                     {LINES.map((l) => <LineBadge key={l.id} line={l.id} size="sm" />)}
                   </div>
                 )}
@@ -330,9 +330,11 @@ const Home = () => {
                       <div className="font-sans text-base font-semibold text-ink-900">
                         {lineName(line.name)}
                         {line.wip && (
-                          <span className="ml-2 inline-block whitespace-nowrap rounded-full border border-alert-600/40 bg-alert-600/10 px-2 py-0.5 align-middle text-[11px] font-semibold text-alert-600">
-                            {t('status.wip')}
-                          </span>
+                          <div className="mt-1 flex">
+                            <span className="inline-block whitespace-nowrap rounded-full border border-alert-600/40 bg-alert-600/10 px-2 py-0.5 text-[11px] font-semibold text-alert-600">
+                              {t('status.wip')}
+                            </span>
+                          </div>
                         )}
                       </div>
                       <div className="text-xs text-ink-600">{t(`corridor.${line.id}`)}</div>

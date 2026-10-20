@@ -11,13 +11,14 @@
     --line-200: 223 225 218;
     --line-100: 236 237 232;
     --surface-0: 244 245 241;
-    --surface-1: 255 255 255;
+    /* Cards and navbar: warm off-white, one step lighter than the page background (surface-0). */
+    --surface-1: 250 251 248;
     --navy-900: 14 35 64;
     --navy-700: 22 51 90;
     --navy-100: 232 237 244;
-    /* Navbar: neutral charcoal, so the logo and line colours carry the colour. */
-    --chrome-900: 22 25 32;
-    --chrome-700: 44 49 60;
+    /* Navbar follows the mode: warm off-white in light, near-black in dark. */
+    --chrome-900: 250 251 248;
+    --chrome-700: 243 244 239;
     --accent: 14 35 64;
     --alert-600: 200 30 30;
     --go-600: 27 122 75;

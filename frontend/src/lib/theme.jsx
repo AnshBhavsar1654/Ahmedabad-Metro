@@ -20,7 +20,7 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0A0C11' : '#161920');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0A0C11' : '#FAFBF8');
   }, [theme]);
 
   // Until the rider picks a theme themselves, follow the operating system.
