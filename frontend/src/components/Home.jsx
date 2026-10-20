@@ -330,9 +330,11 @@ const Home = () => {
                       <div className="font-sans text-base font-semibold text-ink-900">
                         {lineName(line.name)}
                         {line.wip && (
-                          <span className="ml-2 inline-block whitespace-nowrap rounded-full border border-alert-600/40 bg-alert-600/10 px-2 py-0.5 align-middle text-[11px] font-semibold text-alert-600">
-                            {t('status.wip')}
-                          </span>
+                          <div className="mt-1 flex">
+                            <span className="inline-block whitespace-nowrap rounded-full border border-alert-600/40 bg-alert-600/10 px-2 py-0.5 text-[11px] font-semibold text-alert-600">
+                              {t('status.wip')}
+                            </span>
+                          </div>
                         )}
                       </div>
                       <div className="text-xs text-ink-600">{t(`corridor.${line.id}`)}</div>

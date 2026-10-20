@@ -15,7 +15,7 @@ const ThemeToggle = ({ className = '' }) => {
       onClick={toggleTheme}
       aria-label={label}
       title={label}
-      className={`inline-flex items-center justify-center rounded-md p-2 text-white/80 transition hover:bg-chrome-700 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${className}`}
+      className={`inline-flex items-center justify-center rounded-md p-2 text-ink-600 transition hover:bg-chrome-700 hover:text-ink-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${className}`}
     >
       <Icon strokeWidth={1.75} size={20} />
     </button>
