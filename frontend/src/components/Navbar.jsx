@@ -37,19 +37,21 @@ function Navbar() {
 
   return (
     <nav className="fixed top-0 z-[2000] w-full border-b border-white/10 bg-chrome-900" aria-label={t('nav.main')}>
-      <div className="mx-auto flex min-h-[64px] max-w-7xl items-center justify-between px-5 py-3">
+      <div className="relative mx-auto flex min-h-[64px] max-w-7xl items-center justify-between px-5 py-3">
         <Link to="/" className="flex shrink-0 items-center gap-2 text-white no-underline">
-          <img src="/logo.png" alt="" className="h-10 w-10" />
-          <span className="whitespace-nowrap font-sans text-lg font-bold">{t('app.name')}</span>
+          <img src="/logo.png" alt={t('app.name')} className="h-10 w-10" />
         </Link>
 
-        <div className="hidden items-center xl:flex">
+        <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center xl:flex">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <Link key={to} to={to} className={desktopClass(to)} aria-current={pathname === to ? 'page' : undefined}>
               <Icon {...iconProps} /> {t(label)}
             </Link>
           ))}
-          <LanguageSwitcher className="ml-2" />
+        </div>
+
+        <div className="hidden shrink-0 items-center gap-1 xl:flex">
+          <LanguageSwitcher />
           <ThemeToggle />
         </div>
 
