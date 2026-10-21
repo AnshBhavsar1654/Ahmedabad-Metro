@@ -1,197 +1,207 @@
-Ahmedabad Metro System - Structured Knowledge Base
+Ahmedabad Metro (Ahmedabad-Gandhinagar Metro) - Rider Knowledge Base
+Operator: Gujarat Metro Rail Corporation (GMRC) Limited. Official website: gujaratmetrorail.com. Official app: "Ahmedabad Metro" (GMRC) on Google Play and the App Store.
+Sources: GMRC fare rules, smart card, NCMC, customer care and lost and found pages; GMRC timetable w.e.f. 18 May 2026; the app's fare matrix and station data.
 
-=== SECTION I: GENERAL OVERVIEW ===
+=== Network Overview: Lines, Stations and Interchanges ===
 
-Total Stations: 62 (53 operational; Sabarmati and 8 stations on two new lines are work in progress)
-Number of Lines: 6 (4 running, 2 being built)
-- East-West Line (Blue Line)
-- North-South Line (Red Line)
-- Corridor-1 (Yellow Line)
-- Corridor-2 (Violet Line)
-- Airport Corridor (Pink Line, work in progress)
-- GIFT City Extension (Light Blue Line, work in progress)
+Total stations: 62 (53 operational; Sabarmati and 8 stations on two new lines are work in progress)
+Lines: 6 (4 running, 2 being built)
+- Blue Line: East-West Corridor, Thaltej Gam to Vastral Gam (Phase 1)
+- Red Line: North-South Corridor, APMC to Koteshwar Road (Phase 1, extended to Koteshwar Road in Phase 2)
+- Yellow Line: Corridor-1, Koteshwar Road to Mahatma Mandir, Gandhinagar (Phase 2)
+- Violet Line: Corridor-2, GNLU to Gift City (Phase 2, opened 16 September 2024)
+- Pink Line: Airport Corridor, Koteshwar Road to Airport (Phase 2A, 6.03 km, 5 new stations, work in progress)
+- Light Blue Line: GIFT City Extension, Gift City to Shahpur near GIFT City (Phase 2B, 3.33 km, 3 new stations, work in progress)
 
-Operational Hours: 6:30 AM to 11:00 PM daily
-Extended Hours: Up to 12:30 AM during major events at Narendra Modi Stadium
+Network length: 76.64 km including the lines being built (Phase 1: 40.03 km, 32 stations; Phase 2: 28.25 km, 22 stations)
+Daily riders: more than 150,000 across the network
+Underground stations (Blue Line, old city): Kankaria East, Kalupur Railway Station, Ghee Kanta, Shahpur. All other open stations are elevated. The Airport station (Pink Line) will be underground.
 
-Network Length: 76.64 km
-Phase 1: 40.03 km, 32 stations
-Phase 2: 28.25 km, 22 stations
-Phase 2A (Airport Corridor, Pink Line): Koteshwar Road to Airport, 6.03 km, 5 new stations, work in progress
-Phase 2B (GIFT City Extension, Light Blue Line): GIFT City to Shahpur, 3.33 km, 3 new stations, work in progress
-
-Stations Not Open Yet:
-- Sabarmati station (Red Line) is work in progress, not open yet. Trains pass through without stopping; riders cannot board or get off there yet, and it has no fare yet.
-- Pink Line stations (work in progress, not running yet): Ashram Road, Koteshwar Prachin Mandir, Sabarmati River, Sardarnagar, Airport (underground)
-- Light Blue Line stations (work in progress, not running yet): GIFT City House, Gujarat Biotechnology University, Shahpur (Gandhinagar). This Shahpur is near GIFT City, not the Shahpur station on the Blue Line.
-- Fares for work-in-progress stations have not been published yet.
-
-Fares:
-- Minimum Fare: Rs 5
-- Maximum Fare: Rs 40
-
-Contact Information:
-- Phone: +91-79-22960123
-- Email: care@gujaratmetrorail.com
-
-=== SECTION II: FARES AND TICKETING ===
-
-Ticket Types: Single journey, Return journey, Group tickets (available via app or station counters)
-
-Payments Accepted: Cash, UPI (Paytm, PhonePe, Google Pay), Debit Cards, Credit Cards
-
-Smart Cards:
-- 10% fare discount on all journeys
-- Purchase or recharge at stations or via the metro app
-- Non-transferable between passengers
-- Recharge range: Rs 50 to Rs 3000
-
-NCMC (National Common Mobility Card):
-- Accepted at all stations
-- Foreign tourists: 3-month validity card available with valid passport and visa
-- Recharge options: stations, app (UPI), bank ATMs, net banking
-
-Refund Policy:
-- Unused tickets/tokens are refundable within 30 minutes at point of purchase
-- No refunds for used tickets or lost tokens/cards
-- QR code tickets are refundable only if unused within 30 minutes of purchase
-
-Penalties:
-- Ticketless Travel: Rs 50 plus maximum fare
-- Token Misuse: Rs 200
-
-Children Policy: Up to 2 children under 3 feet tall can travel free per accompanying adult
-
-=== SECTION III: STATION AMENITIES AND ACCESSIBILITY ===
-
-Accessibility Features: All stations have elevators, escalators, and ramps for differently-abled passengers
-Specific gate accessibility information available via "Station Info" section on app or website
-
-Amenities at Stations:
-- Restrooms available at all stations
-- Free Wi-Fi available at select stations
-- Mobile charging points: Not available at stations
-
-Security Measures:
-- CCTV surveillance at all stations and inside trains
-- Baggage scanners at all station entry points
-
-Parking:
-- Parking available near most stations (not at all stations)
-- Designated parking areas near Narendra Modi Stadium
-
-=== SECTION IV: ROUTE AND TRAVEL GUIDELINES ===
-
-Journey Planning: Use the "Plan Your Journey" feature on the metro app or website
-
-Peak Hours on Weekdays:
-- Morning Peak: 8:00 AM to 11:00 AM
-- Evening Peak: 5:00 PM to 8:00 PM
-
-Train Frequency: Varies by line and time (see Section V)
-
-Line Interchanges (no additional fare charged):
+Line Interchanges (change lines without paying again, no extra fare):
 - Old High Court station (Red Line and Blue Line)
 - Koteshwar Road station (Red Line, Yellow Line and Pink Line)
 - GNLU station (Yellow Line and Violet Line)
 - Gift City station (Violet Line and Light Blue Line)
 
-Luggage Policy:
-- Maximum weight allowed: 25 kg
-- Maximum dimensions: 80 x 50 x 30 cm
-- Bicycles are prohibited on metro trains
-- Mandatory security checks for all luggage
+The Pink Line at Koteshwar Road and the Light Blue Line at Gift City are not running yet.
 
-Prohibited Items on Metro:
-- Flammable materials
-- Explosives
-- Toxic or radioactive materials
+=== Stations Not Open Yet (Airport, Sabarmati, New Lines) ===
+
+- Sabarmati station (Red Line, between AEC and Motera Stadium) is work in progress. Trains pass through without stopping; riders cannot board or get off there yet, and it has no fare yet. Use AEC or Motera Stadium instead. Sabarmati Railway Station (also Red Line) is open.
+- Pink Line stations, not running yet: Ashram Road, Koteshwar Prachin Mandir, Sabarmati River, Sardarnagar, Airport (underground). There is no metro to Ahmedabad airport yet; the nearest open stations are on the Red Line (for example Koteshwar Road or Motera Stadium), then a taxi or auto.
+- Light Blue Line stations, not running yet: GIFT City House, Gujarat Biotechnology University, Shahpur (Gandhinagar). This Shahpur is near GIFT City, not the Shahpur station on the Blue Line.
+- Fares for work-in-progress stations have not been published yet.
+
+=== Operating Hours, Timings, First and Last Train ===
+
+Regular service: about 6:20 AM to 11:00 PM every day, including weekends and public holidays. The first train from APMC leaves at 6:20 AM.
+Extended hours: GMRC extends service on special occasions, for example up to 12:30 AM after big events at Narendra Modi Stadium (Motera Stadium station) and up to 2:00 AM during Navratri. Extended timings are announced by GMRC for each occasion.
+Timetable: GMRC timetable effective 18 May 2026, on the /schedule page (PDF). There is no live train tracking; the next timetabled trains for a station are shown on its station panel.
+
+=== Train Frequency and Gandhinagar / GIFT City Train Times ===
+
+Blue Line (East-West, Thaltej Gam to Vastral Gam):
+- Weekday peak hours: every 9 minutes
+- Weekday off-peak: every 10 minutes
+- Weekends: every 12 minutes
+
+Red Line (North-South, APMC to Koteshwar Road):
+- Weekday peak hours: every 10 minutes
+- Weekday off-peak: every 12 minutes
+- Weekends: every 12 minutes
+
+Yellow Line (Koteshwar Road to Mahatma Mandir, Gandhinagar):
+- Served by through trains from APMC (Red Line) that continue to Mahatma Mandir, so riders from APMC to Gandhinagar do not need to change trains.
+- About every 24 minutes. 34 trains a day each way. First train from APMC 6:20 AM, last 8:45 PM; first train from Mahatma Mandir 6:40 AM, last 9:00 PM.
+
+Violet Line (GNLU to Gift City):
+- 8 through trains a day each way between APMC and Gift City, mostly in the morning and evening peaks. From APMC: 6:45, 7:34, 8:03, 9:11 AM and 3:16, 4:03, 5:16, 6:06 PM. From Gift City: 7:48, 8:37, 9:01, 10:18 AM and 4:17, 5:08, 6:21, 7:13 PM.
+- Between these trains there is no Violet Line service, so check /schedule before travelling to GIFT City.
+
+Pink Line and Light Blue Line: not running yet (work in progress).
+
+Peak hours on weekdays: 8:00 AM to 11:00 AM and 5:00 PM to 8:00 PM.
+
+=== Fares and Ticket Prices ===
+
+Fares are set by the stations you travel between (the app's fare matrix), not by the route you take. Ask the assistant for the fare between any two stations, or use the Plan Journey page (/routes).
+- Minimum fare: Rs 5. Within Ahmedabad (Phase 1) the maximum is Rs 25. Longer journeys to Gandhinagar and GIFT City cost up to Rs 40.
+- Fare steps: Rs 5, 10, 15, 20, 25, 30, 35, 40.
+- Examples: Thaltej Gam to Vastral Gam Rs 25; APMC to Motera Stadium Rs 20; Koteshwar Road to Mahatma Mandir Rs 25; APMC to Gift City Rs 30.
+- Smart card (GMRC CSC) and NCMC users get 10% off every completed journey.
+- Changing lines at an interchange costs nothing extra.
+
+=== Passes, Student and Senior Citizen Concessions, Discounts ===
+
+- GMRC does not offer any student pass, daily pass, monthly pass, trip pass or unlimited-travel pass. The official fare products are only single journey, return journey and group tickets.
+- There is no student, senior citizen or other concession fare. Students pay the normal fare.
+- The cheapest way to travel often (for example daily to college or work) is a GMRC smart card (Ahmedabad journeys) or an NCMC card (whole network, including Gandhinagar and GIFT City), which gives 10% off every journey. A return journey ticket saves buying a second ticket for the way back.
+- Children: up to two children under 3 feet tall travel free when accompanied by an adult.
+- Policies can change; for the latest, ask GMRC customer care (+91-79-22960123, care@gujaratmetrorail.com) or at a station ticket counter.
+
+=== Ticket Types and How to Buy Tickets (QR, App, Counter) ===
+
+Fare products: single journey ticket, return journey ticket, group ticket (for groups of more than 9 passengers).
+Fare media accepted: QR tickets (paper and mobile), contactless smart token, GMRC contactless smart card (CSC), NCMC card. Temporary paper tickets are used only if the ticketing system fails, and special paper tickets for special events.
+
+Ways to buy:
+- Ticket window (kiosk counter) at every operational station: cash, UPI or debit/credit card.
+- Ticket vending machines (TVM) at stations: self-service.
+- Mobile QR ticket in the official "Ahmedabad Metro" app (GMRC): pay by UPI, debit/credit card or net banking. Mobile QR tickets can be bought only during service hours.
+- Tap in with a GMRC smart card or an NCMC card.
+
+QR ticket rules:
+- A paper QR ticket is valid for 30 minutes from issue, a mobile QR ticket for 180 minutes. Both are valid only for entry at the station they were issued for.
+- Screenshots, photos or photocopies of a QR ticket are not valid. A phone that is dead, switched off, hung or offline at the gate counts as travelling without a ticket, so keep your phone charged.
+- The QR ticket is also your receipt. Keep it until you exit. Damaged or lost QR tickets are not replaced.
+
+Tokens and GMRC smart cards are valid only for journeys within Phase 1 (Ahmedabad): the Blue Line (Thaltej Gam to Vastral Gam) and the Red Line from APMC to Motera Stadium. They cannot be used for journeys between Phase 1 and Phase 2 (Koteshwar Road to Mahatma Mandir, GNLU to Gift City). For journeys to or within Gandhinagar and GIFT City, use a QR ticket or an NCMC card.
+
+=== Smart Card (GMRC CSC) ===
+
+- Buy at any operational station for Rs 100: Rs 50 refundable security deposit plus Rs 50 travel value. Pay by cash or card.
+- 10% discount on every completed journey.
+- Valid only for journeys within Phase 1 (Ahmedabad: Blue Line, and Red Line from APMC to Motera Stadium), not for journeys to Gandhinagar or GIFT City.
+- Recharge at stations (ticket counter or recharge machines) or in the official app. Station recharges are in multiples of Rs 50; the card holds up to Rs 3000.
+- You need at least the minimum fare on the card to enter. The fare is deducted at the exit gate. Entering and leaving at the same station deducts the minimum fare.
+- Tap in at entry and tap out at exit, every time. A missing tap causes an entry-exit mismatch that must be fixed at a station customer care counter.
+- The card can be shared with friends or family, but only one person can travel on it at a time.
+- Check the balance at a ticket vending machine or recharge machine.
+- Valid for 5 years from the last recharge.
+- Refund: travel value is never refunded in cash. Surrendering a readable card refunds the security deposit minus a Rs 20 admin charge (and any negative balance). For a card that cannot be read, the remaining value is moved to a new card within 7 days.
+- Lost cards: GMRC is not responsible and the value is lost. Report a lost card at any station.
+
+=== NCMC (National Common Mobility Card) ===
+
+- An NCMC card ("One Nation One Card", for example a RuPay debit or prepaid card with the NCMC symbol) from any bank is accepted on the whole GMRC network, including the Gandhinagar and GIFT City lines.
+- Get one from a bank that issues NCMC cards. It also works on other NCMC-enabled transport.
+- 10% discount on every completed journey.
+- Top up through your bank (online). Then validate the added value at a customer care window at any station before travelling.
+- Tap in and tap out like a smart card. The gate will not open at exit if the balance is too low; top up to exit.
+- Refunds, replacements and disputes about the card are handled by the issuing bank; GMRC only fixes travel issues such as entry-exit mismatches.
+
+=== Refunds ===
+
+- Only unused paper QR tickets and tokens can be refunded, within 30 minutes of purchase, at the station where they were bought.
+- No partial refunds.
+- Mobile QR tickets and group QR tickets cannot be refunded.
+- No refund for used tickets or lost tokens and cards.
+
+=== Penalties, Fines and Time Limits ===
+
+Time limits inside the paid area:
+- Entry and exit at the same station: maximum 20 minutes.
+- Journey to another station: maximum 240 minutes (4 hours).
+
+Penalties:
+- Travelling without a valid ticket: Rs 50 plus the maximum fare of the system.
+- Taking a token out of the metro premises: Rs 200.
+- Travelling beyond your ticket's destination: pay the fare difference.
+- Exiting by tailgating or jumping the gate: Rs 50 plus the fare difference.
+- Staying longer than the time limit: Rs 10 per hour per person, up to Rs 50.
+- Not following entry and exit correctly with a mobile QR ticket: Rs 150.
+- Reverse travel is not allowed: to go back from your destination, exit and buy a new ticket.
+
+=== Luggage, Food, Pets and Prohibited Items ===
+
+Luggage: maximum 25 kg and 80 x 50 x 30 cm per piece. All luggage goes through the security scanner.
+Bicycles are not allowed on trains.
+
+Not allowed on the metro:
+- Flammable materials, explosives, toxic or radioactive materials
 - Weapons of any kind
-- Luggage exceeding size/weight limits
-- Food and drinks (eating and drinking prohibited)
-- Smoking is strictly prohibited
-- Pets are not allowed
+- Luggage over the size or weight limit
+- Pets and animals (dogs, cats, birds)
+- Eating food and drinking inside trains
+- Smoking anywhere on metro premises
+- Spitting
+- Begging, selling goods without permission, posters or graffiti
 
-=== SECTION V: TRAIN FREQUENCY BY LINE ===
+=== Station Facilities, Accessibility and Parking ===
 
-East-West Line:
-- Weekday Peak Hours: Every 9 minutes
-- Weekday Non-Peak Hours: Every 10 minutes
-- Weekend Peak Hours: Every 12 minutes
+At stations: lifts and escalators, washrooms, drinking water, seating, first aid, information display boards, digital TV screens, public announcements, guiding signage, ticket vending and card recharge machines, CCTV and baggage scanners at every entrance. Free Wi-Fi at select stations. Mobile charging points are not available.
+For differently-abled riders: ramps, lifts with Braille buttons and audible messages, tactile paths for visually impaired riders, wide automatic fare gates, low-height ticket counters, wheelchairs at stations, accessible washrooms, reserved wheelchair space in trains, and staff assistance.
+Entry and exit gates and lift locations for every station are on the /stations-info page; the assistant can also look them up.
+Parking: available near most stations but not all; designated parking near Narendra Modi Stadium. Check locally before driving.
+Full list of facilities: /facilities.
 
-North-South Line:
-- Weekday Peak Hours: Every 10 minutes
-- Weekday Non-Peak Hours: Every 12 minutes
-- Weekend Peak Hours: Every 12 minutes
+=== Safety, Security and Emergencies ===
 
-Corridor-1 (Gandhinagar):
-- Frequency: Every 30 to 70 minutes (may vary up to 355 minutes based on schedule)
+- Medical emergency: first aid at all stations; ambulance 108. Report medical incidents within 24 hours to claims@gujaratmetrorail.com.
+- Fire: use the fire alarm or manual call point, follow the exit signs, do not use lifts.
+- Stuck in a lift: press the emergency button inside the lift, or call 079-22960000.
+- Lost child: tell station staff immediately.
+- Harassment or feeling unsafe: press the passenger emergency alarm in the coach or tell station staff. Women helpline 181. Police 112.
+- Trains and stations have CCTV; platforms have emergency stop plungers and emergency trip switches; trains have detrainment ramps for evacuation.
+- General helpline: 079-22960000.
 
-Pink Line and Light Blue Line:
-- Not running yet (work in progress)
+=== Lost and Found ===
 
-Corridor-2 (GIFT City):
-- Frequency: Every 33 to 355 minutes
+- Report a lost item at any station, or call/email customer care with a description of the item, your address and phone number.
+- Lost & Found Office: Apparel Park Depot, Rajpur Hirpur, Gomtipur, Ahmedabad 380021. Phone 079-22960123, email care@gujaratmetrorail.com. Hours 10:30 AM to 6:10 PM.
+- To collect an item, bring a valid government photo ID with your address.
+- Perishable and soiled items are thrown away at stations. Unclaimed items are kept for six months, then disposed of.
 
-=== SECTION VII: LOST AND FOUND ===
+=== Contact, Customer Care, Feedback and Complaints ===
 
-How to Report Lost Items:
-- Report at any metro station to station staff
-- Contact Lost and Found Office directly
+- Passenger customer care: +91-79-22960123, care@gujaratmetrorail.com
+- General enquiries: +91-79-23248572, info@gujaratmetrorail.com
+- Corporate office: Gujarat Metro Rail Corporation (GMRC) Limited, Block No. 1, First Floor, Karmayogi Bhavan, Sector 10/A, Gandhinagar 382010
+- Complaints, suggestions and appreciation: fill in a form at any operational station, or use the feedback/grievance form on gujaratmetrorail.com.
+- GMRC is on Facebook, X (Twitter), Instagram, YouTube and LinkedIn.
+- This website's contact page: /contact.
 
-Lost and Found Office:
-- Address: Apparel Park Depot, Rajpur Hirpur, Gomtipur, Ahmedabad - 380021
-- Phone: 079-22960234
+=== Pages on This Website ===
 
-Lost Smart Cards: Report immediately at any station or to the Lost and Found Office
-Items Lost on Train: Contact Metro Security or station staff immediately
-Unclaimed Items: Kept for six months before disposal
+- /routes: plan a journey on a map, with fare, time, line changes and next trains
+- /stations: network map and station list, with each station's fares and next trains
+- /nearest-stations: stations closest to you or to any place or Google Maps link
+- /schedule: GMRC timetable (PDF)
+- /stations-info: entry and exit gates and lifts at every station
+- /facilities: passenger, accessibility and emergency facilities
+- /contact: GMRC contact details and lost and found
 
-=== SECTION VIII: EMERGENCY PROCEDURES ===
-
-Medical Emergency:
-- First aid kits available at all stations
-- Ambulance: Call 1073
-- Medical incidents must be reported within 24 hours to: claims@gujaratmetrorail.com
-
-Fire Emergency:
-- Use fire alarms immediately
-- Follow emergency exit signage
-- Do not use elevators during fire emergency
-
-Lift/Elevator Issue:
-- Press the emergency button inside the lift
-- Or call: 079-22960000
-
-Lost Child:
-- Immediately inform station staff
-
-Harassment or Safety Concerns:
-- Press emergency button in coach or at station
-- Women helpline: Call 181
-- Police: Call 112
-
-Security Concerns:
-- Call: 079-22960234
-- Use station intercoms
-
-General Helpline: 079-22960000
-
-=== SECTION IX: OTHER REGULATIONS AND INFORMATION ===
-
-Feedback:
-- Submit feedback forms available at all operational stations
-
-Prohibited Activities:
-- Begging inside metro premises
-- Unauthorized selling of goods
-- Putting up posters or graffiti
-
-Travel Time Limits:
-- Same station entry and exit: Maximum 20 minutes
-- Different station journey: Maximum 240 minutes (4 hours)
-
-=== SECTION VI: STATION LIST ===
+=== Station List by Line, Places Near Stations ===
 
 Red Line (North-South Corridor, APMC to Koteshwar Road):
 APMC, Jivraj Park, Rajivnagar, Shreyas, Paldi, Gandhigram, Old High Court, Usmanpura, Vijaynagar, Vadaj, Ranip, Sabarmati Railway Station, AEC, Sabarmati (work in progress), Motera Stadium, Koteshwar Road
@@ -210,3 +220,5 @@ Koteshwar Road, Ashram Road, Koteshwar Prachin Mandir, Sabarmati River, Sardarna
 
 Light Blue Line (GIFT City Extension, Gift City to Shahpur, work in progress):
 Gift City, GIFT City House, Gujarat Biotechnology University, Shahpur (Gandhinagar)
+
+Places near stations: Kalupur Railway Station for Ahmedabad railway station; Sabarmati Railway Station for Sabarmati Junction; Kankaria East for Kankaria Lake; Motera Stadium for Narendra Modi Stadium; Akshardham for Akshardham temple, Gandhinagar; Mahatma Mandir for Mahatma Mandir convention centre; Gujarat University and Commerce Six Road for the university area; Old High Court and Usmanpura for Ashram Road; Gift City and PDEU for GIFT City and PDEU university. For any other place, use /nearest-stations.

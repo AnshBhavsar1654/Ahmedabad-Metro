@@ -284,6 +284,12 @@ _GREETING = re.compile(
 _NEARBY = re.compile(
     r"\b(nearest|nearby|near me|closest|najik|najeek|nazdik|nazdeek|paas)\b|નજીક|પાસે|नज़दीक|नजदीक|पास"
 )
+# Questions that mention stations but are about something else: tickets, cards, passes, facilities, timings.
+_BEYOND_JOURNEY = re.compile(
+    r"\b(smart ?card|card|ncmc|pass|passes|discount|concession|student|senior|token|qr|refund|luggage|parking|lift|"
+    r"gate|gates|wheelchair|toilet|washroom|open|underground|first train|last train|next train|timing|timings)\b"
+    r"|કાર્ડ|પાસ|ગેટ|પાર્કિંગ|कार्ड|पास|गेट|पार्किंग"
+)
 _STATION_WORD = re.compile(r"\b(station|stations|metro)\b|સ્ટેશન|મેટ્રો|स्टेशन|मेट्रो")
 
 
@@ -312,11 +318,14 @@ def detect_intent(text: str, stations: List[str]) -> Optional[str]:
     if not stations or _DURATION.search(norm):
         return None
 
+    if _BEYOND_JOURNEY.search(norm):
+        return None  # "can I use my smart card to go to gift city?" is about the card, not the route
+
     wants_fare = bool(_FARE.search(norm))
     strong_route = bool(_ROUTE_STRONG.search(norm))
     wants_route = strong_route or bool(_ROUTE_WEAK.search(norm))
     if len(stations) >= 2:
-        if strong_route or (wants_route and not wants_fare):
+        if strong_route or (wants_route and not wants_fare and len(words) <= 8):
             return "route"
         if wants_fare:
             return "fare"
@@ -327,7 +336,10 @@ def detect_intent(text: str, stations: List[str]) -> Optional[str]:
     # A lone station name ("paldi", "gift city station") is the start of a journey question.
     if only_station(norm, stations[0]):
         return "route"
-    # One station and a fare/route word: the reply asks for the other end.
+    # One station and a fare/route word in a short message ("fare from paldi"): the reply asks for the other end.
+    # A longer question about one station ("how do I reach the airport by metro?") needs the model.
+    if len(words) > 5:
+        return None
     return "route" if strong_route else "fare" if wants_fare else "route" if wants_route else None
 
 

@@ -146,8 +146,8 @@ export const LINE_FREQUENCY = {
   lightblue: 'freq.wip',
 };
 
-// Operating hours from the knowledge base: 6:30 AM to 11:00 PM daily.
-export const SERVICE_HOURS = { open: 6 * 60 + 30, close: 23 * 60 };
+// Operating hours from the knowledge base: 6:20 AM to 11:00 PM daily.
+export const SERVICE_HOURS = { open: 6 * 60 + 20, close: 23 * 60 };
 
 export const serviceStatus = (date = new Date()) => {
   // Ahmedabad time, whatever the viewer's time zone.

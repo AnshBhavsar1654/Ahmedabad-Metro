@@ -97,7 +97,7 @@ Environment variables are listed in [ENV_VARIABLES.md](ENV_VARIABLES.md). The de
 backend/
   app.py        API routes (start with: uvicorn app:app)
   metro/        network and fares, timetable, nearby stations, visit counter, keep-alive
-  chatbot/      rider assistant: instant rule-based answers and the Gemini assistant
+  chatbot/      rider assistant: instant rule-based answers, then a LangGraph RAG agent on Gemini
   data/         Excel sources, the network built from them, timetable, chatbot knowledge base
   scripts/      build_network.py (rebuilds data/network.json from the Excel files)
   tests/        pytest suite (run `pytest` from backend/)

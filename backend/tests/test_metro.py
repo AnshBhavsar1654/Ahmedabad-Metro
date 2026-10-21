@@ -53,8 +53,8 @@ def test_maps_resolver_reads_coordinates_from_link():
 
 
 def test_chat_validates_input():
-    assert client.post("/api/chat", json={"message": "  "}).status_code == 400
-    assert client.post("/api/chat", json={"message": "x" * 1001}).status_code == 400
+    assert client.post("/api/chat/stream", json={"message": "  "}).status_code == 400
+    assert client.post("/api/chat/stream", json={"message": "x" * 1001}).status_code == 400
 
 
 def test_health_route():

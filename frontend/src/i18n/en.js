@@ -53,7 +53,7 @@ const en = {
   // Home
   'home.welcome': 'Welcome to Ahmedabad Metro',
   'home.running': 'Trains running now, until 11:00 PM',
-  'home.closed': 'Closed now, first trains from 6:30 AM',
+  'home.closed': 'Closed now, first trains from 6:20 AM',
   'home.weatherPlace': 'Ahmedabad, {condition}',
   'weather.Clear': 'clear',
   'weather.Clouds': 'cloudy',
@@ -271,7 +271,7 @@ const en = {
   'routes.copied': 'Link copied',
   'routes.shareText': 'Ahmedabad Metro journey',
   'routes.freqTitle': 'Train frequency',
-  'routes.freqText': 'Trains on this route run frequently: about every 9 to 12 minutes, from 6:30 AM to 11:00 PM. No need to check a timetable.',
+  'routes.freqText': 'Trains on this route run frequently: about every 9 to 12 minutes, from 6:20 AM to 11:00 PM. No need to check a timetable.',
   'routes.map': 'Route Map',
   'routes.allStops': 'All stops',
   'routes.start': 'Start: take the {line}',

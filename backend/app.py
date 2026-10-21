@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
-from chatbot.assistant import ChatServiceError, answer, answer_stream  # noqa: E402  (needs env loaded first)
+from chatbot.assistant import ChatServiceError, answer_stream  # noqa: E402  (needs env loaded first)
 from metro.keepalive import start_keepalive  # noqa: E402
 from metro.locations import get_nearby_stations_data, get_stations_with_coordinates, resolve_google_maps_location_data  # noqa: E402
 from metro.network import (  # noqa: E402
@@ -255,20 +255,6 @@ def _chat_error(exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=status, content={"error": CHAT_ERROR_MESSAGES[kind]})
 
 
-@app.post("/api/chat")
-async def chat(data: ChatRequest, request: Request):
-    rejected = _check_chat_request(data, request)
-    if rejected:
-        return rejected
-    started = time.monotonic()
-    try:
-        result = await answer(data.message.strip(), api_key=os.getenv("GEMINI_API_KEY", ""), history=data.history)
-    except Exception as exc:
-        return _chat_error(exc)
-    print(f"[chat] {result['source']} in {time.monotonic() - started:.2f}s")
-    return result
-
-
 def _sse(event: dict) -> str:
     return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
@@ -277,7 +263,7 @@ def _sse(event: dict) -> str:
 async def chat_stream(data: ChatRequest, request: Request):
     """Server-sent events: {"type": "delta", "text"} pieces, then {"type": "done", "source"}.
 
-    Failures before the first piece get a normal JSON error with a status code, like /api/chat.
+    Failures before the first piece get a normal JSON error with a status code.
     """
     rejected = _check_chat_request(data, request)
     if rejected:
