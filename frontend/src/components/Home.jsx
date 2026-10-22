@@ -86,9 +86,12 @@ const ServiceStatus = () => {
     return () => clearInterval(timer);
   }, []);
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm backdrop-blur-sm">
-      <span className={`h-2 w-2 rounded-full ${running ? 'bg-go-600' : 'bg-white/50'}`} aria-hidden="true" />
-      {running ? t('home.running') : t('home.closed')}
+    <div>
+      <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm backdrop-blur-sm">
+        <span className={`h-2 w-2 rounded-full ${running ? 'bg-go-600' : 'bg-white/50'}`} aria-hidden="true" />
+        {running ? t('home.running') : t('home.closed')}
+      </div>
+      {!running && <p className="mt-3 text-sm text-white/80">{t('home.coldStart')}</p>}
     </div>
   );
 };

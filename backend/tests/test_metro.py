@@ -69,6 +69,29 @@ def test_keepalive_disabled_without_url(monkeypatch):
     start_keepalive()()  # returns a no-op stop function and starts no thread
 
 
+@pytest.mark.parametrize("hour, expected", [(5, False), (6, True), (22, True), (23, False)])
+def test_keepalive_window(hour, expected):
+    from datetime import datetime
+
+    from metro.keepalive import IST, _active
+
+    assert _active(datetime(2026, 1, 1, hour, 0, tzinfo=IST)) is expected
+
+
+def test_keepalive_window_env_override(monkeypatch):
+    from datetime import datetime
+
+    from metro.keepalive import IST, _active
+
+    monkeypatch.setenv("KEEPALIVE_START_HOUR", "8")
+    monkeypatch.setenv("KEEPALIVE_END_HOUR", "20")
+    assert _active(datetime(2026, 1, 1, 7, 0, tzinfo=IST)) is False
+    assert _active(datetime(2026, 1, 1, 19, 0, tzinfo=IST)) is True
+
+    monkeypatch.setenv("KEEPALIVE_START_HOUR", "not-a-number")
+    assert _active(datetime(2026, 1, 1, 6, 0, tzinfo=IST)) is True  # falls back to 6
+
+
 # ---------------------------------------------------------------- timetable (GMRC, w.e.f. 18 May 2026)
 
 def test_journey_time_matches_the_timetable():

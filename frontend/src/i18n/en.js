@@ -54,6 +54,7 @@ const en = {
   'home.welcome': 'Welcome to Ahmedabad Metro',
   'home.running': 'Trains running now, until 11:00 PM',
   'home.closed': 'Closed now, first trains from 6:20 AM',
+  'home.coldStart': 'Slow to load? Wait a minute and refresh. Visits are quickest between 6:20 AM and 11:00 PM.',
   'home.weatherPlace': 'Ahmedabad, {condition}',
   'weather.Clear': 'clear',
   'weather.Clouds': 'cloudy',
